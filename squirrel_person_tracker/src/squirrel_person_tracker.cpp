@@ -400,7 +400,6 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
 //        publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
         if (pDetector.isFloorPoint(userSkeleton, floor, floorPoint))
         {
-          ROS_INFO("%f,%f,%f", floorPoint.x, floorPoint.y, floorPoint.z);
           publishedState.state = squirrel_person_tracker_msgs::State::POINT_USER;
           publishPointingPoseStamped(floorPoint, timestamp);
 //          publishTransformOfPoint(wavingUserID, point, frame_id, "PointingPoint", timestamp);

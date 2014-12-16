@@ -26,45 +26,6 @@ SUBSCRIBED TOPICS:
 ---
 
 #############################################################
-HOW TO INSTALL NiTE2:
-
-Place/Unzip the NiTE2 package to a directory (e.g. your home directory). Run install.sh in the NiTE2 directory:
-
-1) cd path/to/Nite2/directory
-
-2) chmod +x install.sh
-
-3) ./install.sh
-
-#############################################################
-
-Check the NiTEDevEnvironment file located in the NiTE2 directory. 
-
-Usually not necessary:
-Change the dots to your installation directory
-
-export NITE2_INCLUDE=/path/to/.../NiTE2/Include
-export NITE2_REDIST64=/path/to/.../NiTE2/Redist
-
-##############################################################
-
-Add this line to your .bashrc file (or equal file in the robot setup), change the dots to the corresponding path again:
-
-source /path/to/.../NiTE2/NiTEDevEnvironment
-
-##############################################################
-
-Setup Nite:
-
-NiTE requires that any executables point to a training sample directory at .../NiTE2/Redist/NiTE2.
-This means that a NiTE2 folder holding the h.dat and s.dat files inside, needs to be in the working directory.
-A workaround is to create a symbolic link of the NiTE2 directory in your .ros directory (on my machine):
-
-ln -s /home/pregier/NiTE2/Redist/NiTE2/ /home/pregier/.ros/NiTE2.
-
-or you simply create a NiTE2 folder in your .ros directory and place the h.dat and s.dat files inside.
-
-This works only if your cwd attribute in the node tag is equal to ROS_HOME (see squirrel_tracker_nodelet.launch down below).
 
 
 HOW TO LAUNCH:
