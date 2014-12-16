@@ -1,0 +1,16 @@
+<package>
+  <name>squirrel_hri</name>
+  <version>0.0.1</version>
+  <description>Everything related to human robot interaction</description>
+  <maintainer email="nhg@ipa.fhg.de">Nadia Hammoudeh Garcia</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>libnite2</run_depend>
+  <run_depend>squirrel_person_tracker</run_depend>
+  
+
+  <export>
+	<metapackage/>
+  </export>
+</package>
