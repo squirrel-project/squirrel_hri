@@ -17,13 +17,13 @@ endif()
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
   roscpp
   roslib
   tf
   pcl_ros
   squirrel_person_tracker_msgs
   libnite2
+  nodelet
 )
 
 # Find OpenNI2
@@ -56,7 +56,14 @@ message(STATUS ${OpenNI2_LIBRARIES})
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES tracker_bonn
-#  CATKIN_DEPENDS geometry_msgs orocos_kdl roscpp roslib tf
+  CATKIN_DEPENDS 
+	roscpp 
+	roslib
+	tf
+	pcl_ros
+	squirrel_person_tracker_msgs
+	libnite2
+	nodelet
 #  DEPENDS system_lib
 )
 
