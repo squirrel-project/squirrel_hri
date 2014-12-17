@@ -96,3 +96,6 @@ POST_BUILD
 COMMAND ${PROJECT_SOURCE_DIR}/create_nite2_link.bash
 )
 
+# for ros hydro
+set_target_properties(squirrel_person_tracker PROPERTIES COMPILE_FLAGS -Dlinux) # for comipling with openni2 with linux 12.04
+set_target_properties(squirrel_person_tracker_nodelet PROPERTIES COMPILE_FLAGS -Dlinux)
