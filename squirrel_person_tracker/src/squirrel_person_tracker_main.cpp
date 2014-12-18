@@ -10,8 +10,8 @@ int main(int argc, char **argv)
     return 1;
 //  ROS_INFO("Done...\r\n");
   ros::NodeHandle pnh("~");
-  SquirrelTracker listener(pnh);
-  listener.runSquirrelTracker();
+  SquirrelTracker tracker(pnh);
+  tracker.runSquirrelTracker();
   ros::spin();
 
   return 0;

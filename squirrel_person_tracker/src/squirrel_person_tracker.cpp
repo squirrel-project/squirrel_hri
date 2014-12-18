@@ -41,7 +41,7 @@ SquirrelTracker::~SquirrelTracker()
 /////////////////////////////////////////////////////////////////////
 void SquirrelTracker::initOpenNI()
 {
-//  ROS_INFO("Initialize OpenNI....\r\n");
+  ROS_INFO("Initialize OpenNI....\r\n");
   ostatus = openni::OpenNI::initialize();
   if (ostatus != openni::STATUS_OK)
   {
@@ -50,7 +50,7 @@ void SquirrelTracker::initOpenNI()
     return;
   }
 //-----------------------------------------------------------------
-//  ROS_INFO("Opening first device ...\r\n");
+  ROS_INFO("Opening first device ...\r\n");
   ostatus = device.open(openni::ANY_DEVICE);
   if (ostatus != openni::STATUS_OK)
   {
@@ -58,9 +58,9 @@ void SquirrelTracker::initOpenNI()
     ros::shutdown();
     return;
   }
-//  ROS_INFO("%s Opened, Completed.\r\n", device.getDeviceInfo().getName());
+  ROS_INFO("%s Opened, Completed.\r\n", device.getDeviceInfo().getName());
 //------------------------------------------------------------------
-//  ROS_INFO("Create DepthSensor ...\r\n");
+  ROS_INFO("Create DepthSensor ...\r\n");
   ostatus = depthSensor.create(device, openni::SENSOR_DEPTH);
   if (ostatus != openni::STATUS_OK)
   {
@@ -81,7 +81,7 @@ void SquirrelTracker::initOpenNI()
 /////////////////////////////////////////////////////////////////////
 void SquirrelTracker::initNITE()
 {
-//  ROS_INFO("Initialize NiTE....\r\n");
+  ROS_INFO("Initialize NiTE....\r\n");
   nstatus = nite::NiTE::initialize();
   if (nstatus != nite::STATUS_OK)
   {

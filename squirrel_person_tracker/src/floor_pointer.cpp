@@ -1,8 +1,8 @@
 #include "squirrel_person_tracker/floor_pointer.h"
 
-FloorPointer::FloorPointer() :
-    average {0.0}
+FloorPointer::FloorPointer()
 {
+  average[0] = average[1] = average[2] = 0.f; 
   straightness = 0.9;
   minHipDistance = 0.3;
   maxQueuesize = 10;
@@ -65,7 +65,7 @@ FloorPointer::Side FloorPointer::getReliableGestureSide(nite::Point3f& leftHand,
   {
     return NONE;
   }
-  nite::Point3f point1 = {average[0], average[1], average[2]};
+  nite::Point3f point1(average[0], average[1], average[2]);
   if (side == LEFT)
   {
     if (getDistance(point1, leftHand) < accuracyTreshold)
@@ -232,14 +232,14 @@ bool FloorPointer::isFloorPoint(const nite::Skeleton& userSkeleton, const nite::
       getPointingSide(headPoint, leftShoulderPoint, leftElbowPoint, leftHandPoint, leftHipPoint, rightShoulderPoint,
                       rightElbowPoint, rightHandPoint, rightHipPoint)) == LEFT)
   {
-    nite::Point3f FloorNormal = {floor.normal.x, floor.normal.y, floor.normal.z};
-    nite::Point3f FloorPoint = {floor.point.x, floor.point.y, floor.point.z};
+    nite::Point3f FloorNormal(floor.normal.x, floor.normal.y, floor.normal.z);
+    nite::Point3f FloorPoint(floor.point.x, floor.point.y, floor.point.z);
 //      nite::Point3f vecShoulderHandleft = subPoints(leftShoulderPoint, leftHandPoint);
     nite::Point3f vecHeadHandleft = subPoints(headPoint, leftHandPoint);
     nite::Point3f vecHandFloorPoint = subPoints(FloorPoint, leftHandPoint);
     float normFaktor = calcDotProduct(FloorNormal, vecHandFloorPoint) / calcDotProduct(FloorNormal, vecHeadHandleft);
-    nite::Point3f normvecSholderHand = {vecHeadHandleft.x * normFaktor, vecHeadHandleft.y * normFaktor,
-                                        vecHeadHandleft.z * normFaktor};
+    nite::Point3f normvecSholderHand(vecHeadHandleft.x * normFaktor, vecHeadHandleft.y * normFaktor,
+                                        vecHeadHandleft.z * normFaktor);
     nite::Point3f intersectionPoint = addPoints(leftHandPoint, normvecSholderHand);
     Output = intersectionPoint;
     return true;
@@ -251,14 +251,14 @@ bool FloorPointer::isFloorPoint(const nite::Skeleton& userSkeleton, const nite::
                       rightElbowPoint, rightHandPoint, rightHipPoint)) == RIGHT)
   {
 
-    nite::Point3f FloorNormal = {floor.normal.x, floor.normal.y, floor.normal.z};
-    nite::Point3f FloorPoint = {floor.point.x, floor.point.y, floor.point.z};
+    nite::Point3f FloorNormal(floor.normal.x, floor.normal.y, floor.normal.z);
+    nite::Point3f FloorPoint(floor.point.x, floor.point.y, floor.point.z);
 //      nite::Point3f vecShoulderHandright = subPoints(rightShoulderPoint, rightHandPoint);
     nite::Point3f vecHeadHandright = subPoints(headPoint, rightHandPoint);
     nite::Point3f vecHandFloorPoint = subPoints(FloorPoint, rightHandPoint);
     float normFaktor = calcDotProduct(FloorNormal, vecHandFloorPoint) / calcDotProduct(FloorNormal, vecHeadHandright);
-    nite::Point3f normvecSholderHand = {vecHeadHandright.x * normFaktor, vecHeadHandright.y * normFaktor,
-                                        vecHeadHandright.z * normFaktor};
+    nite::Point3f normvecSholderHand(vecHeadHandright.x * normFaktor, vecHeadHandright.y * normFaktor,
+                                        vecHeadHandright.z * normFaktor);
     nite::Point3f intersectionPoint = addPoints(rightHandPoint, normvecSholderHand);
     Output = intersectionPoint;
     return true;
