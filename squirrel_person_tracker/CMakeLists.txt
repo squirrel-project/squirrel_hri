@@ -2,18 +2,18 @@ cmake_minimum_required(VERSION 2.8.3)
 project(squirrel_person_tracker)
 
 # check c++11 / c++0x
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX11)
-   set(CMAKE_CXX_FLAGS "-std=c++11")
-   message(COMPILER_SUPPORTS_CXX11)
-elseif(COMPILER_SUPPORTS_CXX0X)
-    set(CMAKE_CXX_FLAGS "-std=c++0x")
-    message(COMPILER_SUPPORTS_CXX0X)
-else()
-    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
-endif()
+#include(CheckCXXCompilerFlag)
+#CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+#CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+#if(COMPILER_SUPPORTS_CXX11)
+#   set(CMAKE_CXX_FLAGS "-std=c++11")
+#   message(COMPILER_SUPPORTS_CXX11)
+#elseif(COMPILER_SUPPORTS_CXX0X)
+#    set(CMAKE_CXX_FLAGS "-std=c++0x")
+#    message(COMPILER_SUPPORTS_CXX0X)
+#else()
+#    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+#endif()
 
 
 ## Find catkin macros and libraries
@@ -33,7 +33,7 @@ find_path(OpenNI2_INCLUDEDIR
 	  HINTS /usr/include/openni2)
 message(STATUS ${OpenNI2_INCLUDEDIR}) 
 find_library(OpenNI2_LIBRARIES
-	     NAMES OpenNI2 DummyDevice OniFile PS1090
+	     NAMES OpenNI2 DummyDevice OniFile PS1080
 	     HINTS /usr/lib/ /usr/lib/OpenNI2/Drivers
 	     PATH_SUFFIXES lib)
 message(STATUS ${OpenNI2_LIBRARIES})
@@ -77,7 +77,6 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${OpenNI2_INCLUDEDIR}
-  ${Nite2_INCLUDEDIR}
 )
 
 
@@ -85,7 +84,7 @@ include_directories(
 
 
 add_executable(squirrel_person_tracker src/squirrel_person_tracker_main.cpp src/floor_pointer.cpp src/squirrel_person_tracker.cpp)
-target_link_libraries(squirrel_person_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} )
+target_link_libraries(squirrel_person_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES})
 
 add_library(squirrel_person_tracker_nodelet src/squirrel_person_tracker_nodelet.cpp src/floor_pointer.cpp src/squirrel_person_tracker.cpp)
 target_link_libraries(squirrel_person_tracker_nodelet ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} )
