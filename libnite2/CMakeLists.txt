@@ -16,17 +16,9 @@ find_package(catkin REQUIRED)
 
 add_custom_target(
     build_libnite2 ALL
-    COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f Makefile.tarball
+    COMMAND cmake -E chdir ${PROJECT_BINARY_DIR} make LIB_DIR=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_LIB_DESTINATION} INCLUDE_DIR=${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION} PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -f ${PROJECT_SOURCE_DIR}/Makefile.tarball
 )
 
-set(libraries "NiTE2")
-foreach(library ${libraries})
-	add_custom_target(
-		copy_${library} ALL
-		COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/common/lib/ ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_LIB_DESTINATION}
-    	COMMENT "Copying ${PROJECT_SOURCE_DIR}/common/lib/lib${library}.so to ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_LIB_DESTINATION}"
-	)
-endforeach()
 
 ###################################
 ## catkin specific configuration ##
@@ -38,8 +30,8 @@ endforeach()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-	INCLUDE_DIRS
-		common/include
+	#INCLUDE_DIRS
+	#	include
 	LIBRARIES
 		NiTE2
 #  CATKIN_DEPENDS other_catkin_pkg
@@ -56,12 +48,8 @@ include_directories(
 	common/include
 )
 
-foreach(library ${libraries})
-	add_library(${library} SHARED)
-	add_dependencies(${library} copy_${library})
-	add_dependencies(copy_${library} build_libnite2)
-	set_target_properties(${library} PROPERTIES LINKER_LANGUAGE CXX)
-endforeach()
+add_library(NiTE2 SHARED)
+set_target_properties(NiTE2 PROPERTIES LINKER_LANGUAGE CXX)
 set_target_properties(build_libnite2 PROPERTIES LINKER_LANGUAGE CXX)
 
 #############
