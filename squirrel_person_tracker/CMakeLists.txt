@@ -78,7 +78,6 @@ include_directories(
   ${OpenNI2_INCLUDEDIR}
 )
 
-
 add_executable(squirrel_person_tracker src/squirrel_person_tracker_main.cpp src/floor_pointer.cpp src/squirrel_person_tracker.cpp)
 target_link_libraries(squirrel_person_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES})
 
@@ -89,10 +88,9 @@ target_link_libraries(squirrel_person_tracker_nodelet ${catkin_LIBRARIES} ${Open
 catkin_add_gtest(test_floorpointer test/squirrel_person_tracker_floor_point_test.cpp src/floor_pointer.cpp)
 target_link_libraries(test_floorpointer ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} )
 
-add_custom_command(
-TARGET squirrel_person_tracker
-POST_BUILD
-COMMAND ${PROJECT_SOURCE_DIR}/create_nite2_link.bash
+add_custom_target(
+create_nite2_link ALL
+COMMAND ${PROJECT_SOURCE_DIR}/create_nite2_link.bash ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_LIB_DESTINATION}/NiTE2
 )
 
 # for ros hydro
