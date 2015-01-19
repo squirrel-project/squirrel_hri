@@ -1,5 +1,3 @@
-all: installed
-
 TARBALL = build/NiTE-Linux-x64-2.2.tar.bz2
 TARBALL_URL = https://github.com/ipa320/thirdparty/raw/master/NiTE-Linux-x64-2.2.tar.bz2
 # originally from http://ilab.usc.edu/packages/forall/ubuntu-13.10/NiTE-Linux-x64-2.2.tar.bz2
@@ -7,21 +5,28 @@ SOURCE_DIR = build/NiTE-Linux-x64-2.2
 UNPACK_CMD = tar xjf
 MD5SUM_FILE = $(PROJECT_SOURCE_DIR)/NiTE-Linux-x64-2.2.tar.bz2.md5sum
 
+all: $(LIB_DIR)/OpenNI.ini
+
 include $(shell rospack find mk)/download_unpack_build.mk
 
-installed: $(SOURCE_DIR)/unpacked
+$(LIB_DIR)/OpenNI.ini: $(SOURCE_DIR)/unpacked
 	# copy to $(INSTALL_PREFIX)
-	mkdir -p $(LIB_DIR)
+	mkdir -p $(LIB_DIR)/NiTE2
 	mkdir -p $(INCLUDE_DIR)/libnite2
-	
-	cp -pr $(SOURCE_DIR)/Include/* $(INCLUDE_DIR)/libnite2/
-	cp -pr $(SOURCE_DIR)/Redist/* $(LIB_DIR)
-	cp -p  $(SOURCE_DIR)/Samples/Bin/libOpenNI2.so $(LIB_DIR)
-	cp -pr $(SOURCE_DIR)/Samples/Bin/OpenNI2 $(LIB_DIR)
-	cp -p  $(SOURCE_DIR)/Samples/Bin/OpenNI.ini $(LIB_DIR)
+	cp -pur $(SOURCE_DIR)/Include/* $(INCLUDE_DIR)/libnite2/
+	cp -pur $(SOURCE_DIR)/Redist/libNiTE2.jni.so $(LIB_DIR)
+	cp -pur $(SOURCE_DIR)/Redist/libNiTE2.so $(LIB_DIR)
+	cp -pur $(SOURCE_DIR)/Redist/*.ini $(LIB_DIR)
+	cp -pur $(SOURCE_DIR)/Redist/NiTE2/* $(LIB_DIR)/NiTE2
+	cp -pu  $(SOURCE_DIR)/Samples/Bin/libOpenNI2.so $(LIB_DIR)
+	cp -pur $(SOURCE_DIR)/Samples/Bin/OpenNI2 $(LIB_DIR)
+	cp -pu  $(SOURCE_DIR)/Samples/Bin/OpenNI.ini $(LIB_DIR)
+
 	cd $(LIB_DIR) && [ -h libOpenNI2.so.0 ] || ln -s libOpenNI2.so libOpenNI2.so.0
+	touch -c $(LIB_DIR)/OpenNI.ini
 
 clean:
 	rm -rf $(SOURCE_DIR) $(TARBALL)
 wipe: clean
 	-rm -rf build
+
