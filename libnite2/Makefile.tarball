@@ -18,12 +18,10 @@ $(LIB_DIR)/OpenNI.ini: $(SOURCE_DIR)/unpacked
 	cp -pur $(SOURCE_DIR)/Redist/libNiTE2.so $(LIB_DIR)
 	cp -pur $(SOURCE_DIR)/Redist/*.ini $(LIB_DIR)
 	cp -pur $(SOURCE_DIR)/Redist/NiTE2/* $(LIB_DIR)/NiTE2
-	cp -pu  $(SOURCE_DIR)/Samples/Bin/libOpenNI2.so $(LIB_DIR)
-	cp -pur $(SOURCE_DIR)/Samples/Bin/OpenNI2 $(LIB_DIR)
-	cp -pu  $(SOURCE_DIR)/Samples/Bin/OpenNI.ini $(LIB_DIR)
-
-	cd $(LIB_DIR) && [ -h libOpenNI2.so.0 ] || ln -s libOpenNI2.so libOpenNI2.so.0
-	touch -c $(LIB_DIR)/OpenNI.ini
+	[ "${ROS_DISTRO}" != "indigo" ] && cp -pu  $(SOURCE_DIR)/Samples/Bin/libOpenNI2.so $(LIB_DIR) || echo libOpenNI2.so does not need to be copied in indigo
+	[ "${ROS_DISTRO}" != "indigo" ] && cp -pur $(SOURCE_DIR)/Samples/Bin/OpenNI2 $(LIB_DIR) || echo OpenNI2-Folder does not need to be copied in indigo
+	[ "${ROS_DISTRO}" != "indigo" ] && cp -pu  $(SOURCE_DIR)/Samples/Bin/OpenNI.ini $(LIB_DIR) || echo OpenNI.ini does not  need to be copied in indigo
+	[ "${ROS_DISTRO}" != "indigo" ] && (cd $(LIB_DIR) && [ -h libOpenNI2.so.0 ] || ln -s libOpenNI2.so libOpenNI2.so.0) || echo no symlink 
 
 clean:
 	rm -rf $(SOURCE_DIR) $(TARBALL)
