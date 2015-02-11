@@ -5,12 +5,16 @@
 //PLUGINLIB_DECLARE_CLASS(squirrel_tracker, squirrel_tracker_nodelet, squirrel_tracker_nodelet, nodelet::Nodelet)
 PLUGINLIB_EXPORT_CLASS(SquirrelPersonTrackerNodelet, nodelet::Nodelet)
 
-SquirrelPersonTrackerNodelet::SquirrelPersonTrackerNodelet() : Nodelet(), listener(NULL) {
+SquirrelPersonTrackerNodelet::SquirrelPersonTrackerNodelet() :
+    Nodelet(), listener(NULL)
+{
 
 }
 
-SquirrelPersonTrackerNodelet::~SquirrelPersonTrackerNodelet() {
-  if (listener) {
+SquirrelPersonTrackerNodelet::~SquirrelPersonTrackerNodelet()
+{
+  if (listener)
+  {
     delete listener;
     listener = NULL;
   }
@@ -18,7 +22,8 @@ SquirrelPersonTrackerNodelet::~SquirrelPersonTrackerNodelet() {
 
 void SquirrelPersonTrackerNodelet::onInit()
 {
-  if (!listener) {
+  if (!listener)
+  {
     listener = new SquirrelTracker(getPrivateNodeHandle());
   }
 

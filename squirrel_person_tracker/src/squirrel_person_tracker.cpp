@@ -3,31 +3,23 @@
 SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
     pcl_msg(new pcl::PointCloud<pcl::PointXYZ>)
 {
-  pnh_.param<std::string>("camera_frame_id", frame_id, "camera_depth_frame");
+  pnh_.param<std::string>("camera_optical_frame_id", frame_id, "camera_depth_optical_frame");
   ostatus = openni::STATUS_OK;
   nstatus = nite::STATUS_OK;
   pubPC = pnh_.advertise<pcl::PointCloud<pcl::PointXYZ> >("filtered_cloud", 1);
-  pubPS = pnh_.advertise<geometry_msgs::PoseStamped>("pointing_pose", 10);
+  pubPP = pnh_.advertise<geometry_msgs::PointStamped>("pointing_pose", 10);
   pubPSA = pnh_.advertise<geometry_msgs::PoseArray>("detected_pose", 10);
   pubState = pnh_.advertise<squirrel_person_tracker_msgs::State>("tracking_state", 10);
+  pubPHH = pnh_.advertise<squirrel_person_tracker_msgs::HeadHandPoints>("head_hand_points", 10);
   wavingUserID = 0;
   ISWAVEDETECTED = false;
   SWITCHSKELTRACKON = true;
   ISWAVEUSERVISBLE = false;
-//  pcl_msg->header.frame_id = frame_id;
-//////////////////////////////////////////////////
-//  detectedPoseArray.header.frame_id = frame_id;
-//  pointingPoint.header.frame_id = frame_id;
-////////////////////////////////////////////////
   pcl_msg->height = 1;
-  change_frame.setOrigin(tf::Vector3(0, 0, 0));
-  //rotate camera frame to robot frame
-  tf::Quaternion frame_rotation;
-  frame_rotation.setEuler(1.5708, 0, 1.5708);
-  change_frame.setRotation(frame_rotation);
   publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
   beginUnvis = 0;
   durationUnvis = 3;
+  transform.setRotation(tf::Quaternion(0, 0, 0, 1));
   this->initUserTracker();
 }
 
@@ -41,7 +33,7 @@ SquirrelTracker::~SquirrelTracker()
 /////////////////////////////////////////////////////////////////////
 void SquirrelTracker::initOpenNI()
 {
-  ROS_INFO("Initialize OpenNI....\r\n");
+//  ROS_INFO("Initialize OpenNI....\r\n");
   ostatus = openni::OpenNI::initialize();
   if (ostatus != openni::STATUS_OK)
   {
@@ -50,7 +42,7 @@ void SquirrelTracker::initOpenNI()
     return;
   }
 //-----------------------------------------------------------------
-  ROS_INFO("Opening first device ...\r\n");
+//  ROS_INFO("Opening first device ...\r\n");
   ostatus = device.open(openni::ANY_DEVICE);
   if (ostatus != openni::STATUS_OK)
   {
@@ -58,9 +50,9 @@ void SquirrelTracker::initOpenNI()
     ros::shutdown();
     return;
   }
-  ROS_INFO("%s Opened, Completed.\r\n", device.getDeviceInfo().getName());
+//  ROS_INFO("%s Opened, Completed.\r\n", device.getDeviceInfo().getName());
 //------------------------------------------------------------------
-  ROS_INFO("Create DepthSensor ...\r\n");
+//  ROS_INFO("Create DepthSensor ...\r\n");
   ostatus = depthSensor.create(device, openni::SENSOR_DEPTH);
   if (ostatus != openni::STATUS_OK)
   {
@@ -81,7 +73,7 @@ void SquirrelTracker::initOpenNI()
 /////////////////////////////////////////////////////////////////////
 void SquirrelTracker::initNITE()
 {
-  ROS_INFO("Initialize NiTE....\r\n");
+//  ROS_INFO("Initialize NiTE....\r\n");
   nstatus = nite::NiTE::initialize();
   if (nstatus != nite::STATUS_OK)
   {
@@ -131,6 +123,7 @@ void SquirrelTracker::setFrameIDParameter()
   pcl_msg->header.frame_id = frame_id;
   detectedPoseArray.header.frame_id = frame_id;
   pointingPoint.header.frame_id = frame_id;
+  squirrelHeadHand.header.frame_id = frame_id;
 }
 ////////////////////////////////////////////////////////////////////
 void SquirrelTracker::publishTransformOfPoint(const nite::UserId& userID, const nite::Point3f& point,
@@ -138,18 +131,11 @@ void SquirrelTracker::publishTransformOfPoint(const nite::UserId& userID, const 
                                               const ros::Time& timestamp)
 {
   double x = point.x / 1000;
-  double y = point.y / 1000;
+  double y = -point.y / 1000;
   double z = point.z / 1000;
 
-  float qx = 0;
-  float qy = 0;
-  float qz = 0;
-  float qw = 1;
+  transform.setOrigin(tf::Vector3(x, y, z));
 
-  transform.setOrigin(tf::Vector3(-x, y, z));
-  transform.setRotation(tf::Quaternion(qx, -qy, -qz, qw));
-
-  transform = change_frame * transform;
   char child_frame_no[128];
   std::snprintf(child_frame_no, sizeof(child_frame_no), "%s_%d", child_frame_id.c_str(), (int)(userID));
   tfBraodcaster.sendTransform(tf::StampedTransform(transform, timestamp, frame_id, child_frame_no));
@@ -160,26 +146,10 @@ void SquirrelTracker::publishTransformOfJoint(const nite::UserId& userID, const 
                                               const ros::Time& timestamp)
 {
   double x = joint.getPosition().x / 1000;
-  double y = joint.getPosition().y / 1000;
+  double y = -joint.getPosition().y / 1000;
   double z = joint.getPosition().z / 1000;
 
-  float qx = joint.getOrientation().x;
-  float qy = joint.getOrientation().y;
-  float qz = joint.getOrientation().z;
-  float qw = joint.getOrientation().w;
-
-  if (qx == qy == qx == qw == 0.0)
-  {
-    qx = 0;
-    qy = 0;
-    qz = 0;
-    qw = 1;
-  }
-
-  transform.setOrigin(tf::Vector3(-x, y, z));
-  transform.setRotation(tf::Quaternion(qx, -qy, -qz, qw));
-
-  transform = change_frame * transform;
+  transform.setOrigin(tf::Vector3(x, y, z));
   char child_frame_no[128];
   std::snprintf(child_frame_no, sizeof(child_frame_no), "%s_%d", child_frame_id.c_str(), (int)(userID));
   tfBraodcaster.sendTransform(tf::StampedTransform(transform, timestamp, frame_id, child_frame_no));
@@ -187,32 +157,44 @@ void SquirrelTracker::publishTransformOfJoint(const nite::UserId& userID, const 
 /////////////////////////////////////////////////////////////////////
 void SquirrelTracker::publishPoseStampedArrayOfUsers(const nite::Point3f& point, const ros::Time& timestamp)
 {
-  detectedPose.orientation.x = 0;
-  detectedPose.orientation.y = 0;
-  detectedPose.orientation.z = 0;
-  detectedPose.orientation.w = 1;
+  detectedPose.orientation.x = 0.5;
+  detectedPose.orientation.y = -0.5;
+  detectedPose.orientation.z = -0.5;
+  detectedPose.orientation.w = 0.5;
 
-  detectedPose.position.x = point.z / 1000;
-  detectedPose.position.y = -point.x / 1000;
-  detectedPose.position.z = point.y / 1000;
+  detectedPose.position.x = point.x / 1000;
+  detectedPose.position.y = -point.y / 1000;
+  detectedPose.position.z = point.z / 1000;
   detectedPoseArray.header.stamp = timestamp;
   detectedPoseArray.poses.push_back(detectedPose);
   pubPSA.publish(detectedPoseArray);
 }
 /////////////////////////////////////////////////////////////////////
-void SquirrelTracker::publishPointingPoseStamped(const nite::Point3f& point, const ros::Time& timestamp)
+void SquirrelTracker::publishPointingPoint(const nite::Point3f& point, const ros::Time& timestamp)
 {
-  pointingPoint.pose.orientation.x = 0;
-  pointingPoint.pose.orientation.y = 0;
-  pointingPoint.pose.orientation.z = 0;
-  pointingPoint.pose.orientation.w = 1;
-
-  pointingPoint.pose.position.x = point.z / 1000;
-  pointingPoint.pose.position.y = -point.x / 1000;
-  pointingPoint.pose.position.z = point.y / 1000;
+  pointingPoint.point.x = point.x / 1000;
+  pointingPoint.point.y = -point.y / 1000;
+  pointingPoint.point.z = point.z / 1000;
   pointingPoint.header.stamp = timestamp;
 
-  pubPS.publish(pointingPoint);
+  pubPP.publish(pointingPoint);
+}
+/////////////////////////////////////////////////////////////////////
+void SquirrelTracker::publishHeadHandMsgs(const nite::Point3f& head, const nite::Point3f& hand,
+                                          const ros::Time& timestamp)
+{
+
+  squirrelHeadHand.head.x = head.x / 1000;
+  squirrelHeadHand.head.y = -head.y / 1000;
+  squirrelHeadHand.head.z = head.z / 1000;
+
+  squirrelHeadHand.hand.x = hand.x / 1000;
+  squirrelHeadHand.hand.y = -hand.y / 1000;
+  squirrelHeadHand.hand.z = hand.z / 1000;
+
+  squirrelHeadHand.header.stamp = timestamp;
+
+  pubPHH.publish(squirrelHeadHand);
 }
 /////////////////////////////////////////////////////////////////////
 void SquirrelTracker::convertDepthToFilteredPointcloud()
@@ -243,7 +225,7 @@ void SquirrelTracker::convertDepthToFilteredPointcloud()
           ROS_ERROR("ERROR: #%d, %s", ostatus, openni::OpenNI::getExtendedError());
           return;
         }
-        pcl_msg->points.push_back(pcl::PointXYZ(dZ / 1000, -dX / 1000, dY / 1000));
+        pcl_msg->points.push_back(pcl::PointXYZ(dX / 1000, -dY / 1000, dZ / 1000));
       }
     }
   }
@@ -397,13 +379,13 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
         {
           publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
         }
-//        publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
-        if (pDetector.isFloorPoint(userSkeleton, floor, floorPoint))
+        //publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
+        if (pDetector.isFloorPoint(userSkeleton, floor, floorPoint, pointingHead, pointingHand))
         {
           publishedState.state = squirrel_person_tracker_msgs::State::POINT_USER;
-          publishPointingPoseStamped(floorPoint, timestamp);
+          publishPointingPoint(floorPoint, timestamp);
+          publishHeadHandMsgs(pointingHead, pointingHand, timestamp);
 //          publishTransformOfPoint(wavingUserID, point, frame_id, "PointingPoint", timestamp);
-
         }
         else
         {
@@ -415,7 +397,6 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
     {
       ISWAVEUSERVISBLE = false;
       beginUnvis = timestamp.toSec();
-
     }
     if (users[i].isVisible() && wavingUserID == userID && ISWAVEDETECTED)
     {
@@ -429,7 +410,6 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
       SWITCHSKELTRACKON = true;
       uTracker.stopSkeletonTracking(wavingUserID);
       wavingUserID = 0;
-
     }
   }
   /////PoseArrayTest

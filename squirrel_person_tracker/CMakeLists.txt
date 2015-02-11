@@ -61,8 +61,8 @@ catkin_package(
 	roslib
 	tf
 	pcl_ros
-	squirrel_person_tracker_msgs
 	libnite2
+	squirrel_person_tracker_msgs	
 	nodelet
 #  DEPENDS system_lib
 )
