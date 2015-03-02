@@ -14,7 +14,10 @@ public:
   std::vector<nite::Point3f> leftHandPositionHistory;
   std::vector<nite::Point3f> rightHandPositionHistory;
   float average[3];
-  enum Side {NONE=1, LEFT, RIGHT};
+  enum Side
+  {
+    NONE = 1, LEFT, RIGHT
+  };
   int maxQueuesize;
   float accuracyTreshold;
 
@@ -48,12 +51,12 @@ public:
   void updateHistory(const Side& side, const nite::Point3f& point = nite::Point3f(0, 0, 0));
 /////////////////////////////////////////////////////////////////////
   Side getPointingSide(const nite::Point3f& headPoint, const nite::Point3f& leftShoulderPoint,
-                      const nite::Point3f& leftElbowPoint, const nite::Point3f& leftHandPoint,
-                      const nite::Point3f& leftHipPoint, const nite::Point3f& rightShoulderPoint,
-                      const nite::Point3f& rightElbowPoint, const nite::Point3f& rightHandPoint,
-                      const nite::Point3f& rightHipPoint);
+                       const nite::Point3f& leftElbowPoint, const nite::Point3f& leftHandPoint,
+                       const nite::Point3f& leftHipPoint, const nite::Point3f& rightShoulderPoint,
+                       const nite::Point3f& rightElbowPoint, const nite::Point3f& rightHandPoint,
+                       const nite::Point3f& rightHipPoint);
 /////////////////////////////////////////////////////////////////////////////////////
-  bool isFloorPoint(const nite::Skeleton& userSkeleton, const nite::Plane& floor, nite::Point3f& Output);
+  bool isFloorPoint(const nite::Skeleton& userSkeleton, const nite::Plane& floor, nite::Point3f& Output, nite::Point3f& head, nite::Point3f& hand);
 
   friend class FloorPointerTest_testIsGestureReliable_Test;
 };

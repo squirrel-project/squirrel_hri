@@ -2,11 +2,11 @@
 
 FloorPointer::FloorPointer()
 {
-  average[0] = average[1] = average[2] = 0.f; 
+  average[0] = average[1] = average[2] = 0.f;
   straightness = 0.9;
   minHipDistance = 0.3;
-  maxQueuesize = 10;
-  accuracyTreshold = 0.03;
+  maxQueuesize = 20;
+  accuracyTreshold = 0.02;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -207,7 +207,7 @@ FloorPointer::Side FloorPointer::getPointingSide(const nite::Point3f& headPoint,
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////
-bool FloorPointer::isFloorPoint(const nite::Skeleton& userSkeleton, const nite::Plane& floor, nite::Point3f& Output)
+bool FloorPointer::isFloorPoint(const nite::Skeleton& userSkeleton, const nite::Plane& floor, nite::Point3f& pointingPoint, nite::Point3f& head, nite::Point3f& hand)
 {
   nite::Point3f headPoint = userSkeleton.getJoint(nite::JOINT_HEAD).getPosition();
   nite::Point3f rightShoulderPoint = userSkeleton.getJoint(nite::JOINT_RIGHT_SHOULDER).getPosition();
@@ -239,9 +239,11 @@ bool FloorPointer::isFloorPoint(const nite::Skeleton& userSkeleton, const nite::
     nite::Point3f vecHandFloorPoint = subPoints(FloorPoint, leftHandPoint);
     float normFaktor = calcDotProduct(FloorNormal, vecHandFloorPoint) / calcDotProduct(FloorNormal, vecHeadHandleft);
     nite::Point3f normvecSholderHand(vecHeadHandleft.x * normFaktor, vecHeadHandleft.y * normFaktor,
-                                        vecHeadHandleft.z * normFaktor);
+                                     vecHeadHandleft.z * normFaktor);
     nite::Point3f intersectionPoint = addPoints(leftHandPoint, normvecSholderHand);
-    Output = intersectionPoint;
+    pointingPoint = intersectionPoint;
+    head = headPoint;
+    hand = leftHandPoint;
     return true;
   }
   else if (getReliableGestureSide(
@@ -258,9 +260,11 @@ bool FloorPointer::isFloorPoint(const nite::Skeleton& userSkeleton, const nite::
     nite::Point3f vecHandFloorPoint = subPoints(FloorPoint, rightHandPoint);
     float normFaktor = calcDotProduct(FloorNormal, vecHandFloorPoint) / calcDotProduct(FloorNormal, vecHeadHandright);
     nite::Point3f normvecSholderHand(vecHeadHandright.x * normFaktor, vecHeadHandright.y * normFaktor,
-                                        vecHeadHandright.z * normFaktor);
+                                     vecHeadHandright.z * normFaktor);
     nite::Point3f intersectionPoint = addPoints(rightHandPoint, normvecSholderHand);
-    Output = intersectionPoint;
+    pointingPoint = intersectionPoint;
+    head = headPoint;
+    hand = rightHandPoint;
     return true;
   }
   else

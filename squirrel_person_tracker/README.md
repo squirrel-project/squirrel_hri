@@ -14,6 +14,8 @@ name="filtered_cloud": Publish sensor_msgs::PointCloud2 messages. The filtered c
 
 name="pointing_pose": Publish geometry_msgs::PoseStamped messages. The XYZ information contains the position in space the user is pointing to represented in the coordinate system of the depth sensor.
 
+name="head_hand_points": Publish squirrel_person_tracker::HeadHandPoints messages. The points contain the position in space of the head and hand joint represented in the coordinate system of the depth sensor.
+
 name="tracking_state": This message holds the description of the state of progress while tracking.
 uint8 NO_USER          = 1-> No users in the field of view of the sensor.
 uint8 VISIBLE_USER     = 2-> Users are detected in the field of view of the sensor.
