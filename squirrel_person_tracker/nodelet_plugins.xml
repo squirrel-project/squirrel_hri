@@ -1,0 +1,7 @@
+<library path="libsquirrel_person_tracker_nodelet">
+  <class name="squirrel_person_tracker/squirrel_person_tracker_nodelet" type="SquirrelPersonTrackerNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  This is my nodelet.
+  </description>
+  </class>
+</library>
