@@ -36,22 +36,7 @@ find_library(OpenNI2_LIBRARIES
 	     HINTS /usr/lib/ /usr/lib/OpenNI2/Drivers
 	     PATH_SUFFIXES lib)
 message(STATUS ${OpenNI2_LIBRARIES})
-# Find Nite2
-#message(STATUS $ENV{NITE2_INCLUDE})
-#message(STATUS $ENV{NITE2_REDIST64})
-#find_path(Nite2_INCLUDEDIR
-#	  NAMES NiTE.h
-#	  HINTS $ENV{NITE2_INCLUDE})
-#find_library(Nite2_LIBRARY
-#	     NAMES NiTE2
-#	     HINTS $ENV{NITE2_REDIST64}
-#	     PATH_SUFFIXES lib) 
 
-
-
-###################################
-## catkin specific configuration ##
-###################################
 
 catkin_package(
   INCLUDE_DIRS include
