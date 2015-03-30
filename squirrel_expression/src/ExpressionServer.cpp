@@ -11,7 +11,7 @@ namespace SQUIRREL_expression {
 	ExpressionServer::ExpressionServer(ros::NodeHandle &nh) {
 
 		// setup publishers
-		head_tilt_pub = nh.advertise<std_msgs::Float64>("/tilt_conroller/command", 10, true);
+		head_tilt_pub = nh.advertise<std_msgs::Float64>("/tilt_controller/command", 10, true);
 
 		// setup service servers
 		// setup service clients
