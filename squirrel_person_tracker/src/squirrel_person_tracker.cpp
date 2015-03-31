@@ -60,7 +60,15 @@ void SquirrelTracker::initOpenNI()
     ros::shutdown();
     return;
   }
+//------------------------------------------------------------------
+//  ROS_INFO("Mirroring Enabled = false ...\r\n");
   ostatus = depthSensor.setMirroringEnabled(false);
+  if (ostatus != openni::STATUS_OK)
+  {
+    ROS_FATAL("ERROR: #%d, %s", ostatus, openni::OpenNI::getExtendedError());
+    ros::shutdown();
+    return;
+  }
 //------------------------------------------------------------------
 //  ROS_INFO("DepthSensor start ...\r\n");
   ostatus = depthSensor.start();
