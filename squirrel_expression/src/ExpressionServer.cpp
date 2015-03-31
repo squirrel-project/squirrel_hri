@@ -26,9 +26,9 @@ namespace SQUIRREL_expression {
 
 	void ExpressionServer::performNod() {
 		// nod the head
-		ros::Rate nodRate(3);
+		ros::Rate nodRate(2.5);
 		std_msgs::Float64 ht;
-		for(int i=0;i<2;i++) {
+		for(int i=0;i<3;i++) {
 			ht.data = 0.5;
 			head_tilt_pub.publish(ht);
 			nodRate.sleep();
@@ -36,6 +36,9 @@ namespace SQUIRREL_expression {
 			head_tilt_pub.publish(ht);
 			nodRate.sleep();
 		}
+		nodRate.sleep();
+		ht.data = 0.6;
+		head_tilt_pub.publish(ht);
 	}
 
 } // close namespace

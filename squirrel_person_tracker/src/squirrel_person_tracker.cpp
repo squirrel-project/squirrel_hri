@@ -60,13 +60,7 @@ void SquirrelTracker::initOpenNI()
     ros::shutdown();
     return;
   }
-  ostatus =depthSensor.setMirroringEnabled(false);
-  if (ostatus != openni::STATUS_OK)
-    {
-      ROS_FATAL("ERROR: #%d, %s", ostatus, openni::OpenNI::getExtendedError());
-      ros::shutdown();
-      return;
-    }
+  ostatus = depthSensor.setMirroringEnabled(false);
 //------------------------------------------------------------------
 //  ROS_INFO("DepthSensor start ...\r\n");
   ostatus = depthSensor.start();
@@ -158,7 +152,7 @@ void SquirrelTracker::publishTransformOfJoint(const nite::UserId& userID, const 
 
   transform.setOrigin(tf::Vector3(x, y, z));
   char child_frame_no[128];
-  std::snprintf(child_frame_no, sizeof(child_frame_no), "%s", child_frame_id.c_str());
+  std::snprintf(child_frame_no, sizeof(child_frame_no), "%s_%d", child_frame_id.c_str(), (int)(userID));
   tfBraodcaster.sendTransform(tf::StampedTransform(transform, timestamp, frame_id, child_frame_no));
 }
 /////////////////////////////////////////////////////////////////////
@@ -386,7 +380,7 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
         {
           publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
         }
-        publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
+        //publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
         if (pDetector.isFloorPoint(userSkeleton, floor, floorPoint, pointingHead, pointingHand))
         {
           publishedState.state = squirrel_person_tracker_msgs::State::POINT_USER;
