@@ -146,7 +146,7 @@ void SquirrelTracker::publishTransformOfPoint(const nite::UserId& userID, const 
   transform.setOrigin(tf::Vector3(x, y, z));
 
   char child_frame_no[128];
-  std::snprintf(child_frame_no, sizeof(child_frame_no), "%s", child_frame_id.c_str());
+  std::snprintf(child_frame_no, sizeof(child_frame_no), "%s_%d", child_frame_id.c_str(), (int)(userID));
   tfBraodcaster.sendTransform(tf::StampedTransform(transform, timestamp, frame_id, child_frame_no));
 }
 /////////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ void SquirrelTracker::publishTransformOfJoint(const nite::UserId& userID, const 
 
   transform.setOrigin(tf::Vector3(x, y, z));
   char child_frame_no[128];
-  std::snprintf(child_frame_no, sizeof(child_frame_no), "%s_%d", child_frame_id.c_str(), (int)(userID));
+  std::snprintf(child_frame_no, sizeof(child_frame_no), "%s", child_frame_id.c_str());
   tfBraodcaster.sendTransform(tf::StampedTransform(transform, timestamp, frame_id, child_frame_no));
 }
 /////////////////////////////////////////////////////////////////////
