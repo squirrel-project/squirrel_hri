@@ -38,6 +38,7 @@ private:
 
   void laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg);
   void visualisePerson(LSL_Point3D_container &person);
+  void visualiseScan(const sensor_msgs::LaserScan::ConstPtr& laserMsg);
 };
 
 #endif
