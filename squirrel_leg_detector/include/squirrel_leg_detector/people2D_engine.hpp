@@ -78,7 +78,7 @@ public:
 		featuremix = 0;
 		segonly = 0;
 		sanity = 1;
-		verbosity = 2;
+		verbosity = 0;
 	}
 };
 

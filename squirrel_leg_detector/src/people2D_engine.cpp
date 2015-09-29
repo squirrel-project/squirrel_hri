@@ -106,7 +106,8 @@ void people2D_engine::set_featureset()
 	//~ default mix
 	if(params.featuremix == 0)
 	{
-		printf("Standard features mix\n");
+		if(params.verbosity >=1)
+			printf("Standard features mix\n");
 		featnum.push_back(0);featnum.push_back(1);featnum.push_back(2);featnum.push_back(3);featnum.push_back(4);
 		featnum.push_back(5);featnum.push_back(6);featnum.push_back(7);featnum.push_back(8);featnum.push_back(9);
 		featnum.push_back(10);featnum.push_back(11);featnum.push_back(12);featnum.push_back(13);featnum.push_back(14);
@@ -116,7 +117,8 @@ void people2D_engine::set_featureset()
 	//~ no distance
 	if(params.featuremix == 1)
 	{
-		printf("Features mix 1\n");
+		if(params.verbosity >=1)
+			printf("Features mix 1\n");
 		featnum.push_back(0);featnum.push_back(1);featnum.push_back(2);featnum.push_back(3);featnum.push_back(4);
 		featnum.push_back(5);featnum.push_back(6);featnum.push_back(7);featnum.push_back(8);featnum.push_back(9);
 		featnum.push_back(10);featnum.push_back(11);featnum.push_back(12);featnum.push_back(13);featnum.push_back(14);
@@ -126,7 +128,8 @@ void people2D_engine::set_featureset()
 	//~ no distance no relational
 	if(params.featuremix == 2)
 	{
-		printf("Features mix 2\n");
+		if(params.verbosity >=1)
+			printf("Features mix 2\n");
 		featnum.push_back(0);featnum.push_back(1);featnum.push_back(2);featnum.push_back(3);featnum.push_back(4);
 		featnum.push_back(5);featnum.push_back(6);featnum.push_back(7);featnum.push_back(8);featnum.push_back(9);
 		featnum.push_back(10);featnum.push_back(11);featnum.push_back(12);featnum.push_back(13);featnum.push_back(14);
@@ -668,6 +671,8 @@ void people2D_engine::detect_people(laserscan_data &scan, std::vector<LSL_Point3
 {
         std::vector < std::vector <Real> > descriptor;
         std::vector<LSL_Point3D_container> clusters;
+        // make sure the data points are ordered the way we need it
+        order_bytheta_incart(scan.data.pts);
         segmentscanJDC(scan, clusters);
         if(params.verbosity == 2)
                 printf("Found %lu segments\n", clusters.size());                
@@ -697,7 +702,7 @@ void people2D_engine::detect_people(laserscan_data &scan, std::vector<LSL_Point3
 
         for (unsigned int w = 0; w < clusters.size(); w++)
         {
-                if(label[w] == PEOPLE2D_ISPEOPLE)
+                if(label[w] >= 0.5) //== PEOPLE2D_ISPEOPLE)
                         people.push_back(clusters[w]);
         }
 }

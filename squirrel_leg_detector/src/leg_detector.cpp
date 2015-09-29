@@ -15,6 +15,9 @@
  * @date Sept 2015
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
 #include <visualization_msgs/Marker.h>
 #include <squirrel_leg_detector/leg_detector.h>
 
@@ -42,7 +45,10 @@ void LegDetector::initialise(int argc, char **argv)
   ppl2D_ = new people2D_engine(sw_param);
   ppl2D_->set_featureset();
   if(!ppl2D_->load_adaboost_model(sw_param.modelfile))
+  {
     ROS_ERROR("failed to  open model file '%s'\n", sw_param.modelfile.c_str());
+    exit(1);
+  }
   laserSub_ = nh_.subscribe("/scan", 1, &LegDetector::laserCallback, this);
   markerPub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 0);
 }
@@ -57,14 +63,30 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg
   laserscan_data scan;
   std::vector<LSL_Point3D_container> people;
   scan.data.pts.resize(laserMsg->ranges.size());
+  scan.timestamp = 0.;
+//  FILE *dumpfile = fopen("laserdump.txt", "w");
+//  fprintf(dumpfile, "%.6f ", scan.timestamp);
   for(size_t i = 0; i < laserMsg->ranges.size(); i++)
   {
     float r = std::max(std::min(laserMsg->ranges[i], laserMsg->range_max), laserMsg->range_min);
+    if(!std::isfinite(r))
+      r = laserMsg->range_max - 0.10*(float)random()/(float)RAND_MAX;
     scan.data.pts[i].x = r*cos(laserMsg->angle_min + (float)i*laserMsg->angle_increment);
     scan.data.pts[i].y = r*sin(laserMsg->angle_min + (float)i*laserMsg->angle_increment);
+    scan.data.pts[i].label = 1;
+//    fprintf(dumpfile, "%.6f %.6f %d ", scan.data.pts[i].x, scan.data.pts[i].y, scan.data.pts[i].label);
   }
-  visualiseScan(laserMsg);
+//  fclose(dumpfile);
+  //visualiseScan(laserMsg);  // HACK
   ppl2D_->detect_people(scan, people);
+  for(size_t i = 0; i < people.size(); i++)
+  {
+    LSL_Point3D_str center;
+    people[i].compute_cog(&center);
+    ROS_INFO("person at %.2f %.2f", center.x, center.y);
+  }
+  if(people.size() > 0)
+    ROS_INFO("--");
   for(size_t i = 0; i < people.size(); i++)
     visualisePerson(people[i]);
 }
@@ -115,7 +137,7 @@ void LegDetector::visualisePerson(LSL_Point3D_container &person)
   person.compute_cog(&center); 
 
   visualization_msgs::Marker marker;
-  marker.header.frame_id = "hukoyo_link";
+  marker.header.frame_id = "hokuyo_link";
   marker.header.stamp = ros::Time();
   marker.ns = "person";
   marker.id = cnt;
