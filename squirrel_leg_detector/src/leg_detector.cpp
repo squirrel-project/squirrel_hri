@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <ios>
+#include <std_msgs/String.h>
 #include <visualization_msgs/Marker.h>
 #include <squirrel_leg_detector/leg_detector.h>
 
@@ -51,6 +53,7 @@ void LegDetector::initialise(int argc, char **argv)
   }
   laserSub_ = nh_.subscribe("/scan", 1, &LegDetector::laserCallback, this);
   markerPub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 0);
+  personPub_ = nh_.advertise<std_msgs::String>("laser_person", 0);
 }
 
 void LegDetector::run()
@@ -79,6 +82,16 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg
 //  fclose(dumpfile);
   //visualiseScan(laserMsg);  // HACK
   ppl2D_->detect_people(scan, people);
+  if(people.size() > 0)
+  {
+    std_msgs::String pos;
+    std::stringstream poss;
+    LSL_Point3D_str center;
+    people[0].compute_cog(&center);
+    poss << center.x << " " << center.y;
+    pos.data = poss.str();
+    personPub_.publish(pos);
+  }
   for(size_t i = 0; i < people.size(); i++)
   {
     LSL_Point3D_str center;

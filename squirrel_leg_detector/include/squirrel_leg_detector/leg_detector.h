@@ -34,6 +34,7 @@ private:
   people2D_engine *ppl2D_;
   ros::NodeHandle nh_;
   ros::Subscriber laserSub_;
+  ros::Publisher personPub_;
   ros::Publisher markerPub_;
 
   void laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg);
