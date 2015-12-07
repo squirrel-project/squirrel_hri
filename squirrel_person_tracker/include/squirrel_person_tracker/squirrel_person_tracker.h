@@ -24,6 +24,8 @@ public:
   bool ISWAVEDETECTED;
   bool SWITCHSKELTRACKON;
   bool ISWAVEUSERVISBLE;
+  bool static_plane_;
+  bool pub_filtered_pc_;
   double beginUnvis;
   int durationUnvis;
   std::string frame_id;
@@ -37,6 +39,7 @@ public:
   nite::Point3f floorPoint;
   nite::Point3f pointingHead;
   nite::Point3f pointingHand;
+  nite::Plane floor_;
 
   openni::VideoFrameRef userDepthFrame;
   openni::Status ostatus;

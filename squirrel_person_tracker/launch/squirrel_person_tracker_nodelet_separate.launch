@@ -1,8 +1,13 @@
 <launch>
 <arg name="camera_id" default="kinect" />
+<arg name="static_plane" default="true" />
+<arg name="pub_filtered_pc" default="false" />
 
 <node pkg="nodelet" type="nodelet" name="squirrel_person_tracker" args="load squirrel_person_tracker/squirrel_person_tracker_nodelet /$(arg camera_id)/$(arg camera_id)_nodelet_manager" output="screen" cwd="ROS_HOME">
 <param name="camera_optical_frame_id" type="str" value="$(arg camera_id)_depth_optical_frame" />
+<param name="static_plane" type="bool" value="$(arg static_plane)"/>
+<param name="pub_filtered_pc" type="bool" value="$(arg pub_filtered_pc)"/>
  </node>  
-           
+ 
+ <node pkg="tf" type="static_transform_publisher" name="$(arg camera_id)_broadcaster" args="0.0 0.0 0.73 0.0 0.0 0.0  /odom $(arg camera_id)_link 100" />	
 </launch>

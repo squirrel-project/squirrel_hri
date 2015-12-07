@@ -1,12 +1,18 @@
 #include "squirrel_person_tracker/squirrel_person_tracker.h"
+#include <tf/transform_listener.h>
 
 SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
     pcl_msg(new pcl::PointCloud<pcl::PointXYZ>)
 {
   pnh_.param<std::string>("camera_optical_frame_id", frame_id, "camera_depth_optical_frame");
+  pnh_.param<bool>("static_plane", static_plane_, true);
+  pnh_.param<bool>("pub_filtered_pc", pub_filtered_pc_, false);
   ostatus = openni::STATUS_OK;
   nstatus = nite::STATUS_OK;
+  if(pub_filtered_pc_)
+  {
   pubPC = pnh_.advertise<pcl::PointCloud<pcl::PointXYZ> >("filtered_cloud", 1);
+  }
   pubPP = pnh_.advertise<geometry_msgs::PointStamped>("pointing_pose", 10);
   pubPSA = pnh_.advertise<geometry_msgs::PoseArray>("detected_pose", 10);
   pubState = pnh_.advertise<squirrel_person_tracker_msgs::State>("tracking_state", 10);
@@ -21,8 +27,57 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
   durationUnvis = 3;
   transform.setRotation(tf::Quaternion(0, 0, 0, 1));
   this->initUserTracker();
-}
 
+  if (static_plane_)
+  {
+    geometry_msgs::PointStamped odom_point_origin, odom_point_ez, optical_point_origin, optical_point_ez;
+    odom_point_origin.header.frame_id = "/odom";
+    odom_point_ez.header.frame_id = "/odom";
+
+    odom_point_origin.point.x = 0.0;
+    odom_point_origin.point.y = 0.0;
+    odom_point_origin.point.z = 0.0;
+
+    odom_point_ez.point.x = 0.0;
+    odom_point_ez.point.y = 0.0;
+    odom_point_ez.point.z = 1.0;
+
+    tf::TransformListener tfl;
+
+    try
+    {
+      tfl.waitForTransform(odom_point_origin.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfl.transformPoint(frame_id, odom_point_origin, optical_point_origin);
+      optical_point_origin.header.frame_id = frame_id;
+    }
+    catch (tf::TransformException& ex)
+    {
+      ROS_ERROR("%s: %s", ros::this_node::getName().c_str(), ex.what());
+      return;
+    }
+
+    try
+    {
+      tfl.waitForTransform(odom_point_ez.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfl.transformPoint(frame_id, odom_point_ez, optical_point_ez);
+      optical_point_ez.header.frame_id = frame_id;
+    }
+    catch (tf::TransformException& ex)
+    {
+      ROS_ERROR("%s: %s", ros::this_node::getName().c_str(), ex.what());
+      return;
+    }
+
+    floor_.point.x = 0.0;  //optical_point_origin.point.x;
+    floor_.point.y = -0.73;//optical_point_origin.point.y;
+    floor_.point.z = 0.0;  //optical_point_origin.point.z;
+
+    floor_.normal.x = 0.0;// optical_point_ez.point.x;
+    floor_.normal.y = 1;  // optical_point_ez.point.y;
+    floor_.normal.z = 0.0;// optical_point_ez.point.z;
+  }
+  ROS_INFO("ORIGIN: X %f; Y %f; Z %f;  NORMAL: X %f; Y %f; Z %f;", floor_.point.x, floor_.point.y, floor_.point.z, floor_.normal.x, floor_.normal.y, floor_.normal.z);
+}
 /////////////////////////////////////////////////////////////////////
 SquirrelTracker::~SquirrelTracker()
 {
@@ -329,12 +384,20 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
   nstatus = uTracker.readFrame(&userFrame);
   ros::Time timestamp = ros::Time::now();
   usersMap = userFrame.getUserMap();
-  nite::Plane floor = userFrame.getFloor();
+
+  if(!static_plane_)
+  {
+    floor_ = userFrame.getFloor();
+  }
+
   if (nstatus != nite::STATUS_OK || !userFrame.isValid())
   {
     return;
   }
+  if(pub_filtered_pc_)
+  {
   publishPtCld2(timestamp);
+  }
 
   const nite::Array<nite::UserData>& users = userFrame.getUsers();
 
@@ -389,7 +452,7 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
           publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
         }
         publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
-        if (pDetector.isFloorPoint(userSkeleton, floor, floorPoint, pointingHead, pointingHand))
+        if (pDetector.isFloorPoint(userSkeleton, floor_, floorPoint, pointingHead, pointingHand))
         {
           publishedState.state = squirrel_person_tracker_msgs::State::POINT_USER;
           publishPointingPoint(floorPoint, timestamp);
