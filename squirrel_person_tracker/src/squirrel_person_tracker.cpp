@@ -1,5 +1,4 @@
 #include "squirrel_person_tracker/squirrel_person_tracker.h"
-#include <tf/transform_listener.h>
 
 SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
     pcl_msg(new pcl::PointCloud<pcl::PointXYZ>)
@@ -9,9 +8,9 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
   pnh_.param<bool>("pub_filtered_pc", pub_filtered_pc_, false);
   ostatus = openni::STATUS_OK;
   nstatus = nite::STATUS_OK;
-  if(pub_filtered_pc_)
+  if (pub_filtered_pc_)
   {
-  pubPC = pnh_.advertise<pcl::PointCloud<pcl::PointXYZ> >("filtered_cloud", 1);
+    pubPC = pnh_.advertise<pcl::PointCloud<pcl::PointXYZ> >("filtered_cloud", 1);
   }
   pubPP = pnh_.advertise<geometry_msgs::PointStamped>("pointing_pose", 10);
   pubPSA = pnh_.advertise<geometry_msgs::PoseArray>("detected_pose", 10);
@@ -30,25 +29,22 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
 
   if (static_plane_)
   {
-    geometry_msgs::PointStamped odom_point_origin, odom_point_ez, optical_point_origin, optical_point_ez;
-    odom_point_origin.header.frame_id = "/odom";
-    odom_point_ez.header.frame_id = "/odom";
+    odom_point_origin_.header.frame_id = "/odom";
+    odom_point_ez_.header.frame_id = "/odom";
 
-    odom_point_origin.point.x = 0.0;
-    odom_point_origin.point.y = 0.0;
-    odom_point_origin.point.z = 0.0;
+    odom_point_origin_.point.x = 0.0;
+    odom_point_origin_.point.y = 0.0;
+    odom_point_origin_.point.z = 0.0;
 
-    odom_point_ez.point.x = 0.0;
-    odom_point_ez.point.y = 0.0;
-    odom_point_ez.point.z = 1.0;
-
-    tf::TransformListener tfl;
+    odom_point_ez_.point.x = 0.0;
+    odom_point_ez_.point.y = 0.0;
+    odom_point_ez_.point.z = 1.0;
 
     try
     {
-      tfl.waitForTransform(odom_point_origin.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
-      tfl.transformPoint(frame_id, odom_point_origin, optical_point_origin);
-      optical_point_origin.header.frame_id = frame_id;
+      tfListener_.waitForTransform(odom_point_origin_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfListener_.transformPoint(frame_id, odom_point_origin_, optical_point_origin_);
+      optical_point_origin_.header.frame_id = frame_id;
     }
     catch (tf::TransformException& ex)
     {
@@ -58,9 +54,9 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
 
     try
     {
-      tfl.waitForTransform(odom_point_ez.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
-      tfl.transformPoint(frame_id, odom_point_ez, optical_point_ez);
-      optical_point_ez.header.frame_id = frame_id;
+      tfListener_.waitForTransform(odom_point_ez_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfListener_.transformPoint(frame_id, odom_point_ez_, optical_point_ez_);
+      optical_point_ez_.header.frame_id = frame_id;
     }
     catch (tf::TransformException& ex)
     {
@@ -68,15 +64,14 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
       return;
     }
 
-    floor_.point.x = 0.0;  //optical_point_origin.point.x;
-    floor_.point.y = -0.73;//optical_point_origin.point.y;
-    floor_.point.z = 0.0;  //optical_point_origin.point.z;
+    floor_.point.x = optical_point_origin_.point.x * 1000;
+    floor_.point.y = -optical_point_origin_.point.y * 1000;
+    floor_.point.z = optical_point_origin_.point.z * 1000;
 
-    floor_.normal.x = 0.0;// optical_point_ez.point.x;
-    floor_.normal.y = 1;  // optical_point_ez.point.y;
-    floor_.normal.z = 0.0;// optical_point_ez.point.z;
+    floor_.normal.x = optical_point_ez_.point.x * 1000;
+    floor_.normal.y = -optical_point_ez_.point.y * 1000;
+    floor_.normal.z = optical_point_ez_.point.z * 1000;
   }
-  ROS_INFO("ORIGIN: X %f; Y %f; Z %f;  NORMAL: X %f; Y %f; Z %f;", floor_.point.x, floor_.point.y, floor_.point.z, floor_.normal.x, floor_.normal.y, floor_.normal.z);
 }
 /////////////////////////////////////////////////////////////////////
 SquirrelTracker::~SquirrelTracker()
@@ -247,7 +242,6 @@ void SquirrelTracker::publishPointingPoint(const nite::Point3f& point, const ros
 void SquirrelTracker::publishHeadHandMsgs(const nite::Point3f& head, const nite::Point3f& hand,
                                           const ros::Time& timestamp)
 {
-
   squirrelHeadHand.head.x = head.x / 1000;
   squirrelHeadHand.head.y = -head.y / 1000;
   squirrelHeadHand.head.z = head.z / 1000;
@@ -385,18 +379,53 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
   ros::Time timestamp = ros::Time::now();
   usersMap = userFrame.getUserMap();
 
-  if(!static_plane_)
+  if (!static_plane_)
   {
     floor_ = userFrame.getFloor();
+    ROS_INFO("ORIGIN: X %f; Y %f; Z %f;  NORMAL: X %f; Y %f; Z %f;", floor_.point.x, floor_.point.y, floor_.point.z,
+             floor_.normal.x, floor_.normal.y, floor_.normal.z);
+  }
+  else
+  {
+    try
+    {
+      tfListener_.waitForTransform(odom_point_origin_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfListener_.transformPoint(frame_id, odom_point_origin_, optical_point_origin_);
+    }
+    catch (tf::TransformException& ex)
+    {
+      ROS_ERROR("%s: %s", ros::this_node::getName().c_str(), ex.what());
+      return;
+    }
+
+    try
+    {
+      tfListener_.waitForTransform(odom_point_ez_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfListener_.transformPoint(frame_id, odom_point_ez_, optical_point_ez_);
+    }
+    catch (tf::TransformException& ex)
+    {
+      ROS_ERROR("%s: %s", ros::this_node::getName().c_str(), ex.what());
+      return;
+    }
+
+    floor_.point.x = optical_point_origin_.point.x * 1000;
+    floor_.point.y = -optical_point_origin_.point.y * 1000;
+    floor_.point.z = optical_point_origin_.point.z * 1000;
+
+    floor_.normal.x = optical_point_ez_.point.x * 1000;
+    floor_.normal.y = -optical_point_ez_.point.y * 1000;
+    floor_.normal.z = optical_point_ez_.point.z * 1000;
+
   }
 
   if (nstatus != nite::STATUS_OK || !userFrame.isValid())
   {
     return;
   }
-  if(pub_filtered_pc_)
+  if (pub_filtered_pc_)
   {
-  publishPtCld2(timestamp);
+    publishPtCld2(timestamp);
   }
 
   const nite::Array<nite::UserData>& users = userFrame.getUsers();

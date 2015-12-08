@@ -14,6 +14,7 @@
 #include <squirrel_person_tracker_msgs/State.h>
 #include <squirrel_person_tracker_msgs/HeadHandPoints.h>
 #include <libnite2/NiTE.h>
+#include <tf/transform_listener.h>
 
 class SquirrelTracker : public nite::UserTracker::NewFrameListener
 {
@@ -51,6 +52,7 @@ public:
   ros::Publisher pubState;
   ros::Publisher pubPHH;
 
+  tf::TransformListener tfListener_;
   tf::TransformBroadcaster tfBraodcaster;
   tf::Transform transform;
 
@@ -61,6 +63,8 @@ public:
   squirrel_person_tracker_msgs::State publishedState;
   squirrel_person_tracker_msgs::HeadHandPoints squirrelHeadHand;
   FloorPointer pDetector;
+  geometry_msgs::PointStamped odom_point_origin_, odom_point_ez_, optical_point_origin_, optical_point_ez_;
+
 
   SquirrelTracker(ros::NodeHandle& pnh_);
 /////////////////////////////////////////////////////////////////////
