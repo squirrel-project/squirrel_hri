@@ -9,6 +9,7 @@
   <run_depend>libnite2</run_depend>
   <run_depend>squirrel_person_tracker</run_depend>
   <run_depend>squirrel_expression</run_depend> 
+  <run_depend>squirrel_speech</run_depend> 
 
   <export>
 	<metapackage/>
