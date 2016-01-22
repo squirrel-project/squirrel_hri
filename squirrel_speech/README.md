@@ -39,6 +39,15 @@ Show available Audio devices:
 * for playing
 `arecord -l`
 
+Recoding a file in current directory named test.wav
+`arecord -f S16_LE -r 16000 -d 5 -D hw:0,0 test.wav`
+
+you may need to adjust the length of the recording (`-d` in seconds) and the audio device (`-D`).
+
+Play the file
+`aplay test.wav`
+
+
 
 
 ## Troubleshooting ##
@@ -53,15 +62,6 @@ reboot the system.
 ``pulseaudio --kill``
 ``jack_control start``
 
-
-
-
-Recoding a file in current directory named test.wav
-`arecord -f S16_LE -r 16000 -d 5 -D hw:0,0 test.wav`
-you may need to adjust the length of the recording (`-d` in seconds) and the audio device (`-D`).
-
-Play the file
-`aplay test.wav`
 
 
 
