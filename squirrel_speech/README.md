@@ -1,82 +1,91 @@
-# squirrel_speech # 
+# squirrel_speech 
   
 Everything related to the speech recongition.  
 Based on 
-	Zhang, A. (2015). Speech Recognition (Version 3.1) [Software]. Available from <https://github.com/Uberi/speech_recognition#readme>.
+'Zhang, A. (2015). Speech Recognition (Version 3.1) [Software]'
+Available from <https://github.com/Uberi/speech_recognition#readme>
 
-Links:
+It is possible to use various online APIs to perform a speech recognition. The program records a audiofile and transmits it to the recongition service. the response is then used to gemerate commands for the robot. 
 
--  `PyPI <https://pypi.python.org/pypi/SpeechRecognition/>`__
--  `GitHub <https://github.com/Uberi/speech_recognition>`__
+(An offline solution based on CMU Sphinx is under development, but so far, the recognition rate is inferior to the online APIs)
 
 ## Usage ##
+
+`rosrun squirrel_speech_rec sq_ros_speech_rec`
+Starts a rosnode which listens to the microphone and sends requests to the google speech API. The result is then published to a topic.
+
+`rosrun squirrel_speech_rec sq_ros_speech_parser`
+Starts a rosnode which checks the published message for known commands (for example: "Roboter gehe links"/"Robot go left"). If a command is recognized, a new message is published to a different topic.  
+
+
+
+## Installation ##`
+`sudo apt-get install python-pyaudio python3-pyaudio`
+
+For 64 bit system only:
+`sudo apt-get install flac` 
+
+For all:
+`sudo apt-get multimedia-jack`
+select yes in the dialog window.
+This can also be changed later with: 
+`sudo dpkg-reconfigure -p high jackd2` and select "Yes" to do so.
 
 
 
 
 
 ## Troubleshooting ##
-If you should expirience the following Error message 
-"jack server is not running or cannot be started"
-
 
 ### "jack server is not running or cannot be started" or "Cannot lock down [...] byte memory area (Cannot allocate memory)" ###
 
 Check if current user is in the ``audio`` group. 
-Add your current user with ``sudo adduser $(whoami) audio``.
-sudo adduser robotino audio
+Add your current user with ``sudo adduser $(whoami) audio``. 
 
 reboot the system.
 
-``pulseaudio --kill``, followed by ``jack_control start``, to fix the "jack server is not running or cannot be started" error.
+``pulseaudio --kill``
+``jack_control start``
 
 
 
+## Record Audio ##
+Show available Audio devices:
+* for recording
+`aplay -l`
+* for playing
+`arecord -l`
+
+Recoding a file in current directory named test.wav
+`arecord -f S16_LE -r 16000 -d 5 -D hw:0,0 test.wav`
+you may need to adjust the length of the recording (`-d` in seconds) and the audio device (`-D`).
+
+Play the file
+`aplay test.wav`
 
 
-## Installation ##
-sudo apt-get install python-pyaudio python3-pyaudio 
 
-for 64 bit system
-sudo apt-get install flac 
-
-sudo apt-get multimedia-jack - select yes in the dialog window.
-LAter COnfiguration: 
-`sudo dpkg-reconfigure -p high jackd2` and select "Yes" to do so.
-
-
-
-
-## Record stuff ##
-show available Audio devices:
--for recording
-aplay -l 
--for playing
-arecord -l
-
-Make a test recoding in current directory
-arecord -f S16_LE -r 16000 -d 5 -D hw:0,0 test.wav
-
-Play the recording
-aplay test.wav
-
+## Debugging audio devices ##
 Test your speakers
-test speaker 
-speaker-test -p 500 -D hw:1,0 -c 2
+`speaker-test -p 500 -D hw:1,0 -c 2`
 
-### Debugging audio devices ###
-sudo apt-get install audacity
-You can generate various sinus and noise signals
-change between devices and test them
-test the recording 
+Use audacity
+`sudo apt-get install audacity`
+You can generate various sinus and noise signals and change between devices and test them.
 
+Trivial
+* Check if headset/sound card is plugged in. 
+* Check if headset is muted.
+* Check if headset is connected.
+ 
 
 
 ### HEADSET ###
 Recommendation for use with robotino: Logitech G930 (wireless)
 The robotino does not have a sound card, therefore a USB sound card is required to handle audio signals. The mentioned Headset has a built-in USB sound card and is tested to work with the robotino system. 
-* Check if it is plugged in. 
-* Check if it is muted.
+In general, the used audio device should support at least a rate of 16kHz.
+
+
  
 ### Languages ###
 Languages supported by Google (excerpt):
