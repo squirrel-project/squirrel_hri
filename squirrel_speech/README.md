@@ -32,6 +32,12 @@ This can also be changed later with:
 `sudo dpkg-reconfigure -p high jackd2` and select "Yes" to do so.
 
 
+## Record Audio ##
+Show available Audio devices:
+* for recording
+`aplay -l`
+* for playing
+`arecord -l`
 
 
 
@@ -49,12 +55,6 @@ reboot the system.
 
 
 
-## Record Audio ##
-Show available Audio devices:
-* for recording
-`aplay -l`
-* for playing
-`arecord -l`
 
 Recoding a file in current directory named test.wav
 `arecord -f S16_LE -r 16000 -d 5 -D hw:0,0 test.wav`
@@ -65,7 +65,7 @@ Play the file
 
 
 
-## Debugging audio devices ##
+### Debugging audio devices ###
 Test your speakers
 `speaker-test -p 500 -D hw:1,0 -c 2`
 
@@ -80,14 +80,14 @@ Trivial
  
 
 
-### Headset ###
+## Headset ##
 Recommendation for use with robotino: Logitech G930 (wireless)
 The robotino does not have a sound card, therefore a USB sound card is required to handle audio signals. The mentioned Headset has a built-in USB sound card and is tested to work with the robotino system. 
 In general, the used audio device should support at least a rate of 16kHz.
 
 
  
-### Languages ###
+## Languages ##
 Languages supported by Google (excerpt):
 
 * Dutch nl-NL
