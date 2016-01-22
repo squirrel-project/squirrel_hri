@@ -19,7 +19,7 @@ Starts a rosnode which checks the published message for known commands (for exam
 
 
 
-## Installation ##`
+## Installation ##
 `sudo apt-get install python-pyaudio python3-pyaudio`
 
 For 64 bit system only:
@@ -80,7 +80,7 @@ Trivial
  
 
 
-### HEADSET ###
+### Headset ###
 Recommendation for use with robotino: Logitech G930 (wireless)
 The robotino does not have a sound card, therefore a USB sound card is required to handle audio signals. The mentioned Headset has a built-in USB sound card and is tested to work with the robotino system. 
 In general, the used audio device should support at least a rate of 16kHz.
