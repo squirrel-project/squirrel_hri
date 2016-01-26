@@ -1,4 +1,4 @@
-#include "squirrel_tracker/floor_pointer.h"
+#include "squirrel_person_tracker/floor_pointer.h"
 #include "gtest/gtest.h"
 
 TEST(FloorPointerTest, testIsGestureReliable)
