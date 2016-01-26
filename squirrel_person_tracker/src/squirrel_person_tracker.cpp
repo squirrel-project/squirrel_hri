@@ -3,9 +3,30 @@
 SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
     pcl_msg(new pcl::PointCloud<pcl::PointXYZ>)
 {
-  pnh_.param<std::string>("camera_optical_frame_id", frame_id, "camera_depth_optical_frame");
-  pnh_.param<bool>("static_plane", static_plane_, true);
-  pnh_.param<bool>("pub_filtered_pc", pub_filtered_pc_, false);
+  if (!pnh_.getParam("camera_optical_frame_id", frame_id))
+  {
+    frame_id = "camera_depth_optical_frame";
+    ROS_INFO("camera_optical_frame_id is not set. Default value: %s", frame_id.c_str());
+  }
+
+  if (!pnh_.getParam("static_plane", static_plane_))
+  {
+    static_plane_ = true;
+    ROS_INFO("static_plane is not set. Default value: true");
+  }
+
+  if (!pnh_.getParam("pub_filtered_pc", static_plane_))
+  {
+    pub_filtered_pc_ = false;
+    ROS_INFO("pub_filtered_pc is not set. Default value: false");
+  }
+
+  if (!pnh_.getParam("publish_skeleton", publish_skeleton_))
+  {
+    publish_skeleton_ = true;
+    ROS_INFO("pub_filtered_pc is not set. Default value: true");
+  }
+
   ostatus = openni::STATUS_OK;
   nstatus = nite::STATUS_OK;
   if (pub_filtered_pc_)
@@ -45,15 +66,7 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
       tfListener_.waitForTransform(odom_point_origin_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
       tfListener_.transformPoint(frame_id, odom_point_origin_, optical_point_origin_);
       optical_point_origin_.header.frame_id = frame_id;
-    }
-    catch (tf::TransformException& ex)
-    {
-      ROS_ERROR("%s: %s", ros::this_node::getName().c_str(), ex.what());
-      return;
-    }
 
-    try
-    {
       tfListener_.waitForTransform(odom_point_ez_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
       tfListener_.transformPoint(frame_id, odom_point_ez_, optical_point_ez_);
       optical_point_ez_.header.frame_id = frame_id;
@@ -68,9 +81,9 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
     floor_.point.y = -optical_point_origin_.point.y * 1000;
     floor_.point.z = optical_point_origin_.point.z * 1000;
 
-    floor_.normal.x = optical_point_ez_.point.x * 1000;
-    floor_.normal.y = -optical_point_ez_.point.y * 1000;
-    floor_.normal.z = optical_point_ez_.point.z * 1000;
+    floor_.normal.x = (optical_point_ez_.point.x - optical_point_origin_.point.x) * 1000;
+    floor_.normal.y = (-optical_point_ez_.point.y + optical_point_origin_.point.y) * 1000;
+    floor_.normal.z = (optical_point_ez_.point.z - optical_point_origin_.point.z) * 1000;
   }
 }
 /////////////////////////////////////////////////////////////////////
@@ -382,25 +395,17 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
   if (!static_plane_)
   {
     floor_ = userFrame.getFloor();
-    ROS_INFO("ORIGIN: X %f; Y %f; Z %f;  NORMAL: X %f; Y %f; Z %f;", floor_.point.x, floor_.point.y, floor_.point.z,
-             floor_.normal.x, floor_.normal.y, floor_.normal.z);
+//    ROS_INFO("ORIGIN: X %f; Y %f; Z %f;  NORMAL: X %f; Y %f; Z %f;", floor_.point.x, floor_.point.y, floor_.point.z,
+//             floor_.normal.x, floor_.normal.y, floor_.normal.z);
   }
   else
   {
     try
     {
-      tfListener_.waitForTransform(odom_point_origin_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfListener_.waitForTransform(odom_point_origin_.header.frame_id, frame_id, timestamp, ros::Duration(1.0));
       tfListener_.transformPoint(frame_id, odom_point_origin_, optical_point_origin_);
-    }
-    catch (tf::TransformException& ex)
-    {
-      ROS_ERROR("%s: %s", ros::this_node::getName().c_str(), ex.what());
-      return;
-    }
 
-    try
-    {
-      tfListener_.waitForTransform(odom_point_ez_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfListener_.waitForTransform(odom_point_ez_.header.frame_id, frame_id, timestamp, ros::Duration(1.0));
       tfListener_.transformPoint(frame_id, odom_point_ez_, optical_point_ez_);
     }
     catch (tf::TransformException& ex)
@@ -413,9 +418,9 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
     floor_.point.y = -optical_point_origin_.point.y * 1000;
     floor_.point.z = optical_point_origin_.point.z * 1000;
 
-    floor_.normal.x = optical_point_ez_.point.x * 1000;
-    floor_.normal.y = -optical_point_ez_.point.y * 1000;
-    floor_.normal.z = optical_point_ez_.point.z * 1000;
+    floor_.normal.x = (optical_point_ez_.point.x - optical_point_origin_.point.x) * 1000;
+    floor_.normal.y = (-optical_point_ez_.point.y + optical_point_origin_.point.y) * 1000;
+    floor_.normal.z = (optical_point_ez_.point.z - optical_point_origin_.point.z) * 1000;
 
   }
 
@@ -480,7 +485,10 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
         {
           publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
         }
-        publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
+        if (publish_skeleton_)
+        {
+          publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
+        }
         if (pDetector.isFloorPoint(userSkeleton, floor_, floorPoint, pointingHead, pointingHand))
         {
           publishedState.state = squirrel_person_tracker_msgs::State::POINT_USER;
@@ -524,4 +532,12 @@ void SquirrelTracker::runSquirrelTracker()
   setFrameIDParameter();
   hTracker.startGestureDetection(nite::GESTURE_WAVE);
   uTracker.addNewFrameListener(this);
+}
+void SquirrelTracker::stopSquirrelTracker()
+{
+  ISWAVEDETECTED = false;
+  SWITCHSKELTRACKON = true;
+  ISWAVEUSERVISBLE = false;
+  hTracker.stopGestureDetection(nite::GESTURE_WAVE);
+  uTracker.removeNewFrameListener(this);
 }

@@ -27,6 +27,7 @@ public:
   bool ISWAVEUSERVISBLE;
   bool static_plane_;
   bool pub_filtered_pc_;
+  bool publish_skeleton_;
   double beginUnvis;
   int durationUnvis;
   std::string frame_id;
@@ -108,6 +109,8 @@ public:
   void onNewFrame(nite::UserTracker& uTracker);
 /////////////////////////////////////////////////////////////////////
   void runSquirrelTracker();
+/////////////////////////////////////////////////////////////////////
+  void stopSquirrelTracker();
 };
 
 #endif

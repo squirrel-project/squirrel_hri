@@ -1,11 +1,18 @@
 <launch>
-<arg name="camera_id" default="kinect" />
-<arg name="static_plane" default="true" />
-<arg name="pub_filtered_pc" default="false" />
+	<arg name="camera_id" default="kinect" />
+	<arg name="is_srv_used" default="true" />
+	<arg name="static_plane" default="false" />
+	<arg name="pub_filtered_pc" default="false" />
+	<arg name="publish_skeleton" default="true" />
 
-<node pkg="nodelet" type="nodelet" name="squirrel_person_tracker" args="load squirrel_person_tracker/squirrel_person_tracker_nodelet /$(arg camera_id)/$(arg camera_id)_nodelet_manager" output="screen" cwd="ROS_HOME">
-<param name="camera_optical_frame_id" type="str" value="$(arg camera_id)_depth_optical_frame" />
-<param name="static_plane" type="bool" value="$(arg static_plane)"/>
-<param name="pub_filtered_pc" type="bool" value="$(arg pub_filtered_pc)"/>
- </node>  
- </launch>
+	<node pkg="nodelet" type="nodelet" name="squirrel_person_tracker"
+		args="load squirrel_person_tracker/squirrel_person_tracker_nodelet /$(arg camera_id)/$(arg camera_id)_nodelet_manager"
+		output="screen" cwd="ROS_HOME">
+		<param name="camera_optical_frame_id" type="str"
+			value="$(arg camera_id)_depth_optical_frame" />
+		<param name="is_srv_used" type="bool" value="$(arg is_srv_used)" />
+		<param name="static_plane" type="bool" value="$(arg static_plane)" />
+		<param name="pub_filtered_pc" type="bool" value="$(arg pub_filtered_pc)" />
+		<param name="publish_skeleton" type="bool" value="$(arg publish_skeleton)" />
+	</node>
+</launch>
