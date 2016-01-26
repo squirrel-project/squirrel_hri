@@ -4,20 +4,25 @@
   <version>0.0.0</version>
   <description>Implements Robotino's expressions for the SQUIRREL project</description>
   <maintainer email="pregier@cs.uni-bonn.de">Peter Regier</maintainer>
+  <maintainer email="boniardi@cs.uni-freiburg.de">Federico Boniardi</maintainer>
   <license>BSD</license>
   <url type="website">/http://www.squirrel-project.eu/</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   
+  <build_depend>geometry_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roslib</build_depend>
-  <build_depend>tf</build_depend>
+  <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>tf</build_depend>
 
+  <run_depend>geometry_msgs</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>roslib</run_depend>
-  <run_depend>tf</run_depend>
+  <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>tf</run_depend>
 
   <export>
   </export>
