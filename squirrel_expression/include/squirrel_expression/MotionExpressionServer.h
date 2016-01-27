@@ -83,7 +83,7 @@ class MotionExpressionServer
   void performMotionExpression( const std_msgs::String::ConstPtr& );
 
  private:
-  typedef enum {MOTION_1, MOTION_2} motion_t;
+  typedef enum {ERROR, NO} motion_t;
 
   ros::Subscriber dist_sub_;
   ros::Publisher cmd_pub_;

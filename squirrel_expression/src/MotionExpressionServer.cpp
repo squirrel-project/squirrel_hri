@@ -68,8 +68,8 @@ MotionExpressionServer::MotionExpressionServer( ros::NodeHandle& nh ) :
   dist_sub_ = nh.subscribe("/distance_sensors",1,&MotionExpressionServer::pointCloudCallback_, this);
   cmd_pub_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel",1);
 
-  motion_parser_["motion_1"] = MOTION_1;
-  motion_parser_["motion_2"] = MOTION_2;
+  motion_parser_["error"] = ERROR;
+  motion_parser_["no"] = NO;
 }
 
 MotionExpressionServer::~MotionExpressionServer( void )
@@ -86,19 +86,53 @@ void MotionExpressionServer::performMotionExpression( const std_msgs::String::Co
 void MotionExpressionServer::performMotion_( motion_t motion )
 {
   switch ( motion ) {
-    case MOTION_1: {
+    case ERROR: {
       ROS_INFO("%s: Perfoming motion 1", ros::this_node::getName().c_str());
-      while ( true /*finished*/ ) {     
+      double t = 0;
+      while ( t<=1.0 ) {     
+        geometry_msgs::Twist cmd;
+        cmd.angular.z = std::cos(2*t*M_PI);
+        t += 0.1;            
+        cmd_pub_.publish(cmd);
+        
+        ros::Duration a_moment(0.1);
+        a_moment.sleep();
+        
         if ( dist_ < 0.20 ) {
           geometry_msgs::Twist stop;
           cmd_pub_.publish(stop);
           break;
         }
       }
+
+      geometry_msgs::Twist stop;
+      cmd_pub_.publish(stop);
+      
       break;
     }
-    case MOTION_2: {
-      ROS_INFO("%s: Perfoming motion 1", ros::this_node::getName().c_str());
+    case NO: {
+      ROS_INFO("%s: Perfoming motion 2", ros::this_node::getName().c_str());
+
+      double t = 0;
+      while ( t<=2.0 ) {     
+        geometry_msgs::Twist cmd;
+        cmd.angular.z = 1.5*std::cos(2*t*M_PI);
+        t += 0.1;            
+        cmd_pub_.publish(cmd);
+        
+        ros::Duration a_moment(0.1);
+        a_moment.sleep();
+        
+        if ( dist_ < 0.20 ) {
+          geometry_msgs::Twist stop;
+          cmd_pub_.publish(stop);
+          break;
+        }
+      }
+
+      geometry_msgs::Twist stop;
+      cmd_pub_.publish(stop);
+
       break;
     }
   }      
