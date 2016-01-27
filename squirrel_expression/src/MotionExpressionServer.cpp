@@ -91,8 +91,8 @@ void MotionExpressionServer::performMotion_( motion_t motion )
       double t = 0;
       while ( t<=1.0 ) {     
         geometry_msgs::Twist cmd;
-        cmd.angular.z = std::cos(2*t*M_PI);
-        t += 0.1;            
+        cmd.angular.z = 0.8*std::cos(2*t*M_PI);
+        t += 0.05;            
         cmd_pub_.publish(cmd);
         
         ros::Duration a_moment(0.1);
@@ -116,11 +116,11 @@ void MotionExpressionServer::performMotion_( motion_t motion )
       double t = 0;
       while ( t<=2.0 ) {     
         geometry_msgs::Twist cmd;
-        cmd.angular.z = 1.5*std::cos(2*t*M_PI);
-        t += 0.1;            
+        cmd.angular.z = 0.8*std::cos(2*t*M_PI);
+        t += 0.01;            
         cmd_pub_.publish(cmd);
         
-        ros::Duration a_moment(0.1);
+        ros::Duration a_moment(0.02);
         a_moment.sleep();
         
         if ( dist_ < 0.20 ) {
