@@ -32,6 +32,7 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
   if (pub_filtered_pc_)
   {
     pubPC = pnh_.advertise<pcl::PointCloud<pcl::PointXYZ> >("filtered_cloud", 1);
+    pcl_msg->height = 1;
   }
   pubPP = pnh_.advertise<geometry_msgs::PointStamped>("pointing_pose", 10);
   pubPSA = pnh_.advertise<geometry_msgs::PoseArray>("detected_pose", 10);
@@ -41,7 +42,6 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
   ISWAVEDETECTED = false;
   SWITCHSKELTRACKON = true;
   ISWAVEUSERVISBLE = false;
-  pcl_msg->height = 1;
   publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
   beginUnvis = 0;
   durationUnvis = 3;
@@ -501,6 +501,13 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
           publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
         }
       }
+      else
+      {
+        ROS_INFO("SKELETON STATE: %d", userSkeleton.getState());
+//        uTracker.stopSkeletonTracking(wavingUserID);
+//        uTracker.startSkeletonTracking(wavingUserID);
+        SWITCHSKELTRACKON = true;
+      }
     }
     if (!users[i].isVisible() && wavingUserID == userID && ISWAVEUSERVISBLE)
     {
@@ -538,6 +545,8 @@ void SquirrelTracker::stopSquirrelTracker()
   ISWAVEDETECTED = false;
   SWITCHSKELTRACKON = true;
   ISWAVEUSERVISBLE = false;
+  wavingUserID = 0;
+  publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
   hTracker.stopGestureDetection(nite::GESTURE_WAVE);
   uTracker.removeNewFrameListener(this);
 }
