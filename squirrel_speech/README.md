@@ -9,14 +9,24 @@ It is possible to use various online APIs to perform a speech recognition. The p
 
 (An offline solution based on CMU Sphinx is under development, but so far, the recognition rate is inferior to the online APIs)
 
+
+
 ## Usage ##
 
-`rosrun squirrel_speech_rec sq_ros_speech_rec`
+`rosrun squirrel_speech_rec sq_ros_speech_rec <language> <device_ID>`
 Starts a rosnode which listens to the microphone and sends requests to the google speech API. The result is then published to a topic.
+The parameters are optional. `<language>` can be any language code which is supported by google for the voice recognition. For the parser, only German is supported currently. The `<device_ID>` completly depends on the used system and hardware. 
+
+###Examples###
+`rosrun squirrel_speech_rec sq_ros_speech_rec` invokes the standard behaviour `rosrun squirrel_speech_rec sq_ros_speech_rec de 0`. 
+
+`rosrun squirrel_speech_rec sq_ros_speech_rec de`
+`rosrun squirrel_speech_rec sq_ros_speech_rec de-DE`
+`rosrun squirrel_speech_rec sq_ros_speech_rec en 3`
+
 
 `rosrun squirrel_speech_rec sq_ros_speech_parser`
 Starts a rosnode which checks the published message for known commands (for example: "Roboter gehe links"/"Robot go left"). If a command is recognized, a new message is published to a different topic.  
-
 
 
 ## Installation ##
