@@ -88,7 +88,7 @@ void MotionExpressionServer::performMotion_( motion_t motion )
   switch ( motion ) {
     case MOTION_1: {
       ROS_INFO("%s: Perfoming motion 1", ros::this_node::getName().c_str());
-      while ( true /*finished*/ ) {     
+      while ( false /*finished*/ ) {     
         if ( dist_ < 0.20 ) {
           geometry_msgs::Twist stop;
           cmd_pub_.publish(stop);
@@ -98,7 +98,7 @@ void MotionExpressionServer::performMotion_( motion_t motion )
       break;
     }
     case MOTION_2: {
-      ROS_INFO("%s: Perfoming motion 1", ros::this_node::getName().c_str());
+      ROS_INFO("%s: Perfoming motion 2", ros::this_node::getName().c_str());
       break;
     }
   }      
