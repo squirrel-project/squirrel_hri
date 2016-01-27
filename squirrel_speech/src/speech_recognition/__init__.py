@@ -6,6 +6,8 @@ __author__ = "Anthony Zhang (Uberi)"
 __version__ = "3.1.3"
 __license__ = "BSD"
 
+#Modified
+
 import io, os, subprocess, wave, base64
 import math, audioop, collections, threading
 import platform, stat
@@ -52,10 +54,14 @@ try:
 
 chunk default = 1024
         """
-        def __init__(self, device_index = None, sample_rate = 16000, chunk_size = 8192):
+        def __init__(self, device_index = 0, sample_rate = 16000, chunk_size = 8192):
+            
+
             assert device_index is None or isinstance(device_index, int), "Device index must be None or an integer"
+            audio = pyaudio.PyAudio();
+            count = audio.get_device_count();
             if device_index is not None: # ensure device index is in range
-                audio = pyaudio.PyAudio(); count = audio.get_device_count(); audio.terminate() # obtain device count
+                  # obtain device count
                 assert 0 <= device_index < count, "Device index out of range"
             assert isinstance(sample_rate, int) and sample_rate > 0, "Sample rate must be a positive integer"
             assert isinstance(chunk_size, int) and chunk_size > 0, "Chunk size must be a positive integer"
@@ -67,6 +73,27 @@ chunk default = 1024
 
             self.audio = None
             self.stream = None
+
+
+            
+            # print out device parameters
+            devinfo = audio.get_device_info_by_index(device_index)
+            print( "Used Device-----------------------------")
+            for k in devinfo.items():
+                name, value = k
+
+                # if host API, then get friendly name
+                
+                if name == 'hostApi':
+                    value = str(value) + \
+                            " (%s)" % audio.get_host_api_info_by_index(k[1])['name']
+                print (str(name) + " : " + str(value))
+
+            print( "--------------------------")
+            audio.terminate()
+
+
+
 
         def __enter__(self):
             assert self.stream is None, "This audio source is already inside a context manager"
