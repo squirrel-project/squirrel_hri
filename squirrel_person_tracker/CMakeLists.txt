@@ -67,13 +67,16 @@ include_directories(
 
 add_executable(squirrel_person_tracker src/squirrel_person_tracker_main.cpp src/floor_pointer.cpp src/squirrel_person_tracker.cpp)
 target_link_libraries(squirrel_person_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES})
+add_dependencies(squirrel_person_tracker ${catkin_EXPORTED_TARGETS})
 
 add_library(squirrel_person_tracker_nodelet src/squirrel_person_tracker_nodelet.cpp src/floor_pointer.cpp src/squirrel_person_tracker.cpp)
 target_link_libraries(squirrel_person_tracker_nodelet ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} )
+add_dependencies(squirrel_person_tracker_nodelet ${catkin_EXPORTED_TARGETS})
 
 
 catkin_add_gtest(test_floorpointer test/squirrel_person_tracker_floor_point_test.cpp src/floor_pointer.cpp)
 target_link_libraries(test_floorpointer ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} )
+add_dependencies(test_floorpointer ${catkin_EXPORTED_TARGETS})
 
 add_custom_target(
 create_nite2_link ALL
