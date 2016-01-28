@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 import speech_recognition as sr
-from std_msgs.msg import String
 
 import sys
 import pyaudio
