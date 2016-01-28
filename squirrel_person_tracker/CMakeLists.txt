@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   squirrel_person_tracker_msgs
   libnite2
   nodelet
+  std_srvs
 )
 
 # Find OpenNI2
@@ -49,6 +50,7 @@ catkin_package(
 	libnite2
 	squirrel_person_tracker_msgs	
 	nodelet
+	std_srvs
 #  DEPENDS system_lib
 )
 
