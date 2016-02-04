@@ -31,7 +31,6 @@ Starts a rosnode which checks the published message for known commands (for exam
 `rosrun squirrel_speech_rec sq_ros_speech_rec en 3`
 
 
-
 ## Installation ##
 `sudo apt-get install python-pyaudio python3-pyaudio`
 
@@ -43,6 +42,15 @@ For all:
 select yes in the dialog window.
 This can also be changed later with: 
 `sudo dpkg-reconfigure -p high jackd2` and select "Yes" to do so.
+
+
+## Testing the Speech Recognition for different Languages ##
+Similar to the usage of the rosnodes, a python script can be used to test the speech recongition on multiple OS without a ROS installation(so far MacOS and Ubuntu 14.04).
+
+Start it by typing 
+`python pure_py_speech_rec <language> <device_ID>`
+
+
 
 
 ## Record Audio ##
@@ -88,7 +96,7 @@ You can generate various sinus and noise signals and change between devices and 
 
 Trivial
 * Check if headset/sound card is plugged in. 
-* Check if headset is muted.
+* Check if headset is muted. (G930 shows a red LED at the tip of the microphone if it is muted)
 * Check if headset is connected.
  
 
