@@ -3,10 +3,37 @@
 SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
     pcl_msg(new pcl::PointCloud<pcl::PointXYZ>)
 {
-  pnh_.param<std::string>("camera_optical_frame_id", frame_id, "camera_depth_optical_frame");
+  if (!pnh_.getParam("camera_optical_frame_id", frame_id))
+  {
+    frame_id = "camera_depth_optical_frame";
+    ROS_INFO("camera_optical_frame_id is not set. Default value: %s", frame_id.c_str());
+  }
+
+  if (!pnh_.getParam("static_plane", static_plane_))
+  {
+    static_plane_ = true;
+    ROS_INFO("static_plane is not set. Default value: true");
+  }
+
+  if (!pnh_.getParam("pub_filtered_pc", static_plane_))
+  {
+    pub_filtered_pc_ = false;
+    ROS_INFO("pub_filtered_pc is not set. Default value: false");
+  }
+
+  if (!pnh_.getParam("publish_skeleton", publish_skeleton_))
+  {
+    publish_skeleton_ = true;
+    ROS_INFO("pub_filtered_pc is not set. Default value: true");
+  }
+
   ostatus = openni::STATUS_OK;
   nstatus = nite::STATUS_OK;
-  pubPC = pnh_.advertise<pcl::PointCloud<pcl::PointXYZ> >("filtered_cloud", 1);
+  if (pub_filtered_pc_)
+  {
+    pubPC = pnh_.advertise<pcl::PointCloud<pcl::PointXYZ> >("filtered_cloud", 1);
+    pcl_msg->height = 1;
+  }
   pubPP = pnh_.advertise<geometry_msgs::PointStamped>("pointing_pose", 10);
   pubPSA = pnh_.advertise<geometry_msgs::PoseArray>("detected_pose", 10);
   pubState = pnh_.advertise<squirrel_person_tracker_msgs::State>("tracking_state", 10);
@@ -15,14 +42,50 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
   ISWAVEDETECTED = false;
   SWITCHSKELTRACKON = true;
   ISWAVEUSERVISBLE = false;
-  pcl_msg->height = 1;
   publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
   beginUnvis = 0;
   durationUnvis = 3;
   transform.setRotation(tf::Quaternion(0, 0, 0, 1));
   this->initUserTracker();
-}
 
+  if (static_plane_)
+  {
+    odom_point_origin_.header.frame_id = "/odom";
+    odom_point_ez_.header.frame_id = "/odom";
+
+    odom_point_origin_.point.x = 0.0;
+    odom_point_origin_.point.y = 0.0;
+    odom_point_origin_.point.z = 0.0;
+
+    odom_point_ez_.point.x = 0.0;
+    odom_point_ez_.point.y = 0.0;
+    odom_point_ez_.point.z = 1.0;
+
+    try
+    {
+      tfListener_.waitForTransform(odom_point_origin_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfListener_.transformPoint(frame_id, odom_point_origin_, optical_point_origin_);
+      optical_point_origin_.header.frame_id = frame_id;
+
+      tfListener_.waitForTransform(odom_point_ez_.header.frame_id, frame_id, ros::Time::now(), ros::Duration(1.0));
+      tfListener_.transformPoint(frame_id, odom_point_ez_, optical_point_ez_);
+      optical_point_ez_.header.frame_id = frame_id;
+    }
+    catch (tf::TransformException& ex)
+    {
+      ROS_ERROR("%s: %s", ros::this_node::getName().c_str(), ex.what());
+      return;
+    }
+
+    floor_.point.x = optical_point_origin_.point.x * 1000;
+    floor_.point.y = -optical_point_origin_.point.y * 1000;
+    floor_.point.z = optical_point_origin_.point.z * 1000;
+
+    floor_.normal.x = (optical_point_ez_.point.x - optical_point_origin_.point.x) * 1000;
+    floor_.normal.y = (-optical_point_ez_.point.y + optical_point_origin_.point.y) * 1000;
+    floor_.normal.z = (optical_point_ez_.point.z - optical_point_origin_.point.z) * 1000;
+  }
+}
 /////////////////////////////////////////////////////////////////////
 SquirrelTracker::~SquirrelTracker()
 {
@@ -192,7 +255,6 @@ void SquirrelTracker::publishPointingPoint(const nite::Point3f& point, const ros
 void SquirrelTracker::publishHeadHandMsgs(const nite::Point3f& head, const nite::Point3f& hand,
                                           const ros::Time& timestamp)
 {
-
   squirrelHeadHand.head.x = head.x / 1000;
   squirrelHeadHand.head.y = -head.y / 1000;
   squirrelHeadHand.head.z = head.z / 1000;
@@ -329,12 +391,47 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
   nstatus = uTracker.readFrame(&userFrame);
   ros::Time timestamp = ros::Time::now();
   usersMap = userFrame.getUserMap();
-  nite::Plane floor = userFrame.getFloor();
+
+  if (!static_plane_)
+  {
+    floor_ = userFrame.getFloor();
+//    ROS_INFO("ORIGIN: X %f; Y %f; Z %f;  NORMAL: X %f; Y %f; Z %f;", floor_.point.x, floor_.point.y, floor_.point.z,
+//             floor_.normal.x, floor_.normal.y, floor_.normal.z);
+  }
+  else
+  {
+    try
+    {
+      tfListener_.waitForTransform(odom_point_origin_.header.frame_id, frame_id, timestamp, ros::Duration(1.0));
+      tfListener_.transformPoint(frame_id, odom_point_origin_, optical_point_origin_);
+
+      tfListener_.waitForTransform(odom_point_ez_.header.frame_id, frame_id, timestamp, ros::Duration(1.0));
+      tfListener_.transformPoint(frame_id, odom_point_ez_, optical_point_ez_);
+    }
+    catch (tf::TransformException& ex)
+    {
+      ROS_ERROR("%s: %s", ros::this_node::getName().c_str(), ex.what());
+      return;
+    }
+
+    floor_.point.x = optical_point_origin_.point.x * 1000;
+    floor_.point.y = -optical_point_origin_.point.y * 1000;
+    floor_.point.z = optical_point_origin_.point.z * 1000;
+
+    floor_.normal.x = (optical_point_ez_.point.x - optical_point_origin_.point.x) * 1000;
+    floor_.normal.y = (-optical_point_ez_.point.y + optical_point_origin_.point.y) * 1000;
+    floor_.normal.z = (optical_point_ez_.point.z - optical_point_origin_.point.z) * 1000;
+
+  }
+
   if (nstatus != nite::STATUS_OK || !userFrame.isValid())
   {
     return;
   }
-  publishPtCld2(timestamp);
+  if (pub_filtered_pc_)
+  {
+    publishPtCld2(timestamp);
+  }
 
   const nite::Array<nite::UserData>& users = userFrame.getUsers();
 
@@ -388,8 +485,11 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
         {
           publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
         }
-        publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
-        if (pDetector.isFloorPoint(userSkeleton, floor, floorPoint, pointingHead, pointingHand))
+        if (publish_skeleton_)
+        {
+          publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
+        }
+        if (pDetector.isFloorPoint(userSkeleton, floor_, floorPoint, pointingHead, pointingHand))
         {
           publishedState.state = squirrel_person_tracker_msgs::State::POINT_USER;
           publishPointingPoint(floorPoint, timestamp);
@@ -400,6 +500,13 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
         {
           publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
         }
+      }
+      else
+      {
+        ROS_INFO("SKELETON STATE: %d", userSkeleton.getState());
+//        uTracker.stopSkeletonTracking(wavingUserID);
+//        uTracker.startSkeletonTracking(wavingUserID);
+        SWITCHSKELTRACKON = true;
       }
     }
     if (!users[i].isVisible() && wavingUserID == userID && ISWAVEUSERVISBLE)
@@ -432,4 +539,14 @@ void SquirrelTracker::runSquirrelTracker()
   setFrameIDParameter();
   hTracker.startGestureDetection(nite::GESTURE_WAVE);
   uTracker.addNewFrameListener(this);
+}
+void SquirrelTracker::stopSquirrelTracker()
+{
+  ISWAVEDETECTED = false;
+  SWITCHSKELTRACKON = true;
+  ISWAVEUSERVISBLE = false;
+  wavingUserID = 0;
+  publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
+  hTracker.stopGestureDetection(nite::GESTURE_WAVE);
+  uTracker.removeNewFrameListener(this);
 }
