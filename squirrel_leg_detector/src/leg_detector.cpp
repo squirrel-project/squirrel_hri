@@ -107,7 +107,7 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg
       visualisePerson(people[i]);
       personss << "id: " << i;
       people_vector.header.stamp = ros::Time::now();
-      people_vector.header.frame_id = "kinect_rgb_optical_frame";
+      people_vector.header.frame_id = "hokuyo_link";
       person.name = personss.str();
       person.position.x = center.x;
       person.position.y = center.y;
