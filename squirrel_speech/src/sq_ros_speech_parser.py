@@ -48,33 +48,43 @@ def callback(data):
                     inp = inp.replace(syn,trigger)
                     print("Replacing " + syn + " with " + trigger)
         
-
-         #Commands-------------------------------------------------------------------
+        # Commands-------------------------------------------------------------------
 
         if "hallo roboter" in inp:
             command = "hallo"
 
-        if "roboter begin" in inp:
-            command = "begin"
-
-        if "roboter ja" in inp:
+        if "ja" in inp:
             command = "yes"
 
-        if "roboter nein" in inp:
+        if "nein" in inp:
             command = "no"
 
-        if "roboter gehe" in inp:
-            command = "go"
-
-        if "roboter stop" in inp:
-            command = "stop"
+        if "start" in inp:
+            command = "start"
 
         if "programm beenden" in inp:
             command = "end_program"
 
-        if "roboter gehe vor " in inp:
-            command = "go_forwards"
+        if "gehe" in inp:
+            command = "go"
 
+        if "vor" in inp:
+            command = "forward"
+
+        if "links" in inp:
+            command = "left"
+
+        if "rechts" in inp:
+            command = "right"
+
+        if "stop" in inp:
+            command = "stop"
+
+        if "komm" in inp:
+            command = "come"
+
+        if "YELLING" in inp:
+            command = "stop"
 
         msg.recognized_speech = init_inp
         msg.parsed_speech = inp

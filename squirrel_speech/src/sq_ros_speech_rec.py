@@ -68,41 +68,41 @@ def recognizer():
         while not rospy.is_shutdown():
             # LOOP -----------------------------------------------------------------------
             try:
-
-            
                 print("Ready!")
-                audio = r.listen(source)
-                print("Recognition...")
-            
-                #value_str = r.recognize_google(audio,None,"de")
-                value = r.recognize_google(audio,None, arg_lang)
-                value = value.encode("utf-8")
-                #value = unicode(value_str,"utf-8")
-                #value = value.encode("utf-8")
-                value = value.lower()
+                (audio, yelling) = r.listen(source)
+                if yelling:
+                    print("detected YELLING")
+                    msg.recognized_speech = "YELLING"
+                    msg.is_recognized = True
+                    msg.speaker_ID = 0
+                    he = std_msgs.msg.Header()
+                    he.stamp = rospy.Time.now()
+                    msg.header = he
 
-                msg.recognized_speech = value
-                msg.is_recognized = True
-                msg.speaker_ID = 0
-            
-                he = std_msgs.msg.Header()
-                he.stamp = rospy.Time.now()
-                msg.header = he
-
-
-
+                else:
+                    print("Recognition...")
+ 
+                    value = r.recognize_google(audio, None, arg_lang)
+                    value = value.encode("utf-8")
+                    value = value.lower()
+ 
+                    msg.recognized_speech = value
+                    msg.is_recognized = True
+                    msg.speaker_ID = 0
+                    he = std_msgs.msg.Header()
+                    he.stamp = rospy.Time.now()
+                    msg.header = he
+ 
                 print("\033[0;32m", end="")  #green
                 rospy.loginfo(msg)
                 print("\033[0;39m", end="")    #default
 
                 pub.publish(msg)
 
-
             except sr.UnknownValueError:
                 msg.recognized_speech = ""
                 msg.is_recognized = False
                 msg.speaker_ID = 0
-            
                 he = std_msgs.msg.Header()
                 he.stamp = rospy.Time.now()
                 msg.header = he
@@ -113,8 +113,6 @@ def recognizer():
                 print("\033[0;39m")   #default
 
                 pub.publish(msg)
-                
-
 
             except sr.RequestError as e:
                 print("\033[0;31m", end="")  #red
@@ -123,12 +121,9 @@ def recognizer():
                 print("\033[0;39m")   #default
 
 
-
 if __name__ == '__main__':
     try:
         recognizer()
     except rospy.ROSInterruptException:
         pass
-
-
 
