@@ -14,6 +14,7 @@ call(["pulseaudio", "--kill"])
 call(["jack_control", "start"])
 
 from squirrel_speech_msgs.msg import RecognizedSpeech
+from sound_play.msg import SoundRequest
 
 
 default_lang = "de"
@@ -54,7 +55,17 @@ print(" ")
 print("---------------------------------------------------------------------------") 
 
 def recognizer():
-    pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5) 
+    # hm, yes?
+    audiofile_hm = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Pickup_00.wav'
+    # whaat?
+    audiofile_what = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Jump_03.wav'
+    # ok!
+    audiofile_ok = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Collect_Point_01.wav'
+    # uahhh!
+    audiofile_uah = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Pickup_04.wav'
+
+    pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5)
+    sound_pub = rospy.Publisher('/robotsound', SoundRequest, queue_size=5)
     msg = RecognizedSpeech()
 
     rospy.init_node('squirrel_speech_recognizer', anonymous=True)
@@ -71,7 +82,15 @@ def recognizer():
             try:
                 print("Ready!")
                 (audio, yelling) = r.listen(source)
+
                 if yelling:
+                    # say "uaaah!"
+                    sound_msg = SoundRequest()
+                    sound_msg.sound = -2 # play file
+                    sound_msg.command = 1 # play once
+                    sound_msg.arg = audiofile_uah
+                    sound_pub.publish(sound_msg)
+
                     print("detected YELLING")
                     msg.recognized_speech = "YELLING"
                     msg.is_recognized = True
@@ -91,6 +110,13 @@ def recognizer():
                     utterance_cnt = utterance_cnt + 1
 
                 else:
+                    # say "hm?" "what?"
+                    sound_msg = SoundRequest()
+                    sound_msg.sound = -2 # play file
+                    sound_msg.command = 1 # play once
+                    sound_msg.arg = audiofile_hm
+                    sound_pub.publish(sound_msg)
+
                     print("Recognition...")
  
                     value = r.recognize_google(audio, None, arg_lang)
