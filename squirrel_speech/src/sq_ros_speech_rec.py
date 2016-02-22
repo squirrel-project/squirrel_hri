@@ -56,9 +56,10 @@ print("-------------------------------------------------------------------------
 def recognizer():
     pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5) 
     msg = RecognizedSpeech()
-   
+
     rospy.init_node('squirrel_speech_recognizer', anonymous=True)
 
+    utterance_cnt = 1
     with m as source:
         r.adjust_for_ambient_noise(source)
         print("Set minimum energy threshold to {}".format(r.energy_threshold))
@@ -79,6 +80,16 @@ def recognizer():
                     he.stamp = rospy.Time.now()
                     msg.header = he
 
+                    wav_filename = "sample" + str(utterance_cnt) + ".wav"
+                    f = open(wav_filename, 'w')
+                    f.write(audio.get_wav_data())
+                    f.close()
+                    text_filename = "sample" + str(utterance_cnt) + ".txt"
+                    f = open(text_filename, 'w')
+                    f.write(value)
+                    f.close()
+                    utterance_cnt = utterance_cnt + 1
+
                 else:
                     print("Recognition...")
  
@@ -92,6 +103,25 @@ def recognizer():
                     he = std_msgs.msg.Header()
                     he.stamp = rospy.Time.now()
                     msg.header = he
+
+                    wav_filename = "sample" + str(utterance_cnt) + ".wav"
+                    f = open(wav_filename, 'w')
+                    f.write(audio.get_wav_data())
+                    f.close()
+                    text_filename = "sample" + str(utterance_cnt) + ".txt"
+                    f = open(text_filename, 'w')
+                    f.write(value)
+                    f.close()
+                    utterance_cnt = utterance_cnt + 1
+
+                wav_filename = "sample" + str(utterance_cnt) + ".wav"
+                f = open(wav_filename, 'w')
+                f.write(audio.get_wav_data())
+                f.close()
+                text_filename = "sample" + str(utterance_cnt) + ".txt"
+                f = open(text_filename, 'w')
+                f.write(value)
+                f.close()
  
                 print("\033[0;32m", end="")  #green
                 rospy.loginfo(msg)
