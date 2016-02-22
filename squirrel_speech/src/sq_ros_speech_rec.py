@@ -14,6 +14,7 @@ call(["pulseaudio", "--kill"])
 call(["jack_control", "start"])
 
 from squirrel_speech_msgs.msg import RecognizedSpeech
+from sound_play.msg import SoundRequest
 
 
 default_lang = "de"
@@ -54,11 +55,22 @@ print(" ")
 print("---------------------------------------------------------------------------") 
 
 def recognizer():
-    pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5) 
+    # hm, yes?
+    audiofile_hm = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Pickup_00.wav'
+    # whaat?
+    audiofile_what = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Jump_03.wav'
+    # ok!
+    audiofile_ok = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Collect_Point_01.wav'
+    # uahhh!
+    audiofile_uah = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Pickup_04.wav'
+
+    pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5)
+    sound_pub = rospy.Publisher('/robotsound', SoundRequest, queue_size=5)
     msg = RecognizedSpeech()
-   
+
     rospy.init_node('squirrel_speech_recognizer', anonymous=True)
 
+    utterance_cnt = 1
     with m as source:
         r.adjust_for_ambient_noise(source)
         print("Set minimum energy threshold to {}".format(r.energy_threshold))
@@ -70,7 +82,15 @@ def recognizer():
             try:
                 print("Ready!")
                 (audio, yelling) = r.listen(source)
+
                 if yelling:
+                    # say "uaaah!"
+                    sound_msg = SoundRequest()
+                    sound_msg.sound = -2 # play file
+                    sound_msg.command = 1 # play once
+                    sound_msg.arg = audiofile_uah
+                    sound_pub.publish(sound_msg)
+
                     print("detected YELLING")
                     msg.recognized_speech = "YELLING"
                     msg.is_recognized = True
@@ -79,7 +99,24 @@ def recognizer():
                     he.stamp = rospy.Time.now()
                     msg.header = he
 
+                    wav_filename = "sample" + str(utterance_cnt) + ".wav"
+                    f = open(wav_filename, 'w')
+                    f.write(audio.get_wav_data())
+                    f.close()
+                    text_filename = "sample" + str(utterance_cnt) + ".txt"
+                    f = open(text_filename, 'w')
+                    f.write("YELLING")
+                    f.close()
+                    utterance_cnt = utterance_cnt + 1
+
                 else:
+                    # say "hm?" "what?"
+                    sound_msg = SoundRequest()
+                    sound_msg.sound = -2 # play file
+                    sound_msg.command = 1 # play once
+                    sound_msg.arg = audiofile_hm
+                    sound_pub.publish(sound_msg)
+
                     print("Recognition...")
  
                     value = r.recognize_google(audio, None, arg_lang)
@@ -92,7 +129,17 @@ def recognizer():
                     he = std_msgs.msg.Header()
                     he.stamp = rospy.Time.now()
                     msg.header = he
- 
+
+                    wav_filename = "sample" + str(utterance_cnt) + ".wav"
+                    f = open(wav_filename, 'w')
+                    f.write(audio.get_wav_data())
+                    f.close()
+                    text_filename = "sample" + str(utterance_cnt) + ".txt"
+                    f = open(text_filename, 'w')
+                    f.write(value)
+                    f.close()
+                    utterance_cnt = utterance_cnt + 1
+
                 print("\033[0;32m", end="")  #green
                 rospy.loginfo(msg)
                 print("\033[0;39m", end="")    #default
