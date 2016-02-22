@@ -8,7 +8,7 @@ drehe:dreh
 nehme:nimm
 lass fallen:fallen lassen
 spielzeug:
-links:
+links:link,leck
 rechts:recht
 vor:vorwärts
 rückwärts:
