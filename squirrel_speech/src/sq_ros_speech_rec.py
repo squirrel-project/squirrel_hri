@@ -86,7 +86,7 @@ def recognizer():
                     f.close()
                     text_filename = "sample" + str(utterance_cnt) + ".txt"
                     f = open(text_filename, 'w')
-                    f.write(value)
+                    f.write("YELLING")
                     f.close()
                     utterance_cnt = utterance_cnt + 1
 
@@ -114,15 +114,6 @@ def recognizer():
                     f.close()
                     utterance_cnt = utterance_cnt + 1
 
-                wav_filename = "sample" + str(utterance_cnt) + ".wav"
-                f = open(wav_filename, 'w')
-                f.write(audio.get_wav_data())
-                f.close()
-                text_filename = "sample" + str(utterance_cnt) + ".txt"
-                f = open(text_filename, 'w')
-                f.write(value)
-                f.close()
- 
                 print("\033[0;32m", end="")  #green
                 rospy.loginfo(msg)
                 print("\033[0;39m", end="")    #default
