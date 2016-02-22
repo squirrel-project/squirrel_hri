@@ -3,10 +3,12 @@ project(squirrel_expression)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
+  geometry_msgs
   roscpp
   roslib
-  tf
+  sensor_msgs
   std_msgs
+  tf
 )
 
 ###################################
@@ -16,16 +18,17 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS 
+  geometry_msgs
 	roscpp 
 	roslib
-	tf
+  sensor_msgs
 	std_msgs
+	tf
 )
 
 ###########
 ## Build ##
 ###########
-
 
 include_directories(
   include
@@ -39,3 +42,8 @@ set(SES_SOURCES
 add_executable(squirrel_expression ${SES_SOURCES})
 target_link_libraries(squirrel_expression ${catkin_LIBRARIES})
 
+set(MSES_SOURCES 
+  src/MotionExpressionServer.cpp)
+
+add_executable(squirrel_motion_expression ${MSES_SOURCES})
+target_link_libraries(squirrel_motion_expression ${catkin_LIBRARIES})

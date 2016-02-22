@@ -1,78 +1,117 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import rospy
-from std_msgs.msg import String
+from __future__ import print_function
 
+import rospy
+import rospkg
+import std_msgs.msg
+from read_voc import read_voc
+
+from squirrel_speech_msgs.msg import RecognizedSpeech
+from squirrel_speech_msgs.msg import RecognizedCommand
 
 print("SQUIRREL SPEECH PARSER ----------------------------------------------------")
 print("Deutsch") 
 print("---------------------------------------------------------------------------") 
 
-robot_syn =("roboter","kenny","robotino", "can i" , "kevin", "jenny", "roberto")
-gehe_syn  =("gehe","geht","geh")
-stop_syn  =("stopp", "stop", "halt","anhalten", "halte an")
-ja_syn =("ja", " ok ", "okay", "bestätige") 
 
-start_syn =("start", "starte", "beginnen", "beginne", "beginn", "big in")
+rospack = rospkg.RosPack()
+path_to_pkg = rospack.get_path('squirrel_speech_rec')
+#print(path_to_pkg)
+path_to_voc = path_to_pkg+"/database/german/vocabulary_with_synonyms.txt"
+#print(path_to_voc)
 
 
+synonyms = read_voc(path_to_voc)
+
+pub = rospy.Publisher('squirrel_speech_recognized_commands', RecognizedCommand, queue_size=5)  
+msg = RecognizedCommand()
 
 def callback(data):
 
-    pub = rospy.Publisher('topic_rec_speech_command', String, queue_size=5)  
-    rospy.init_node('speech_parser_node', anonymous=True)
+    if(data.is_recognized):
+        init_inp = data.recognized_speech
+        inp = init_inp
+        speaker_ID = data.speaker_ID
 
-    init_inp = data.data
-    inp = init_inp
+        command = ""
 
-    command = ""
+        print("------------------------------------------------")
+        # Synonyms-------------------------------------------------------------------
+
+        for trigger in synonyms:
+            #print(trigger + "-----------------" )
+            for syn in synonyms[trigger]:
+                #print("\t" + syn)
+                if (syn in inp) and (len(syn)>0):
+                    inp = inp.replace(syn,trigger)
+                    print("Replacing " + syn + " with " + trigger)
+        
+        # Commands-------------------------------------------------------------------
+
+        if "hallo roboter" in inp:
+            command = "hallo"
+
+        if "ja" in inp:
+            command = "yes"
+
+        if "nein" in inp:
+            command = "no"
+
+        if "start" in inp:
+            command = "start"
+
+        if "programm beenden" in inp:
+            command = "end_program"
+
+        if "gehe" in inp:
+            command = "go"
+
+        if "vor" in inp:
+            command = "forward"
+
+        if "links" in inp:
+            command = "left"
+
+        if "rechts" in inp:
+            command = "right"
+
+        if "stop" in inp:
+            command = "stop"
+
+        if "komm" in inp:
+            command = "come"
+
+        if "YELLING" in inp:
+            command = "stop"
+
+        msg.recognized_speech = init_inp
+        msg.parsed_speech = inp
+        msg.int_command = command
+        msg.is_command = (command != "")
+        msg.speaker_ID = speaker_ID
+        
+        he = std_msgs.msg.Header()
+        he.stamp = rospy.Time.now()
+        msg.header = he
+
+        
+        if(msg.is_command):
+            print("\033[0;32m", end="")  #green
+        else:
+            print("\033[0;31m", end="")  #rot
+        rospy.loginfo(msg)
+        print("\033[0;39m", end="")    #default
+        print("")
+        pub.publish(msg)
 
 
-    # Synonyms-------------------------------------------------------------------
-    
-    for syn in robot_syn:
-        #print(syn)
-        if syn in inp:
-            inp = inp.replace(syn,robot_syn[0])
-            #print("Replacing " + syn + " with " + robot_syn[0])
-            
 
-
-
-    # Commands-------------------------------------------------------------------
-
-    if "roboter ja" in inp:
-        command = "Bestätigung"
-
-
-    if "roboter nein" in inp:
-        command = "Verneinung"
-
-    if "roboter gehe" in inp:
-        command = "...geht"
-
-    if "roboter stop" in inp:
-        command = "...Stoppe"
-
-    if "programm beenden" in inp:
-        command = "...beenden"
-
-    print("-------------------------------------------------------")
-    print("CallerID: " + rospy.get_caller_id() )
-    print("Received: " + init_inp )
-    #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
-    print("- - - - - - - - - - - - - - - - - - - - - - - - - - - -")
-    print("After replacing Synonyms:  " + inp)
-    print("Issued Command: " + "\033[0;32m" + command + "\033[0;39m")
-    print("-------------------------------------------------------\n\n")
-
-    pub.publish(command)
 
 def listener():
-    rospy.init_node('speech_parser_node', anonymous=True)
-    rospy.Subscriber("topic_rec_speech", String, callback)
-
+    rospy.init_node('squirrel_speech_parser', anonymous=True)
+    rospy.Subscriber("squirrel_speech_recognized_speech", RecognizedSpeech, callback)
     rospy.spin()
 
 if __name__ == '__main__':

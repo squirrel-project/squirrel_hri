@@ -235,7 +235,7 @@ bool FloorPointer::isFloorPoint(const nite::Skeleton& userSkeleton, const nite::
     nite::Point3f FloorNormal(floor.normal.x, floor.normal.y, floor.normal.z);
     nite::Point3f FloorPoint(floor.point.x, floor.point.y, floor.point.z);
 //      nite::Point3f vecShoulderHandleft = subPoints(leftShoulderPoint, leftHandPoint);
-    nite::Point3f vecHeadHandleft = subPoints(headPoint, leftHandPoint);
+    nite::Point3f vecHeadHandleft = subPoints(leftHandPoint, headPoint);
     nite::Point3f vecHandFloorPoint = subPoints(FloorPoint, leftHandPoint);
     float normFaktor = calcDotProduct(FloorNormal, vecHandFloorPoint) / calcDotProduct(FloorNormal, vecHeadHandleft);
     nite::Point3f normvecSholderHand(vecHeadHandleft.x * normFaktor, vecHeadHandleft.y * normFaktor,
@@ -256,7 +256,7 @@ bool FloorPointer::isFloorPoint(const nite::Skeleton& userSkeleton, const nite::
     nite::Point3f FloorNormal(floor.normal.x, floor.normal.y, floor.normal.z);
     nite::Point3f FloorPoint(floor.point.x, floor.point.y, floor.point.z);
 //      nite::Point3f vecShoulderHandright = subPoints(rightShoulderPoint, rightHandPoint);
-    nite::Point3f vecHeadHandright = subPoints(headPoint, rightHandPoint);
+    nite::Point3f vecHeadHandright = subPoints(rightHandPoint, headPoint);
     nite::Point3f vecHandFloorPoint = subPoints(FloorPoint, rightHandPoint);
     float normFaktor = calcDotProduct(FloorNormal, vecHandFloorPoint) / calcDotProduct(FloorNormal, vecHeadHandright);
     nite::Point3f normvecSholderHand(vecHeadHandright.x * normFaktor, vecHeadHandright.y * normFaktor,

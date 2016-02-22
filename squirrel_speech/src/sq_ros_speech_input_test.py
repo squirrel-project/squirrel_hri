@@ -4,59 +4,48 @@
 from __future__ import print_function
 
 import rospy
-from std_msgs.msg import String
+import std_msgs.msg
 
-import sys
+from squirrel_speech_msgs.msg import RecognizedSpeech
 
 default_lang = "de"
 
-arg_num = len(sys.argv) #first argument is always script name and also being counted in number of arguments.
-arg_list = str(sys.argv)
-
-if arg_num > 1:
-    arg_lang = str(sys.argv[1])
-else:
-    arg_lang = default_lang
- 
-if arg_num > 2:
-    print("Too many Arguments!")
-
 
 print("SQUIRREL SPEECH TEST INPUT ------------------------------------------------")
-if arg_num == 1: 
-	arg_lang == "de"
 
-if arg_lang != "de" and arg_lang != "de-DE" and arg_lang != "de-AT":
-    if arg_lang != "en" and arg_lang != "en-GB" and arg_lang != "en-US": 
-        if arg_lang != "nl" and arg_lang != "nl-NL":
-            print("Language not supported... (*might work anyway - see google speech language list)")
-	
-print("Used Language: " + arg_lang) 
-
-print("---------------------------------------------------------------------------") 
 
 
 def tester():
-    pub = rospy.Publisher('topic_rec_speech', String, queue_size=5)  
-    rospy.init_node('speech_recognizer_node', anonymous=True)
 
+    pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5) 
+    msg = RecognizedSpeech()
+
+    rospy.init_node('squirrel_speech_test_input', anonymous=True)
 
     while not rospy.is_shutdown():
 
         try:
             value_str = raw_input('Enter msg: ')
 
-
             value = unicode(value_str,"utf-8")    #Necessary for Python 2.7x
             #value = value.encode("utf-8")
 
             value = value.lower()
 
+            msg.recognized_speech = value
+            msg.is_recognized = True
+            msg.speaker_ID = 0
+            
+            he = std_msgs.msg.Header()
+            he.stamp = rospy.Time.now()
+            msg.header = he
+            
+
             print("\033[0;32m", end="")  #green
-            rospy.loginfo(value)
+            rospy.loginfo(msg)
             print("\033[0;39m", end="")    #default
 
-            pub.publish(value)
+            pub.publish(msg)
 
         except (KeyboardInterrupt,SystemExit):
             break

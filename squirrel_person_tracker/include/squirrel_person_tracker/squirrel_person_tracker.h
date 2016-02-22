@@ -14,6 +14,7 @@
 #include <squirrel_person_tracker_msgs/State.h>
 #include <squirrel_person_tracker_msgs/HeadHandPoints.h>
 #include <libnite2/NiTE.h>
+#include <tf/transform_listener.h>
 
 class SquirrelTracker : public nite::UserTracker::NewFrameListener
 {
@@ -24,6 +25,9 @@ public:
   bool ISWAVEDETECTED;
   bool SWITCHSKELTRACKON;
   bool ISWAVEUSERVISBLE;
+  bool static_plane_;
+  bool pub_filtered_pc_;
+  bool publish_skeleton_;
   double beginUnvis;
   int durationUnvis;
   std::string frame_id;
@@ -37,6 +41,7 @@ public:
   nite::Point3f floorPoint;
   nite::Point3f pointingHead;
   nite::Point3f pointingHand;
+  nite::Plane floor_;
 
   openni::VideoFrameRef userDepthFrame;
   openni::Status ostatus;
@@ -48,6 +53,7 @@ public:
   ros::Publisher pubState;
   ros::Publisher pubPHH;
 
+  tf::TransformListener tfListener_;
   tf::TransformBroadcaster tfBraodcaster;
   tf::Transform transform;
 
@@ -58,6 +64,8 @@ public:
   squirrel_person_tracker_msgs::State publishedState;
   squirrel_person_tracker_msgs::HeadHandPoints squirrelHeadHand;
   FloorPointer pDetector;
+  geometry_msgs::PointStamped odom_point_origin_, odom_point_ez_, optical_point_origin_, optical_point_ez_;
+
 
   SquirrelTracker(ros::NodeHandle& pnh_);
 /////////////////////////////////////////////////////////////////////
@@ -101,6 +109,8 @@ public:
   void onNewFrame(nite::UserTracker& uTracker);
 /////////////////////////////////////////////////////////////////////
   void runSquirrelTracker();
+/////////////////////////////////////////////////////////////////////
+  void stopSquirrelTracker();
 };
 
 #endif

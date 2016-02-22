@@ -5,8 +5,8 @@ project(squirrel_leg_detector)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
-  tf
   sensor_msgs
+  visualization_msgs
 )
 
 catkin_package(
@@ -15,8 +15,8 @@ catkin_package(
   CATKIN_DEPENDS 
 	roscpp 
 	roslib
-	tf
 	sensor_msgs
+  visualization_msgs
 #  DEPENDS system_lib
 )
 
