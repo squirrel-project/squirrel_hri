@@ -1,19 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(squirrel_person_tracker)
 
-# check c++11 / c++0x
-#include(CheckCXXCompilerFlag)
-#CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-#CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-#if(COMPILER_SUPPORTS_CXX11)
-#   set(CMAKE_CXX_FLAGS "-std=c++11")
-#   message(COMPILER_SUPPORTS_CXX11)
-#elseif(COMPILER_SUPPORTS_CXX0X)
-#    set(CMAKE_CXX_FLAGS "-std=c++0x")
-#    message(COMPILER_SUPPORTS_CXX0X)
-#else()
-#    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
-#endif()
+set(catkin_RUN_PACKAGES
+	libnite2
+)
+
+set(catkin_BUILD_PACKAGES
+	${catkin_RUN_PACKAGES}
+	cmake_modules
+)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -22,9 +17,9 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   pcl_ros
   squirrel_person_tracker_msgs
-  libnite2
   nodelet
   std_srvs
+  ${catkin_BUILD_PACKAGES}
 )
 
 # Find OpenNI2
@@ -43,11 +38,11 @@ catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES tracker_bonn
   CATKIN_DEPENDS 
+	${catkin_RUN_PACKAGES}
 	roscpp 
 	roslib
 	tf
 	pcl_ros
-	libnite2
 	squirrel_person_tracker_msgs	
 	nodelet
 	std_srvs
@@ -78,11 +73,26 @@ catkin_add_gtest(test_floorpointer test/squirrel_person_tracker_floor_point_test
 target_link_libraries(test_floorpointer ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} )
 add_dependencies(test_floorpointer ${catkin_EXPORTED_TARGETS})
 
-add_custom_target(
-create_nite2_link ALL
-COMMAND ${PROJECT_SOURCE_DIR}/create_nite2_link.bash ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_LIB_DESTINATION}/NiTE2
+add_custom_command(
+    TARGET squirrel_person_tracker
+    POST_BUILD
+    COMMAND ${PROJECT_SOURCE_DIR}/create_nite2_link.bash
 )
 
 # for ros hydro
 set_target_properties(squirrel_person_tracker PROPERTIES COMPILE_FLAGS -Dlinux) # for comipling with openni2 with linux 12.04
 set_target_properties(squirrel_person_tracker_nodelet PROPERTIES COMPILE_FLAGS -Dlinux)
+
+
+set(LINK_NAME $ENV{HOME}/.ros/NiTE2)
+set(NITE_DIR ${CMAKE_INSTALL_PREFIX}/${CATKIN_GLOBAL_SHARE_DESTINATION}/libnite2/lib/NiTE2/)
+install(CODE "
+		if(EXISTS ${LINK_NAME})
+			message(\"Link ${LINK_NAME} to ${NITE_DIR} already exists. Re-linking ...\")
+			execute_process(COMMAND rm ${LINK_NAME})
+			execute_process(COMMAND ECHO Test = ${LINK_NAME})
+		endif()
+		execute_process(COMMAND ln -s ${NITE_DIR} ${LINK_NAME})
+		message(\"Created link ${LINK_NAME} to ${NITE_DIR}.\")
+	"
+)
