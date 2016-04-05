@@ -10,6 +10,7 @@ from read_voc import read_voc
 
 from squirrel_speech_msgs.msg import RecognizedSpeech
 from squirrel_speech_msgs.msg import RecognizedCommand
+from squirrel_hri_msgs.msg import Expression
 
 print("SQUIRREL SPEECH PARSER ----------------------------------------------------")
 print("Deutsch") 
@@ -29,6 +30,8 @@ pub = rospy.Publisher('squirrel_speech_recognized_commands', RecognizedCommand, 
 msg = RecognizedCommand()
 
 def callback(data):
+    
+    expression_pub = rospy.Publisher('/expression', std_msgs.msg.String, queue_size=5)
 
     if(data.is_recognized):
         init_inp = data.recognized_speech
@@ -48,34 +51,55 @@ def callback(data):
                     inp = inp.replace(syn,trigger)
                     print("Replacing " + syn + " with " + trigger)
         
-
-         #Commands-------------------------------------------------------------------
+        # Commands-------------------------------------------------------------------
 
         if "hallo roboter" in inp:
             command = "hallo"
 
-        if "roboter begin" in inp:
-            command = "begin"
-
-        if "roboter ja" in inp:
+        if "ja" in inp:
             command = "yes"
 
-        if "roboter nein" in inp:
+        if "nein" in inp:
             command = "no"
 
-        if "roboter gehe" in inp:
-            command = "go"
-
-        if "roboter stop" in inp:
-            command = "stop"
+        if "start" in inp:
+            command = "start"
 
         if "programm beenden" in inp:
             command = "end_program"
 
-        if "roboter gehe vor " in inp:
-            command = "go_forwards"
+        if "gehe" in inp:
+            command = "go"
 
+        if "vor" in inp:
+            command = "forward"
 
+        if "links" in inp:
+            command = "left"
+
+        if "rechts" in inp:
+            command = "right"
+
+        if "stop" in inp:
+            command = "stop"
+
+        if "komm" in inp:
+            command = "come"
+
+        if "YELLING" in inp:
+            command = "YELLING"
+
+        if command == "":
+            # say "whaat?!"
+            expression_pub.publish(std_msgs.msg.String(Expression.WHAT))
+        elif command != "YELLING":
+            # say "ok!"
+            expression_pub.publish(std_msgs.msg.String(Expression.OK))
+
+        # HACK: Michael: this is a bad hack
+        if "YELLING" in inp:
+            command = "stop"
+                    
         msg.recognized_speech = init_inp
         msg.parsed_speech = inp
         msg.int_command = command
