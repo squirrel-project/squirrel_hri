@@ -10,7 +10,7 @@ from read_voc import read_voc
 
 from squirrel_speech_msgs.msg import RecognizedSpeech
 from squirrel_speech_msgs.msg import RecognizedCommand
-from sound_play.msg import SoundRequest
+from squirrel_hri_msgs.msg import Expression
 
 print("SQUIRREL SPEECH PARSER ----------------------------------------------------")
 print("Deutsch") 
@@ -30,12 +30,8 @@ pub = rospy.Publisher('squirrel_speech_recognized_commands', RecognizedCommand, 
 msg = RecognizedCommand()
 
 def callback(data):
-    # ok!
-    audiofile_ok = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Collect_Point_01.wav'
-    # whaat?
-    audiofile_what = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Jump_03.wav'
     
-    sound_pub = rospy.Publisher('/robotsound', SoundRequest, queue_size=5)
+    expression_pub = rospy.Publisher('/expression', std_msgs.msg.String, queue_size=5)
 
     if(data.is_recognized):
         init_inp = data.recognized_speech
@@ -94,19 +90,11 @@ def callback(data):
             command = "YELLING"
 
         if command == "":
-            # say "whaat!"
-            sound_msg = SoundRequest()
-            sound_msg.sound = -2 # play file
-            sound_msg.command = 1 # play once
-            sound_msg.arg = audiofile_what
-            sound_pub.publish(sound_msg)
+            # say "whaat?!"
+            expression_pub.publish(std_msgs.msg.String(Expression.WHAT))
         elif command != "YELLING":
             # say "ok!"
-            sound_msg = SoundRequest()
-            sound_msg.sound = -2 # play file
-            sound_msg.command = 1 # play once
-            sound_msg.arg = audiofile_ok
-            sound_pub.publish(sound_msg)
+            expression_pub.publish(std_msgs.msg.String(Expression.OK))
 
         # HACK: Michael: this is a bad hack
         if "YELLING" in inp:

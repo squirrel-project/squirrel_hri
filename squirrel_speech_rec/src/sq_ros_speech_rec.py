@@ -14,7 +14,7 @@ call(["pulseaudio", "--kill"])
 call(["jack_control", "start"])
 
 from squirrel_speech_msgs.msg import RecognizedSpeech
-from sound_play.msg import SoundRequest
+from squirrel_hri_msgs.msg import Expression
 
 
 default_lang = "de"
@@ -55,18 +55,10 @@ print(" ")
 print("---------------------------------------------------------------------------") 
 
 def recognizer():
-    # hm, yes?
-    audiofile_hm = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Pickup_00.wav'
-    # whaat?
-    audiofile_what = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Jump_03.wav'
-    # ok!
-    audiofile_ok = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Collect_Point_01.wav'
-    # uahhh!
-    audiofile_uah = '/home/mz/work/SQUIRREL/tmp/sounds/8-bit-sounds/Pickup_04.wav'
 
     pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5)
-    sound_pub = rospy.Publisher('/robotsound', SoundRequest, queue_size=5)
     msg = RecognizedSpeech()
+    expression_pub = rospy.Publisher('/expression', std_msgs.msg.String, queue_size=5)
 
     rospy.init_node('squirrel_speech_recognizer', anonymous=True)
 
@@ -84,12 +76,8 @@ def recognizer():
                 (audio, yelling) = r.listen(source)
 
                 if yelling:
-                    # say "uaaah!"
-                    sound_msg = SoundRequest()
-                    sound_msg.sound = -2 # play file
-                    sound_msg.command = 1 # play once
-                    sound_msg.arg = audiofile_uah
-                    sound_pub.publish(sound_msg)
+                    # say "oh no!"
+                    expression_pub.publish(std_msgs.msg.String(Expression.OH_NO))
 
                     print("detected YELLING")
                     msg.recognized_speech = "YELLING"
@@ -111,11 +99,7 @@ def recognizer():
 
                 else:
                     # say "hm?" "what?"
-                    sound_msg = SoundRequest()
-                    sound_msg.sound = -2 # play file
-                    sound_msg.command = 1 # play once
-                    sound_msg.arg = audiofile_hm
-                    sound_pub.publish(sound_msg)
+                    expression_pub.publish(std_msgs.msg.String(Expression.WHAT))
 
                     print("Recognition...")
  
