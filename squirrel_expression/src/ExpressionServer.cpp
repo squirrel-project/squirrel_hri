@@ -1,9 +1,8 @@
-#include "ros/ros.h"
-#include "squirrel_expression/ExpressionServer.h"
 #include <sstream>
-#include <string>
-#include "std_msgs/String.h"
-#include "std_msgs/Float64.h"
+#include <ros/ros.h>
+#include <sound_play/SoundRequest.h>
+#include <squirrel_expression/ExpressionServer.h>
+#include <squirrel_hri_msgs/Expression.h>
 
 namespace SQUIRREL_expression {
 
@@ -11,17 +10,42 @@ namespace SQUIRREL_expression {
 	ExpressionServer::ExpressionServer(ros::NodeHandle &nh) {
 
 		// setup publishers
-		head_tilt_pub = nh.advertise<std_msgs::Float64>("/tilt_controller/command", 10, true);
-
+		sound_pub = nh.advertise<std_msgs::Float64>("/robotsound", 10, true);
 		// setup service servers
 		// setup service clients
+
+		if(!nh.getParam("/squirrel_expression/sound_directory", sound_dir)) {
+			ROS_ERROR("You have to specify 'sound_directory', where all sound samples are stored.");
+			exit(1);
+		}
+		sound_files[squirrel_hri_msgs::Expression::HELLO] = "hello.wav";
+		sound_files[squirrel_hri_msgs::Expression::OK] = "ok.wav";
+		sound_files[squirrel_hri_msgs::Expression::YES] = "yes.wav";
+		sound_files[squirrel_hri_msgs::Expression::NO] = "no.wav";
+		sound_files[squirrel_hri_msgs::Expression::HERE_HERE] = "here_here.wav";
+		sound_files[squirrel_hri_msgs::Expression::OH_NO] = "oh_no.wav";
+		sound_files[squirrel_hri_msgs::Expression::YEAH] = "yeah.wav";
+		sound_files[squirrel_hri_msgs::Expression::SURPRISE] = "surpise.wav";
+		sound_files[squirrel_hri_msgs::Expression::WHAT] = "what.wav";
 	}
 	
 	void ExpressionServer::performExpression(const std_msgs::String::ConstPtr& msg) {
 
 		// perform expression
 		ROS_INFO("Expressions: make expression %s", msg->data.c_str());
-		if("ok" == msg->data) performNod();
+		std::string filename = sound_files[msg->data];
+		if(!filename.empty()) {
+			std::stringstream path;
+			path << sound_dir << "/" << "hello.wav";
+			sound_play::SoundRequest sound_msg;
+			sound_msg.sound = -2; // play file
+			sound_msg.command = 1; // play once
+			sound_msg.arg = path.str();
+			sound_pub.publish(sound_msg);
+		}
+		else {
+			ROS_ERROR("unknown expression '%s'", msg->data.c_str());
+		}
 	}
 
 	void ExpressionServer::performNod() {
