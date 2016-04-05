@@ -9,11 +9,6 @@ namespace SQUIRREL_expression {
 	/* constructor */
 	ExpressionServer::ExpressionServer(ros::NodeHandle &nh) {
 
-		// setup publishers
-		sound_pub = nh.advertise<std_msgs::Float64>("/robotsound", 10, true);
-		// setup service servers
-		// setup service clients
-
 		if(!nh.getParam("/squirrel_expression/sound_directory", sound_dir)) {
 			ROS_ERROR("You have to specify 'sound_directory', where all sound samples are stored.");
 			exit(1);
@@ -27,16 +22,21 @@ namespace SQUIRREL_expression {
 		sound_files[squirrel_hri_msgs::Expression::YEAH] = "yeah.wav";
 		sound_files[squirrel_hri_msgs::Expression::SURPRISE] = "surpise.wav";
 		sound_files[squirrel_hri_msgs::Expression::WHAT] = "what.wav";
+
+		// setup publishers
+		sound_pub = nh.advertise<sound_play::SoundRequest>("/robotsound", 10, true);
+		// setup service servers
+		// setup service clients
 	}
 	
 	void ExpressionServer::performExpression(const std_msgs::String::ConstPtr& msg) {
 
 		// perform expression
-		ROS_INFO("Expressions: make expression %s", msg->data.c_str());
+		ROS_INFO("Expressions: make expression '%s'", msg->data.c_str());
 		std::string filename = sound_files[msg->data];
 		if(!filename.empty()) {
 			std::stringstream path;
-			path << sound_dir << "/" << "hello.wav";
+			path << sound_dir << "/" << filename;
 			sound_play::SoundRequest sound_msg;
 			sound_msg.sound = -2; // play file
 			sound_msg.command = 1; // play once
