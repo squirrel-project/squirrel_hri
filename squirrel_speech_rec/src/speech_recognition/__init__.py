@@ -227,13 +227,14 @@ class Recognizer(AudioSource):
         Creates a new ``Recognizer`` instance, which represents a collection of speech recognition functionality.
         """
         self.energy_threshold = 300 # minimum audio energy to consider for recording
-        self.yell_factor = 30 # this times energy threshold defines the audio energy considered yelling
-        self.dynamic_energy_threshold = True
+        self.yell_factor = 10 # this times energy threshold defines the audio energy considered yelling
+        self.dynamic_energy_threshold = False
         self.dynamic_energy_adjustment_damping = 0.15
         self.dynamic_energy_ratio = 1.5
         self.pause_threshold = 0.8 # seconds of non-speaking audio before a phrase is considered complete
         self.phrase_threshold = 0.3 # minimum seconds of speaking audio before we consider the speaking audio a phrase - values below this are ignored (for filtering out clicks and pops)
         self.non_speaking_duration = 0.5 # seconds of non-speaking audio to keep on both sides of the recording
+        self.max_phrase_duration = 5.0 # maximum length of a phrase, longer ones typically don't make sense in our scenario
 
     def record(self, source, duration = None, offset = None):
         """
@@ -329,7 +330,7 @@ class Recognizer(AudioSource):
                 # detect whether speaking has started on audio input
                 energy = audioop.rms(buffer, source.SAMPLE_WIDTH) # energy of the audio signal
                 if energy > self.energy_threshold: break
-                print "silence energy/low thr/yell", energy, " / ", self.energy_threshold, " / ", self.yell_factor*self.energy_threshold
+                print "[silence] cur energy/low thr/yell thr: ", energy, " / ", self.energy_threshold, " / ", self.yell_factor*self.energy_threshold
 
                 # dynamically adjust the energy threshold using assymmetric weighted average
                 if self.dynamic_energy_threshold:
@@ -339,9 +340,11 @@ class Recognizer(AudioSource):
 
             # read audio input until the phrase ends
             pause_count, phrase_count = 0, 0
+            phrase_duration = 0
             yell = False
             while True:
                 elapsed_time += seconds_per_buffer
+                phrase_duration += seconds_per_buffer
 
                 buffer = source.stream.read(source.CHUNK)
                 if len(buffer) == 0: break # reached end of the stream
@@ -354,7 +357,10 @@ class Recognizer(AudioSource):
                     print "YELLING"
                     yell = True
                     break;
-                print "utterance energy/low thr/yell", energy, " / ", self.energy_threshold, " / ", self.yell_factor*self.energy_threshold
+                if phrase_duration > self.max_phrase_duration:
+                    print "long utterance, cutting off"
+                    break;
+                print "[utterance] cur energy/low thr/yell thr: ", energy, " / ", self.energy_threshold, " / ", self.yell_factor*self.energy_threshold
                 # check if speaking has stopped for longer than the pause threshold on the audio input
                 if energy > self.energy_threshold:
                     pause_count = 0
@@ -363,7 +369,7 @@ class Recognizer(AudioSource):
                 if pause_count > pause_buffer_count: # end of the phrase
                     break
 
-            # if yelling occured we stop immediately
+            # if yelling occured we stop immediately, irrespective of the phrase_count
             if yell: break;
 
             # check how long the detected phrase is, and retry listening if the phrase is too short
