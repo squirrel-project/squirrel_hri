@@ -13,13 +13,13 @@ namespace SQUIRREL_expression {
 			ROS_ERROR("You have to specify 'sound_directory', where all sound samples are stored.");
 			exit(1);
 		}
-		sound_files[squirrel_hri_msgs::Expression::HELLO] = "hello.wav";
+		sound_files[squirrel_hri_msgs::Expression::HELLO] = "hallo.wav";
 		sound_files[squirrel_hri_msgs::Expression::OK] = "ok.wav";
 		sound_files[squirrel_hri_msgs::Expression::YES] = "yes.wav";
 		sound_files[squirrel_hri_msgs::Expression::NO] = "no.wav";
-		sound_files[squirrel_hri_msgs::Expression::HERE_HERE] = "here_here.wav";
-		sound_files[squirrel_hri_msgs::Expression::OH_NO] = "oh_no.wav";
-		sound_files[squirrel_hri_msgs::Expression::YEAH] = "yeah.wav";
+		sound_files[squirrel_hri_msgs::Expression::HERE_HERE] = "herehere.wav";
+		sound_files[squirrel_hri_msgs::Expression::OH_NO] = "nono.wav";
+		sound_files[squirrel_hri_msgs::Expression::YEAH] = "ohyea.wav";
 		sound_files[squirrel_hri_msgs::Expression::SURPRISE] = "surpise.wav";
 		sound_files[squirrel_hri_msgs::Expression::WHAT] = "what.wav";
 
