@@ -1,0 +1,5 @@
+<launch>
+  <param name="threshold" type="float" value="0.5"/>
+  <param name="pose" [0.0, 0.0]/>
+  <node pkg="squirrel_leg_detector" type="legs_close_to_pose" name="squirrel_legs_close_to_pose" output="screen" respawn="true" />
+</launch>
