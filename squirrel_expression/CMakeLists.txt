@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   tf
+  squirrel_hri_msgs
+  sound_play
 )
 
 ###################################
@@ -19,11 +21,13 @@ catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS 
   geometry_msgs
-	roscpp 
-	roslib
+  roscpp 
+  roslib
   sensor_msgs
-	std_msgs
-	tf
+  std_msgs
+  tf
+  squirrel_hri_msgs
+  sound_play
 )
 
 ###########
