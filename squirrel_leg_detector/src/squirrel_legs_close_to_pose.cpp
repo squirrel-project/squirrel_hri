@@ -12,7 +12,7 @@
 
 #include <cmath>   
 
-#include <std_msgs/String.h>
+#include <std_msgs/Bool.h>
 #include <squirrel_leg_detector/squirrel_legs_close_to_pose.h>
 #include <geometry_msgs/Pose.h>
 #include <people_msgs/People.h>
@@ -39,12 +39,13 @@ void LegProximity::initialise(int argc, char **argv)
   target_pose_.position.y = points_list[1];
 
   peopleSub_ = nh_.subscribe("/leg_persons", 1, &LegProximity::legCallback, this);
-  proximityPub_ = nh_.advertise<std_msgs::String>("/person_close_to_target_zone", 0);;
+  proximityPub_ = nh_.advertise<std_msgs::Bool>("/person_close_to_target_zone", 0);;
 }
 
 
 void LegProximity::legCallback(const people_msgs::People::ConstPtr& peopleMsg)
 {
+  std_msgs::Bool data;
   std::cout << peopleMsg->header << std::endl;
   for(unsigned i=0; i < peopleMsg->people.size(); i++)
   {
@@ -56,11 +57,14 @@ void LegProximity::legCallback(const people_msgs::People::ConstPtr& peopleMsg)
        ROS_INFO("target zone is at x: %f, y: %f", target_pose_.position.x, target_pose_.position.y);
        std::cout << "target zone: x: " << target_pose_.position.x << ", y: " << target_pose_.position.y << std::endl;
        // Now publish this information
-       // TODO: do publish
+       data.data = true;
+       proximityPub_.publish(data);
      }
     else
     {
       ROS_INFO("squirrel_legs_close_to_pose_node: No person near target zone");
+       data.data = false;
+       proximityPub_.publish(data);
     } 
   }  
 }

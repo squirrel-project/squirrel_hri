@@ -1,4 +1,5 @@
 <launch>
   <param name="model_file" type="str" value="$(find squirrel_leg_detector)/data/ppl2dmdl.C00_stumpboost.param_txt" />
   <node pkg="squirrel_leg_detector" type="leg_detector" name="squirrel_leg_detector" output="screen" respawn="false" args="-v 3"/>
+  <include file="$(find squirrel_leg_detector)/launch/close_to_pose.launch" />
 </launch>
