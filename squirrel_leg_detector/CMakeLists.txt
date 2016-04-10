@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   sensor_msgs
   visualization_msgs
+  people_msgs
 )
 
 catkin_package(
@@ -16,6 +17,7 @@ catkin_package(
 	roscpp 
 	roslib
 	sensor_msgs
+	people_msgs
   visualization_msgs
 #  DEPENDS system_lib
 )
