@@ -10,6 +10,9 @@
 #define LEG_PROXIMITY_H
 
 #include <ros/ros.h>
+#include <std_msgs/String.h>
+#include <geometry_msgs/Pose.h>
+#include <people_msgs/People.h>
 
 class LegProximity
 {
@@ -20,11 +23,13 @@ public:
   void run();
 
 private:
-  people2D_engine *ppl2D_;
   ros::NodeHandle nh_;
-  ros::Subsciber peoplePub_;
+  ros::Subscriber peopleSub_;
+  ros::Publisher proximityPub_;
+  geometry_msgs::Pose target_pose_;
+  double threshold_;
 
-  void laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg);
+  void legCallback(const people_msgs::People::ConstPtr& peopleMsg);
 };
 
 #endif

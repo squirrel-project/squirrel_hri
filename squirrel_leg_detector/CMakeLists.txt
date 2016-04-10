@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   sensor_msgs
   visualization_msgs
+  people_msgs
 )
 
 catkin_package(
@@ -17,6 +18,7 @@ catkin_package(
 	roslib
 	sensor_msgs
   visualization_msgs
+  people_msgs
 #  DEPENDS system_lib
 )
 
@@ -29,6 +31,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-#add_executable(squirrel_legs_close_to_pose src/squirrel_legs_close_to_pose.cpp)
+add_executable(squirrel_legs_close_to_pose src/squirrel_legs_close_to_pose.cpp)
 add_executable(leg_detector src/leg_detector.cpp src/lfeatures.cpp src/lgeometry.cpp src/people2D_engine.cpp)
 target_link_libraries(leg_detector ${catkin_LIBRARIES} gsl gslcblas)
+target_link_libraries(squirrel_legs_close_to_pose ${catkin_LIBRARIES} )
+
