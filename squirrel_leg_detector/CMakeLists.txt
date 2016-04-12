@@ -17,6 +17,7 @@ catkin_package(
 	roscpp 
 	roslib
 	sensor_msgs
+	people_msgs
   visualization_msgs
   people_msgs
 #  DEPENDS system_lib
