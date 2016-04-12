@@ -11,8 +11,9 @@
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
-#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PointStamped.h>
 #include <people_msgs/People.h>
+#include <tf/transform_listener.h>
 
 class LegProximity
 {
@@ -26,7 +27,8 @@ private:
   ros::NodeHandle nh_;
   ros::Subscriber peopleSub_;
   ros::Publisher proximityPub_;
-  geometry_msgs::Pose target_pose_;
+  tf::TransformListener listener;
+  geometry_msgs::PointStamped target_point_;
   double threshold_;
 
   void legCallback(const people_msgs::People::ConstPtr& peopleMsg);
