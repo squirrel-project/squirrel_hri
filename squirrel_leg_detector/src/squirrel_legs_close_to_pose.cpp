@@ -3,48 +3,78 @@
  *
  * Detects persons as pairs of legs in 2D laser range data.
  *
- * @author Markus Bajones bajones@acin.tuwien.ac.at
+ * @author Markus "Bajo" Bajones bajones@acin.tuwien.ac.at
  * @date April 2016
  */
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <ios>
-#include <std_msgs/String.h>
-#include <squirrel_leg_detector/leg_detector.h>
+
+#include <cmath>   
+
+#include <std_msgs/Bool.h>
+#include <squirrel_leg_detector/squirrel_legs_close_to_pose.h>
+#include <geometry_msgs/Pose.h>
 #include <people_msgs/People.h>
-#include <people_msgs/Person.h>
 
 LegProximity::LegProximity()
 {
-  ppl2D_ = 0;
+  target_pose_;
+  target_pose_.position.x = 0.0;
+  target_pose_.position.y = 0.0;
 }
 
 LegProximity::~LegProximity()
 {
-  delete ppl2D_;
 }
 
 void LegProximity::initialise(int argc, char **argv)
 {
-  sw_param_str sw_param;
+  nh_.param("threshold", threshold_, 0.3);
 
-  // load trained person model
-  nh_.param<std::string>("model_file", sw_param.modelfile, "MODEL_FILE_NOT_SET");
-  // segmentation distance, default 0.2m
-  nh_.param("segmentation_distance", sw_param.dseg, 0.2);
-  // feature set mix, default 0:all
-  nh_.param("feature_mix", sw_param.featuremix, 0);
+  std::vector<double> points_list;
+  double sum = 0;
+  nh_.getParam("target_pose", points_list);
+  target_pose_.position.x = points_list[0];
+  target_pose_.position.y = points_list[1];
 
-  ppl2D_ = new people2D_engine(sw_param);
-  ppl2D_->set_featureset();
+  peopleSub_ = nh_.subscribe("/leg_persons", 1, &LegProximity::legCallback, this);
+  proximityPub_ = nh_.advertise<std_msgs::Bool>("/person_close_to_target_zone", 0);;
+}
 
-  std::vector<double> my_double_list;
-double sum = 0;
-nh.getParam("my_double_list", my_double_list);
-for(unsigned i=0; i < my_double_list.size(); i++) {
-  sum += my_double_list[i];
+
+void LegProximity::legCallback(const people_msgs::People::ConstPtr& peopleMsg)
+{
+  std_msgs::Bool data;
+  std::cout << peopleMsg->header << std::endl;
+  for(unsigned i=0; i < peopleMsg->people.size(); i++)
+  {
+    // check for every detected person if they are within the threshold of the target pose
+    if (std::abs(peopleMsg->people[i].position.x - target_pose_.position.x ) < threshold_  &&
+       std::abs(peopleMsg->people[i].position.y - target_pose_.position.y ) < threshold_ ) 
+     {
+       ROS_INFO("squirrel_legs_close_to_pose_node: Somebody is close to the target zone");
+       ROS_INFO("target zone is at x: %f, y: %f", target_pose_.position.x, target_pose_.position.y);
+       std::cout << "target zone: x: " << target_pose_.position.x << ", y: " << target_pose_.position.y << std::endl;
+       // Now publish this information
+       data.data = true;
+       proximityPub_.publish(data);
+     }
+    else
+    {
+      ROS_INFO("squirrel_legs_close_to_pose_node: No person near target zone");
+       data.data = false;
+       proximityPub_.publish(data);
+    } 
+  }  
+}
+
+
+void LegProximity::run()
+{
+  ros::spin();
+}
+
 
 int main(int argc, char ** argv)
 {
