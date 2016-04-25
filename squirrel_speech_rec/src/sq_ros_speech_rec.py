@@ -9,58 +9,41 @@ import std_msgs.msg
 import sys
 import pyaudio
 
-from subprocess import call
-call(["pulseaudio", "--kill"])
-call(["jack_control", "start"])
-
 from squirrel_speech_msgs.msg import RecognizedSpeech
 from squirrel_hri_msgs.msg import Expression
 
 
-default_lang = "de"
-
-arg_num = len(sys.argv)
-arg_list = str(sys.argv)
-
-if arg_num > 1:
-    arg_lang = str(sys.argv[1])
-else:
-    arg_lang = default_lang
-
-if arg_num > 2:
-    dev_id = int(sys.argv[2])
-else:
-    dev_id = int(0)
- 
-if arg_num > 3:
-    print("Too many Arguments!")
-
-r = sr.Recognizer()
-#m = sr.Microphone(0)
-m = sr.Microphone(int(dev_id))
-
-
-print("SQUIRREL SPEECH RECOGNITION -----------------------------------------------")
-if arg_num == 1: 
-	arg_lang = "de"
-
-if arg_lang != "de" and arg_lang != "de-DE":
-    if arg_lang != "en" and arg_lang != "en-GB" and arg_lang != "en-US": 
-        if arg_lang != "nl" and arg_lang != "nl-NL":
-            print("Language not supported... (*might work anyway - see google speech language list)")
-	
-print("Used Language: " + arg_lang) 
-print("Google API") 
-print(" ") 
-print("---------------------------------------------------------------------------") 
-
 def recognizer():
+
+    print("SQUIRREL SPEECH RECOGNITION -----------------------------------------------")
+
+    from subprocess import call
+    call(["pulseaudio", "--kill"])
+    call(["jack_control", "start"])
 
     pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5)
     msg = RecognizedSpeech()
     expression_pub = rospy.Publisher('/expression', std_msgs.msg.String, queue_size=5)
 
-    rospy.init_node('squirrel_speech_recognizer', anonymous=True)
+    rospy.init_node('squirrel_speech_recognizer', anonymous=False)
+
+    arg_lang = rospy.get_param('~language', 'de')
+    dev_id = rospy.get_param('~device_id', 1)
+    speaker_id = rospy.get_param('~speaker_id', 1)
+
+    if arg_lang != "de" and arg_lang != "de-DE":
+        if arg_lang != "en" and arg_lang != "en-GB" and arg_lang != "en-US": 
+            if arg_lang != "nl" and arg_lang != "nl-NL":
+                print("Language not supported... (*might work anyway - see google speech language list)")
+
+    print("Used Language: " + arg_lang) 
+    print("Google API") 
+    print("audio device ID: ", dev_id)
+    print(" ") 
+    print("---------------------------------------------------------------------------") 
+
+    r = sr.Recognizer()
+    m = sr.Microphone(int(dev_id))
 
     utterance_cnt = 1
     with m as source:
@@ -82,7 +65,7 @@ def recognizer():
                     print("detected YELLING")
                     msg.recognized_speech = "YELLING"
                     msg.is_recognized = True
-                    msg.speaker_ID = 0
+                    msg.speaker_ID = speaker_id
                     he = std_msgs.msg.Header()
                     he.stamp = rospy.Time.now()
                     msg.header = he
@@ -109,7 +92,7 @@ def recognizer():
  
                     msg.recognized_speech = value
                     msg.is_recognized = True
-                    msg.speaker_ID = 0
+                    msg.speaker_ID = speaker_id
                     he = std_msgs.msg.Header()
                     he.stamp = rospy.Time.now()
                     msg.header = he
@@ -133,7 +116,7 @@ def recognizer():
             except sr.UnknownValueError:
                 msg.recognized_speech = ""
                 msg.is_recognized = False
-                msg.speaker_ID = 0
+                msg.speaker_ID = speaker_id
                 he = std_msgs.msg.Header()
                 he.stamp = rospy.Time.now()
                 msg.header = he

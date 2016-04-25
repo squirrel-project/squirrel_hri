@@ -22,6 +22,8 @@
 #include <std_msgs/String.h>
 #include <visualization_msgs/Marker.h>
 #include <squirrel_leg_detector/leg_detector.h>
+#include <people_msgs/People.h>
+#include <people_msgs/Person.h>
 
 LegDetector::LegDetector()
 {
@@ -52,8 +54,11 @@ void LegDetector::initialise(int argc, char **argv)
     exit(1);
   }
   laserSub_ = nh_.subscribe("/scan", 1, &LegDetector::laserCallback, this);
-  markerPub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 0);
+  markerPub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 0, true);
   personPub_ = nh_.advertise<std_msgs::String>("laser_person", 0);
+  peoplePub_ = nh_.advertise<people_msgs::People>("/leg_persons", 0);
+  peopleFilteredPub_ = nh_.advertise<people_msgs::People>("/leg_persons_filtered", 0);
+
 }
 
 void LegDetector::run()
@@ -87,21 +92,34 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg
     std_msgs::String pos;
     std::stringstream poss;
     LSL_Point3D_str center;
-    people[0].compute_cog(&center);
-    poss << center.x << " " << center.y;
+    std::vector<LSL_Point3D_str> center_points;
+    people_msgs::Person person;
+    people_msgs::People people_vector;
+    
+    for(size_t i = 0; i < people.size(); i++)
+    {
+      std::stringstream personss;
+      LSL_Point3D_str center;
+      people[i].compute_cog(&center);
+      center_points.push_back(center);
+
+      ROS_INFO("person %ld at %.2f(x) %.2f(y)", i, center.x, center.y);
+      visualisePerson(people[i]);
+      personss << "id: " << i;
+      people_vector.header.stamp = ros::Time::now();
+      people_vector.header.frame_id = "hokuyo_link";
+      person.name = personss.str();
+      person.position.x = center.x;
+      person.position.y = center.y;
+      person.position.z = center.z;
+      people_vector.people.push_back(person);
+    }
+    peoplePub_.publish(people_vector);
+    ROS_INFO("--");
+    poss << center_points[0].x << " " << center_points[0].y;
     pos.data = poss.str();
     personPub_.publish(pos);
   }
-  for(size_t i = 0; i < people.size(); i++)
-  {
-    LSL_Point3D_str center;
-    people[i].compute_cog(&center);
-    ROS_INFO("person at %.2f %.2f", center.x, center.y);
-  }
-  if(people.size() > 0)
-    ROS_INFO("--");
-  for(size_t i = 0; i < people.size(); i++)
-    visualisePerson(people[i]);
 }
 
 // HACK
@@ -118,7 +136,7 @@ void LegDetector::visualiseScan(const sensor_msgs::LaserScan::ConstPtr& laserMsg
 
 	  visualization_msgs::Marker marker;
 	  marker.header.frame_id = "hokuyo_link";
-	  marker.header.stamp = ros::Time();
+	  marker.header.stamp = ros::Time::now();
 	  marker.ns = "laserdot";
 	  marker.id = i;
 	  marker.lifetime = ros::Duration(1.);
@@ -150,8 +168,9 @@ void LegDetector::visualisePerson(LSL_Point3D_container &person)
   person.compute_cog(&center); 
 
   visualization_msgs::Marker marker;
+  ROS_INFO("Publish Marker");
   marker.header.frame_id = "hokuyo_link";
-  marker.header.stamp = ros::Time();
+  marker.header.stamp = ros::Time::now();
   marker.ns = "person";
   marker.id = cnt;
   marker.lifetime = ros::Duration(1.);
