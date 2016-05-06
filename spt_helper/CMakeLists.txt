@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(spt_helper)
-set(CMAKE_BUILD_TYPE Debug)
 
 # check c++11 / c++0x
 #include(CheckCXXCompilerFlag)
