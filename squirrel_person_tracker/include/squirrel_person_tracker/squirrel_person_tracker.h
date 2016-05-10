@@ -13,6 +13,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include <squirrel_person_tracker_msgs/State.h>
 #include <squirrel_person_tracker_msgs/HeadHandPoints.h>
+#include <squirrel_person_tracker_msgs/SkeletonVector.h>
 #include <libnite2/NiTE.h>
 #include <tf/transform_listener.h>
 
@@ -28,6 +29,7 @@ public:
   bool static_plane_;
   bool pub_filtered_pc_;
   bool publish_skeleton_;
+  bool track_wave_user_;
   double beginUnvis;
   int durationUnvis;
   std::string frame_id;
@@ -52,6 +54,7 @@ public:
   ros::Publisher pubPP;
   ros::Publisher pubState;
   ros::Publisher pubPHH;
+  ros::Publisher pubSkelVec;
 
   tf::TransformListener tfListener_;
   tf::TransformBroadcaster tfBraodcaster;
@@ -90,6 +93,10 @@ public:
   void publishTransformOfJoint(const nite::UserId& userID, const nite::SkeletonJoint& joint,
                                const std::string& frame_id, const std::string& child_frame_id,
                                const ros::Time& timestamp);
+
+  squirrel_person_tracker_msgs::SkeletonJoint transformOfJoint(const nite::UserId& userID, const nite::SkeletonJoint& joint,
+                        const std::string& frame_id, const std::string& child_frame_id,
+                        const ros::Time& timestamp);
 /////////////////////////////////////////////////////////////////////////
   void publishPoseStampedArrayOfUsers(const nite::Point3f& point, const ros::Time& timestamp);
 /////////////////////////////////////////////////////////////////////////
@@ -111,6 +118,8 @@ public:
   void runSquirrelTracker();
 /////////////////////////////////////////////////////////////////////
   void stopSquirrelTracker();
+/////////////////////////////////////////////////////////////////////
+  void publishUsersData(const nite::Array<nite::UserData>& users, const ros::Time& timestamp);
 };
 
 #endif

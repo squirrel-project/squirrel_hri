@@ -27,6 +27,12 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
     ROS_INFO("pub_filtered_pc is not set. Default value: true");
   }
 
+  if (!pnh_.getParam("track_wave_user", track_wave_user_))
+  {
+    track_wave_user_ = true;
+    ROS_INFO("pub_filtered_pc is not set. Default value: true");
+  }
+
   ostatus = openni::STATUS_OK;
   nstatus = nite::STATUS_OK;
   if (pub_filtered_pc_)
@@ -38,6 +44,7 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
   pubPSA = pnh_.advertise<geometry_msgs::PoseArray>("detected_pose", 10);
   pubState = pnh_.advertise<squirrel_person_tracker_msgs::State>("tracking_state", 10);
   pubPHH = pnh_.advertise<squirrel_person_tracker_msgs::HeadHandPoints>("head_hand_points", 10);
+  pubSkelVec = pnh_.advertise<squirrel_person_tracker_msgs::SkeletonVector>("user_information", 10);
   wavingUserID = 0;
   ISWAVEDETECTED = false;
   SWITCHSKELTRACKON = true;
@@ -390,13 +397,10 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
 {
   nstatus = uTracker.readFrame(&userFrame);
   ros::Time timestamp = ros::Time::now();
-  usersMap = userFrame.getUserMap();
 
   if (!static_plane_)
   {
     floor_ = userFrame.getFloor();
-//    ROS_INFO("ORIGIN: X %f; Y %f; Z %f;  NORMAL: X %f; Y %f; Z %f;", floor_.point.x, floor_.point.y, floor_.point.z,
-//             floor_.normal.x, floor_.normal.y, floor_.normal.z);
   }
   else
   {
@@ -434,103 +438,108 @@ void SquirrelTracker::onNewFrame(nite::UserTracker& uTracker)
   }
 
   const nite::Array<nite::UserData>& users = userFrame.getUsers();
-
-  if (!ISWAVEDETECTED)
+  if (track_wave_user_)
   {
-    int j = 0;
-    for (int i = 0; i < users.getSize(); ++i)
-    {
-      if (!users[i].isVisible())
-      {
-        ++j;
-      }
-    }
-    if (j > 0)
-      publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
-  }
-  for (int i = 0; i < users.getSize(); ++i)
-  {
-    nite::UserId userID = users[i].getId();
-    if (users[i].isVisible())
-    {
-      if (publishedState.state == squirrel_person_tracker_msgs::State::NO_USER)
-      {
-        publishedState.state = squirrel_person_tracker_msgs::State::VISIBLE_USER;
-      }
-      publishPoseStampedArrayOfUsers(users[i].getCenterOfMass(), timestamp);
-//      publishTransformOfPoint(userID, users[i].getCenterOfMass(), frame_id, "detected_pose", timestamp);
-    }
-
-    if (ISWAVEDETECTED && SWITCHSKELTRACKON)
-    {
-      uTracker.startSkeletonTracking(wavingUserID);
-      SWITCHSKELTRACKON = false;
-    }
     if (!ISWAVEDETECTED)
     {
-      if (detectWavingUser(userID))
+      int j = 0;
+      for (int i = 0; i < users.getSize(); ++i)
       {
-        publishedState.state = squirrel_person_tracker_msgs::State::WAVE_USER;
-        ISWAVEDETECTED = true;
-        ISWAVEUSERVISBLE = true;
-        hTracker.stopGestureDetection(nite::GESTURE_WAVE);
+        if (!users[i].isVisible())
+        {
+          ++j;
+        }
       }
+      if (j > 0)
+        publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
     }
-    if (ISWAVEDETECTED && wavingUserID == userID)
+    for (int i = 0; i < users.getSize(); ++i)
     {
-      nite::Skeleton userSkeleton = users[i].getSkeleton();
-      if (userSkeleton.getState() == nite::SKELETON_TRACKED)
+      nite::UserId userID = users[i].getId();
+      if (users[i].isVisible())
       {
-        if (publishedState.state != squirrel_person_tracker_msgs::State::POINT_USER)
+        if (publishedState.state == squirrel_person_tracker_msgs::State::NO_USER)
         {
-          publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
+          publishedState.state = squirrel_person_tracker_msgs::State::VISIBLE_USER;
         }
-        if (publish_skeleton_)
+        publishPoseStampedArrayOfUsers(users[i].getCenterOfMass(), timestamp);
+//      publishTransformOfPoint(userID, users[i].getCenterOfMass(), frame_id, "detected_pose", timestamp);
+      }
+
+      if (ISWAVEDETECTED && SWITCHSKELTRACKON)
+      {
+        uTracker.startSkeletonTracking(wavingUserID);
+        SWITCHSKELTRACKON = false;
+      }
+      if (!ISWAVEDETECTED)
+      {
+        if (detectWavingUser(userID))
         {
-          publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
+          publishedState.state = squirrel_person_tracker_msgs::State::WAVE_USER;
+          ISWAVEDETECTED = true;
+          ISWAVEUSERVISBLE = true;
+          hTracker.stopGestureDetection(nite::GESTURE_WAVE);
         }
-        if (pDetector.isFloorPoint(userSkeleton, floor_, floorPoint, pointingHead, pointingHand))
+      }
+      if (ISWAVEDETECTED && wavingUserID == userID)
+      {
+        nite::Skeleton userSkeleton = users[i].getSkeleton();
+        if (userSkeleton.getState() == nite::SKELETON_TRACKED)
         {
-          publishedState.state = squirrel_person_tracker_msgs::State::POINT_USER;
-          publishPointingPoint(floorPoint, timestamp);
-          publishHeadHandMsgs(pointingHead, pointingHand, timestamp);
+          if (publishedState.state != squirrel_person_tracker_msgs::State::POINT_USER)
+          {
+            publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
+          }
+          if (publish_skeleton_)
+          {
+            publishSkeleton(wavingUserID, userSkeleton, frame_id, timestamp);
+          }
+          if (pDetector.isFloorPoint(userSkeleton, floor_, floorPoint, pointingHead, pointingHand))
+          {
+            publishedState.state = squirrel_person_tracker_msgs::State::POINT_USER;
+            publishPointingPoint(floorPoint, timestamp);
+            publishHeadHandMsgs(pointingHead, pointingHand, timestamp);
 //          publishTransformOfPoint(wavingUserID, point, frame_id, "PointingPoint", timestamp);
+          }
+          else
+          {
+            publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
+          }
         }
         else
         {
-          publishedState.state = squirrel_person_tracker_msgs::State::SKEL_TRACK_USER;
-        }
-      }
-      else
-      {
-        ROS_INFO("SKELETON STATE: %d", userSkeleton.getState());
+          ROS_INFO("SKELETON STATE: %d", userSkeleton.getState());
 //        uTracker.stopSkeletonTracking(wavingUserID);
 //        uTracker.startSkeletonTracking(wavingUserID);
+          SWITCHSKELTRACKON = true;
+        }
+      }
+      if (!users[i].isVisible() && wavingUserID == userID && ISWAVEUSERVISBLE)
+      {
+        ISWAVEUSERVISBLE = false;
+        beginUnvis = timestamp.toSec();
+      }
+      if (users[i].isVisible() && wavingUserID == userID && ISWAVEDETECTED)
+      {
+        ISWAVEUSERVISBLE = true;
+      }
+      if (!ISWAVEUSERVISBLE && wavingUserID == userID && (timestamp.toSec() - beginUnvis) > durationUnvis)
+      {
+        publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
+        ISWAVEDETECTED = false;
+        hTracker.startGestureDetection(nite::GESTURE_WAVE);
         SWITCHSKELTRACKON = true;
+        uTracker.stopSkeletonTracking(wavingUserID);
+        wavingUserID = 0;
       }
     }
-    if (!users[i].isVisible() && wavingUserID == userID && ISWAVEUSERVISBLE)
-    {
-      ISWAVEUSERVISBLE = false;
-      beginUnvis = timestamp.toSec();
-    }
-    if (users[i].isVisible() && wavingUserID == userID && ISWAVEDETECTED)
-    {
-      ISWAVEUSERVISBLE = true;
-    }
-    if (!ISWAVEUSERVISBLE && wavingUserID == userID && (timestamp.toSec() - beginUnvis) > durationUnvis)
-    {
-      publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
-      ISWAVEDETECTED = false;
-      hTracker.startGestureDetection(nite::GESTURE_WAVE);
-      SWITCHSKELTRACKON = true;
-      uTracker.stopSkeletonTracking(wavingUserID);
-      wavingUserID = 0;
-    }
+    /////PoseArrayTest
+    pubState.publish(publishedState);
+    detectedPoseArray.poses.clear();
+
   }
-  /////PoseArrayTest
-  pubState.publish(publishedState);
-  detectedPoseArray.poses.clear();
+  publishUsersData(users, timestamp);
+
   userFrame.release();
 }
 /////////////////////////////////////////////////////////////////////
@@ -549,4 +558,110 @@ void SquirrelTracker::stopSquirrelTracker()
   publishedState.state = squirrel_person_tracker_msgs::State::NO_USER;
   hTracker.stopGestureDetection(nite::GESTURE_WAVE);
   uTracker.removeNewFrameListener(this);
+}
+
+void SquirrelTracker::publishUsersData(const nite::Array<nite::UserData>& users, const ros::Time& timestamp)
+{
+  squirrel_person_tracker_msgs::SkeletonVector skel_vec;
+  std_msgs::Header header;
+  header.frame_id = frame_id;
+  header.stamp = timestamp;
+  skel_vec.header = header;
+  for (int i = 0; i < users.getSize(); ++i)
+  {
+    nite::UserId userID = users[i].getId();
+    if (users[i].isLost())
+    {
+      uTracker.stopSkeletonTracking(userID);
+    }
+    else if (users[i].isVisible())
+    {
+      if (users[i].isNew())
+      {
+        uTracker.startSkeletonTracking(userID);
+      }
+      squirrel_person_tracker_msgs::Skeleton skeleton;
+      nite::Skeleton user_skel = users[i].getSkeleton();
+      if (user_skel.getState() == nite::SKELETON_TRACKED)
+      {
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_HEAD), frame_id, "head", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_NECK), frame_id, "neck", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_TORSO), frame_id, "torso", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_LEFT_SHOULDER), frame_id, "left_shoulder",
+                             timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_LEFT_ELBOW), frame_id, "left_elbow", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_LEFT_HAND), frame_id, "left_hand", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_RIGHT_SHOULDER), frame_id, "right_shoulder",
+                             timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_RIGHT_ELBOW), frame_id, "right_elbow", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_RIGHT_HAND), frame_id, "right_hand", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_LEFT_HIP), frame_id, "left_hip", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_LEFT_KNEE), frame_id, "left_knee", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_LEFT_FOOT), frame_id, "left_foot", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_RIGHT_HIP), frame_id, "right_hip", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_RIGHT_KNEE), frame_id, "right_knee", timestamp));
+        skeleton.skeleton_joints.push_back(
+            transformOfJoint(userID, user_skel.getJoint(nite::JOINT_RIGHT_FOOT), frame_id, "right_foot", timestamp));
+        skeleton.user_id = userID;
+        if (pDetector.isFloorPoint(user_skel, floor_, floorPoint, pointingHead, pointingHand))
+        {
+          skeleton.isPointing = true;
+          skeleton.pointingPoint.header = header;
+          skeleton.pointingPoint.point.x = floorPoint.x / 1000;
+          skeleton.pointingPoint.point.y = -floorPoint.y / 1000;
+          skeleton.pointingPoint.point.z = floorPoint.z / 1000;
+
+        }
+        else
+        {
+          skeleton.isPointing = false;
+          skeleton.pointingPoint.header = header;
+          skeleton.pointingPoint.point.x = 0;
+          skeleton.pointingPoint.point.y = 0;
+          skeleton.pointingPoint.point.z = 0;
+        }
+      }
+      skel_vec.skeleton_vector.push_back(skeleton);
+    }
+  }
+  pubSkelVec.publish(skel_vec);
+}
+squirrel_person_tracker_msgs::SkeletonJoint SquirrelTracker::transformOfJoint(const nite::UserId& userID,
+                                                                              const nite::SkeletonJoint& joint,
+                                                                              const std::string& frame_id,
+                                                                              const std::string& child_frame_id,
+                                                                              const ros::Time& timestamp)
+{
+  double x = joint.getPosition().x / 1000;
+  double y = -joint.getPosition().y / 1000;
+  double z = joint.getPosition().z / 1000;
+  squirrel_person_tracker_msgs::SkeletonJoint joint_msg;
+  geometry_msgs::TransformStamped gtransform;
+  gtransform.transform.translation.x = x;
+  gtransform.transform.translation.y = y;
+  gtransform.transform.translation.z = z;
+
+//  char child_frame_no[128];
+//  std::snprintf(child_frame_no, sizeof(child_frame_no), "%s", child_frame_id.c_str());
+  gtransform.child_frame_id = child_frame_id;
+  gtransform.header.stamp = timestamp;
+  gtransform.header.frame_id = frame_id;
+  joint_msg.joint = gtransform;
+  joint_msg.position_confidence = joint.getPositionConfidence();
+
+  return joint_msg;
 }
