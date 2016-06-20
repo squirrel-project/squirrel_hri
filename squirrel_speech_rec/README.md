@@ -84,7 +84,8 @@ Play the file
 
 ## 3. Software architecture <a id="3--software-architecture"/> 
 
-**node name**: ![**squirrel_speech_rec**](https://github.com/squirrel-project//squirrel_recommender/master/software_architecture/sq_speech.PNG "Architecture")
+**node name**: ![**squirrel_speech_rec**](https://github.com/florianvoigtlaender/squirrel_hri/blob/indigo_dev/squirrel_speech_rec/software_architecture/sq_speech.PNG "Architecture")
+
 
 
 ## 4. Troubleshooting <a id="4--troubleshooting"/>
