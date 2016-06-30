@@ -29,7 +29,7 @@ def plot_ly(times, level_1, level_2, level_3, name, y_name):
               yaxis = dict(title = y_name),
               )
 	fig = dict(data=m_data, layout = m_layout)
-	plotly.offline.plot(fig, filename = 'basic-line.html')
+	plotly.offline.plot(fig, filename = (name + '.html'))
 	
 
 if len(sys.argv) != 6:
@@ -77,4 +77,4 @@ for line in predictions_file_2:
 	times_2.append(time)
 	time = time + window_size
 print "ready to plot"
-plot_ly(times_0, levels_0, levels_1, levels_2, "Your conversations look like", name)
+plot_ly(times_0, levels_0, levels_1, levels_2, name, name)

@@ -1,0 +1,1 @@
+./svm_rank_ssl_live_1.sh & ./svm_rank_ssl_live_2.sh & ./svm_rank_ssl_live_3.sh 
