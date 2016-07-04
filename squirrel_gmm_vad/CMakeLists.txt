@@ -17,11 +17,12 @@ LINK_DIRECTORIES(/usr/lib)
 SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 
-SET(CMAKE_CXX_FLAGS "-o3 -w -g -stdlib=libc++")
+SET(CMAKE_CXX_FLAGS "-o3 -w -g -std=c++11")
 SET(CMAKE_CXX_LINK_FLAGS "-pg")
 
 #We assume that boost and pulse-audio are installed
 SET(Boost_LIBRARIES boost_program_options)
+
 SET(Pulse_LIBRARIES pulse pulse-simple)
 
 ADD_LIBRARY(gmm_vad SHARED ${SOURCES})

@@ -16,7 +16,7 @@
 #include <pulse/error.h>
 #include <pulse/gccmacro.h>
 #include "../webrtc/common_audio/vad/include/webrtc_vad.h"
-#include "vad.h"
+#include "VAD.h"
 
 //let c++ compiler knows c code
 extern "C" {
