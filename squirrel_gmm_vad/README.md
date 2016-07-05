@@ -6,20 +6,21 @@ Maintainer: [**batikim09**](https://github.com/**github-user**/) (**batikim09**)
 
 ##Contents
 
+## 1. Installation <a id="1--installation-requirements"/>
+####Debian packages
+
 1. <a href="#1--installation-requirements">Installation Requirements</a>
 To utilise c+11 functions which is not supported by ROS yet, this library must be built separately.
 
 g++-4.8, pulse-audio, boost are required.
 
-## 1. Installation <a id="1--installation-requirements"/>
-####Debian packages
-
 `sudo apt-get install g++-4.8 pulse-audio libboost-all-dev'
 
+## 2. Build <a id="2--build"/>
 2. <a href="#2--build">Build</a>
 
 Please follow the steps.
-## 2. Build <a id="2--build"/> 
+ 
 mkdir ./build
 
 cd ./build
