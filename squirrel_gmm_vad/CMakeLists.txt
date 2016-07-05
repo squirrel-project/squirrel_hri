@@ -5,6 +5,7 @@ PROJECT(GMMVAD)
 # paths to include headers
 INCLUDE_DIRECTORIES(src)
 INCLUDE_DIRECTORIES(/usr/local/include)
+INCLUDE_DIRECTORIES(/usr/include)
 
 # source paths
 FILE(GLOB_RECURSE SOURCES "src/webrtc/*.c*")
@@ -33,3 +34,5 @@ TARGET_LINK_LIBRARIES(example gmm_vad ${Boost_LIBRARIES} ${Pulse_LIBRARIES})
 
 SET(CMAKE_BUILD_TYPE Release)
 
+#install a library and header file
+INSTALL(TARGETS gmm_vad DESTINATION /usr/local/lib)
