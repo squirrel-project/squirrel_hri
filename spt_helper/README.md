@@ -3,9 +3,9 @@ Helper package for the squirrel_person_tracker. This package visualize the user 
 
 #### Nodes
 
-`spt_skeleton`: Visualize the skeleton in rviz as lines between joints.
+- `spt_skeleton`: Visualize the skeleton in rviz as lines between joints using the /tf topic.
 
-`spt_user_info`: Visualize the skeleton of all users in the field of view and the pointing point if a pointing gesture is performed.
+- `spt_user_info`: Visualize the skeleton of all users in the field of view and the pointing point if a pointing gesture is performed.
 
 
 #### Subscribed topics
