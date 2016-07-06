@@ -18,7 +18,7 @@
 		<param name="static_plane" type="bool" value="$(arg static_plane)" />
 		<param name="pub_filtered_pc" type="bool" value="$(arg pub_filtered_pc)" />
 		<param name="publish_skeleton" type="bool" value="$(arg publish_skeleton)" />
-		<param name="track_wave_user" type="bool" value="$(arg track_wave_user)" />"
+		<param name="track_wave_user" type="bool" value="$(arg track_wave_user)" />
 	</node>
 
 </launch>

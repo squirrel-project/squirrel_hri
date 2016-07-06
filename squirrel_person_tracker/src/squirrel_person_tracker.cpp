@@ -15,7 +15,7 @@ SquirrelTracker::SquirrelTracker(ros::NodeHandle& pnh_) :
     ROS_INFO("static_plane is not set. Default value: true");
   }
 
-  if (!pnh_.getParam("pub_filtered_pc", static_plane_))
+  if (!pnh_.getParam("pub_filtered_pc", pub_filtered_pc_))
   {
     pub_filtered_pc_ = false;
     ROS_INFO("pub_filtered_pc is not set. Default value: false");
