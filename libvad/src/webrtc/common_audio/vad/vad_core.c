@@ -671,7 +671,7 @@ int WebRtcVad_CalcVad8khz(VadInstT* inst, const int16_t* speech_frame,
     // Get power in the bands
     total_power = WebRtcVad_CalculateFeatures(inst, speech_frame, frame_length,
                                               feature_vector);
-    printf("Total power: %d\n", total_power);
+    //printf("Total power: %d\n", total_power);
 
     // Make a VAD
     inst->vad = GmmProbability(inst, feature_vector, total_power, frame_length);
