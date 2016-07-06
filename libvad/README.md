@@ -1,5 +1,5 @@
 <a id="top"/> 
-# squirrel_gmm_vad
+# libvad
 This folder has source codes for gmm based voice activity detection module which will be used on squirrel_vad (ROS executable binary). You do not have to build this separately. Just run catkin_make in your catkin_ws/. 
 
 Maintainer: [**batikim09**](https://github.com/**github-user**/) (**batikim09**) - **j.kim@utwente.nl**
