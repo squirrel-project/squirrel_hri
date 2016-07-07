@@ -15,7 +15,7 @@ This ROS package requires external libraries such as pulse-audio and libboost-al
 
 Please run the following steps BEFORE you run catkin_make.
 
-`sudo apt-get install pulse-audio libboost-all-dev'
+`sudo apt-get install pulseaudio libpulse-dev libboost-all-dev'
 
 ## 2. Build <a id="2--build"/>
 
