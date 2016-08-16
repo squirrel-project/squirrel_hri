@@ -53,14 +53,14 @@ int main(int argc, char **argv)
 	if (!ros::isInitialized())
     	return 1;
 
-	int rate = 16000;
-	int flength = 320; // rate / (1000(ms) / 20(ms)) how many samples are in each frame?
+	int rate = 16000;	
 	int mode = 0;
 	int window_len = 20; //10,20,30ms
+	int flength = 320; // rate / (1000(ms) / 20(ms)) how many samples are in each frame?
 	int threshold = 100;
 	int minLength = 500; // 500ms
 	string device = "";
-
+	string ros_topic = "voice_detector";
 	int count = 0;						// For counting number of frames in wave file.
 	header_p meta = (header_p)malloc(sizeof(header));	// header_p points to a header struct that contains the wave file metadata fields
 
@@ -68,11 +68,13 @@ int main(int argc, char **argv)
 	po::options_description desc("Allowed options");
 	desc.add_options()
 													("help", "produce help message")
-													("window_len", po::value<int>(&window_len)->default_value(20), "window_len ms")
-													("mode", po::value<int>(&mode)->default_value(0), "mode")
+													("window_len", po::value<int>(&window_len)->default_value(20), "window_len in ms(10,20,30)")
+													("sp_rate", po::value<int>(&rate)->default_value(16000), "sampling rate in hz")
+													("mode", po::value<int>(&mode)->default_value(0), "mode: 0(normal),1(lowbit),2(aggressive),3(very aggressive)")
 													("threshold", po::value<int>(&threshold)->default_value(100), "threshold for energy")
 													("minLength", po::value<int>(&minLength)->default_value(500), "minimum length of an utterance(ms)")
-													("device", po::value<string>(&device)->default_value("default"), "device name (pactl list)");
+													("device", po::value<string>(&device)->default_value("default"), "device name (pactl list)")
+													("topic", po::value<string>(&ros_topic)->default_value("voice_detector"), "ros topic");
 
 	cout << "params will be all parsed" << endl;
 
@@ -87,8 +89,9 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	cout << "params are all parsed" << endl;
-	static const pa_sample_spec ss = {PA_SAMPLE_S16LE, 16000,1};
+	//setting frame length 
+	flength = rate / (1000/window_len);
+	static const pa_sample_spec ss = {PA_SAMPLE_S16LE, rate, 1};
 
 	pa_simple *s = NULL;
 	int error;
@@ -99,7 +102,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 	//ros::Publisher chatter_pub = n.advertise<std_msgs::String>("voice_detector", 1000);
-	ros::Publisher chatter_pub = n.advertise<squirrel_vad_msgs::vad>("voice_detector", 1000);
+	ros::Publisher chatter_pub = n.advertise<squirrel_vad_msgs::vad>(ros_topic, 1000);
 	// %EndTag(PUBLISHER)%
 
 	ros::Rate loop_rate(10);
@@ -128,15 +131,31 @@ int main(int argc, char **argv)
 
 	output =  WebRtcVad_Init(handle);
 	ROS_INFO("Init: %d ", output);
+	if(output == -1)
+	{
+		ROS_INFO("Failed to init vad");
+		exit(1);
+	}
 
 	output = WebRtcVad_set_mode(handle, mode);
 	ROS_INFO("Mode: %d ", output);
+	if(output == -1)
+	{
+		ROS_INFO("Failed to set a mode");
+		exit(1);
+	}
 
 	WebRtcVad_setThreshold(handle, threshold);
 	ROS_INFO("Threshold: %d ", threshold);
 
 	output = WebRtcVad_ValidRateAndFrameLength(rate, flength);
-	ROS_INFO("Valid rate and frame: %d with rate: %d and flength: %d\n", output, rate, flength);
+	ROS_INFO("Sampling rate: %d and flength: %d\n", rate, flength);
+	if(output == -1)
+	{
+		ROS_INFO("Failed to set sampling rate and frame length.");
+		exit(1);
+	}
+
 	ROS_INFO("Total sampels: %d", totalSamples );
 
 	int16_t buff16[flength];				// short int used for 16 bit as input data format is 16 bit PCM audio

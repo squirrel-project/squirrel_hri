@@ -28,8 +28,8 @@ class VadImpl final : public Vad {
   Activity VoiceActivity(const int16_t* audio,
                          size_t num_samples,
                          int sample_rate_hz) override {
-    int ret = WebRtcVad_Process(handle_, sample_rate_hz, audio, num_samples);
-    switch (ret) {
+    VadResult ret = WebRtcVad_Process(handle_, sample_rate_hz, audio, num_samples);
+    switch (ret.vad) {
       case 0:
         return kPassive;
       case 1:
