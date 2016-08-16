@@ -598,7 +598,7 @@ int WebRtcVad_set_mode_core(VadInstT* self, int mode) {
 // Calculate VAD decision by first extracting feature values and then calculate
 // probability for both speech and background noise.
 
-int WebRtcVad_CalcVad48khz(VadInstT* inst, const int16_t* speech_frame,
+VadResultT WebRtcVad_CalcVad48khz(VadInstT* inst, const int16_t* speech_frame,
                            size_t frame_length) {
   int vad;
   size_t i;
@@ -618,12 +618,11 @@ int WebRtcVad_CalcVad48khz(VadInstT* inst, const int16_t* speech_frame,
   }
 
   // Do VAD on an 8 kHz signal
-  vad = WebRtcVad_CalcVad8khz(inst, speech_nb, frame_length / 6);
+  return WebRtcVad_CalcVad8khz(inst, speech_nb, frame_length / 6);
 
-  return vad;
 }
 
-int WebRtcVad_CalcVad32khz(VadInstT* inst, const int16_t* speech_frame,
+VadResultT WebRtcVad_CalcVad32khz(VadInstT* inst, const int16_t* speech_frame,
                            size_t frame_length)
 {
     size_t len;
@@ -641,12 +640,10 @@ int WebRtcVad_CalcVad32khz(VadInstT* inst, const int16_t* speech_frame,
     len /= 2;
 
     // Do VAD on an 8 kHz signal
-    vad = WebRtcVad_CalcVad8khz(inst, speechNB, len);
-
-    return vad;
+    return WebRtcVad_CalcVad8khz(inst, speechNB, len);
 }
 
-int WebRtcVad_CalcVad16khz(VadInstT* inst, const int16_t* speech_frame,
+VadResultT WebRtcVad_CalcVad16khz(VadInstT* inst, const int16_t* speech_frame,
                            size_t frame_length)
 {
     size_t len;
@@ -658,12 +655,11 @@ int WebRtcVad_CalcVad16khz(VadInstT* inst, const int16_t* speech_frame,
                            frame_length);
 
     len = frame_length / 2;
-    vad = WebRtcVad_CalcVad8khz(inst, speechNB, len);
-
-    return vad;
+    return WebRtcVad_CalcVad8khz(inst, speechNB, len);
+    
 }
 
-int WebRtcVad_CalcVad8khz(VadInstT* inst, const int16_t* speech_frame,
+VadResultT WebRtcVad_CalcVad8khz(VadInstT* inst, const int16_t* speech_frame,
                           size_t frame_length)
 {
     int16_t feature_vector[kNumChannels], total_power;
@@ -676,7 +672,10 @@ int WebRtcVad_CalcVad8khz(VadInstT* inst, const int16_t* speech_frame,
     // Make a VAD
     inst->vad = GmmProbability(inst, feature_vector, total_power, frame_length);
 
-    return inst->vad;
+    VadResultT output;
+    output.vad = inst->vad;
+    output.total_energy = total_power;
+    return output;
 }
 
 void WebRtcVad_SetThresholdCore(VadInstT* inst, int threshold)

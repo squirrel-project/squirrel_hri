@@ -24,6 +24,13 @@ enum { kNumGaussians = 2 };  // Number of Gaussians per channel in the GMM.
 enum { kTableSize = kNumChannels * kNumGaussians };
 enum { kMinEnergy = 1000 };  // Minimum energy required to trigger audio signal.
 
+//This is the vad result class for internal usage.
+typedef struct VadResultT_
+{
+    int vad;
+    int total_energy;
+} VadResultT;
+
 typedef struct VadInstT_
 {
 
@@ -104,13 +111,13 @@ int WebRtcVad_set_mode_core(VadInstT* self, int mode);
  *                        0 - No active speech
  *                        1-6 - Active speech
  */
-int WebRtcVad_CalcVad48khz(VadInstT* inst, const int16_t* speech_frame,
+VadResultT WebRtcVad_CalcVad48khz(VadInstT* inst, const int16_t* speech_frame,
                            size_t frame_length);
-int WebRtcVad_CalcVad32khz(VadInstT* inst, const int16_t* speech_frame,
+VadResultT WebRtcVad_CalcVad32khz(VadInstT* inst, const int16_t* speech_frame,
                            size_t frame_length);
-int WebRtcVad_CalcVad16khz(VadInstT* inst, const int16_t* speech_frame,
+VadResultT WebRtcVad_CalcVad16khz(VadInstT* inst, const int16_t* speech_frame,
                            size_t frame_length);
-int WebRtcVad_CalcVad8khz(VadInstT* inst, const int16_t* speech_frame,
+VadResultT WebRtcVad_CalcVad8khz(VadInstT* inst, const int16_t* speech_frame,
                           size_t frame_length);
 
 void WebRtcVad_SetThresholdCore(VadInstT* inst, int threshold);

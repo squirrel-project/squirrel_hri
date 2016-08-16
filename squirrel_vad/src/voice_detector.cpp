@@ -6,7 +6,7 @@
 // %Tag(MSG_HEADER)%
 #include "std_msgs/String.h"
 // %EndTag(MSG_HEADER)%
-
+#include <squirrel_vad_msgs/vad.h>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,24 +35,23 @@ using namespace boost::posix_time;
 
 namespace po = boost::program_options;
 
-/**
- * This tutorial demonstrates simple sending of messages over the ROS system.
- */
+void publish_vad_msg(ros::Publisher &chatter_pub, const ros::Time& timestamp, int duration, int energy)
+{	
+	squirrel_vad_msgs::vad msg;
+	msg.header.stamp = timestamp;
+	msg.duration = duration;
+	msg.energy = energy;
+
+
+	chatter_pub.publish(msg);
+}
+
 int main(int argc, char **argv)
 {
-	/**
-	 * The ros::init() function needs to see argc and argv so that it can perform
-	 * any ROS arguments and name remapping that were provided at the command line.
-	 * For programmatic remappings you can use a different version of init() which takes
-	 * remappings directly, but for most command-line programs, passing argc and argv is
-	 * the easiest way to do it.  The third argument to init() is the name of the node.
-	 *
-	 * You must call one of the versions of ros::init() before using any other
-	 * part of the ROS system.
-	 */
-	// %Tag(INIT)%
+	
 	ros::init(argc, argv, "voice_detector");
-	// %EndTag(INIT)%
+	if (!ros::isInitialized())
+    	return 1;
 
 	int rate = 16000;
 	int flength = 320; // rate / (1000(ms) / 20(ms)) how many samples are in each frame?
@@ -96,48 +95,16 @@ int main(int argc, char **argv)
 
 	int nFramesPerSec = 1000 / window_len;
 	int totalSamples = 0;
-	/**
-	 * NodeHandle is the main access point to communications with the ROS system.
-	 * The first NodeHandle constructed will fully initialize this node, and the last
-	 * NodeHandle destructed will close down the node.
-	 */
-	// %Tag(NODEHANDLE)%
-	ros::NodeHandle n;
-	// %EndTag(NODEHANDLE)%
 
-	/**
-	 * The advertise() function is how you tell ROS that you want to
-	 * publish on a given topic name. This invokes a call to the ROS
-	 * master node, which keeps a registry of who is publishing and who
-	 * is subscribing. After this advertise() call is made, the master
-	 * node will notify anyone who is trying to subscribe to this topic name,
-	 * and they will in turn negotiate a peer-to-peer connection with this
-	 * node.  advertise() returns a Publisher object which allows you to
-	 * publish messages on that topic through a call to publish().  Once
-	 * all copies of the returned Publisher object are destroyed, the topic
-	 * will be automatically unadvertised.
-	 *
-	 * The second parameter to advertise() is the size of the message queue
-	 * used for publishing messages.  If messages are published more quickly
-	 * than we can send them, the number here specifies how many messages to
-	 * buffer up before throwing some away.
-	 */
-	// %Tag(PUBLISHER)%
-	ros::Publisher chatter_pub = n.advertise<std_msgs::String>("voice_detector", 1000);
+	ros::NodeHandle n;
+
+	//ros::Publisher chatter_pub = n.advertise<std_msgs::String>("voice_detector", 1000);
+	ros::Publisher chatter_pub = n.advertise<squirrel_vad_msgs::vad>("voice_detector", 1000);
 	// %EndTag(PUBLISHER)%
 
-	// %Tag(LOOP_RATE)%
 	ros::Rate loop_rate(10);
-	// %EndTag(LOOP_RATE)%
 
-	/**
-	 * A count of how many messages we have sent. This is used to create
-	 * a unique string for each message.
-	 */
-	// %Tag(ROS_OK)%
-
-
-	cout << "using microphone" << endl;
+	ROS_INFO("using microphone");
 
 	if(device == "default")
 		s = pa_simple_new(NULL, "gmm-vad-mic", PA_STREAM_RECORD, NULL,
@@ -157,6 +124,8 @@ int main(int argc, char **argv)
 	VadInst* handle = WebRtcVad_Create();
 
 	int output = 0;
+	VadResult vad_output;
+
 	output =  WebRtcVad_Init(handle);
 	ROS_INFO("Init: %d ", output);
 
@@ -192,57 +161,46 @@ int main(int argc, char **argv)
 
 		if(nb == 0)
 		{
-			output = WebRtcVad_Process(handle, rate, buff16, flength);
+			vad_output = WebRtcVad_Process(handle, rate, buff16, flength);
 
 			//Speech starts
-			if(isCurrentlySpeech == false && output == 1)
+			if(isCurrentlySpeech == false && vad_output.vad == 1)
 			{
 				isCurrentlySpeech = true;
 				//speechStart = count/(nFramesPerSec *2);
 				speechStart = get_system_time();
 
-				ROS_INFO("speech starts: %s", to_simple_string(speechStart).c_str());
+				ROS_INFO("sound starts: %s", to_simple_string(speechStart).c_str());
 			}
-			else if(isCurrentlySpeech == true && output == 1)
+			else if(isCurrentlySpeech == true && vad_output.vad == 1)
 			{
-				ROS_INFO("speech keeps coming");
+				ROS_INFO("sound keeps coming");
+				ROS_INFO("sound energy: %d", vad_output.total_energy);
 			}
 			//Speech ends
-			else if(isCurrentlySpeech == true && output == 0)
+			else if(isCurrentlySpeech == true && vad_output.vad == 0)
 			{
 				//speechEnd = count/(nFramesPerSec *2);
 
 				isCurrentlySpeech = false;
 				speechEnd = get_system_time();
-				ROS_INFO("speech ends : %s", to_simple_string(speechEnd).c_str());
-
+				ROS_INFO("sound ends : %s", to_simple_string(speechEnd).c_str());
+				
 				time_duration td(speechEnd - speechStart);
 				int duration = td.total_milliseconds();
 				if(duration > minLength)
 				{
-					std_msgs::String msg;
-					std::stringstream ss;
-					ss << " start: [" << speechStart << "]: " << ", duration: [" << duration << "]: " << endl;
-					msg.data = ss.str();
-					ROS_INFO("%s", msg.data.c_str());
+					//std_msgs::String msg;
+					ROS_INFO("Detected speech duration: %d", duration);				
 
-					// %Tag(PUBLISH)%
-					chatter_pub.publish(msg);
-					// %EndTag(PUBLISH)%
+					ros::Time timestamp = ros::Time::now();
+					
+					publish_vad_msg(chatter_pub, timestamp, duration, vad_output.total_energy);
+					
 				}
 			}
 
-
-
-			// %Tag(SPINONCE)%
 			ros::spinOnce();
-			// %EndTag(SPINONCE)%
-
-			// %Tag(RATE_SLEEP)%
-			//    loop_rate.sleep();
-			// %EndTag(RATE_SLEEP)%
-
-
 		}
 	}
 

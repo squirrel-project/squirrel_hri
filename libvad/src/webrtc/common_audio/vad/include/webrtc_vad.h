@@ -22,6 +22,13 @@
 
 typedef struct WebRtcVadInst VadInst;
 
+typedef struct WebRtcVadResult
+{
+    int vad;
+    int total_energy;
+} VadResult;
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -64,10 +71,8 @@ int WebRtcVad_set_mode(VadInst* handle, int mode);
 // - audio_frame  [i]   : Audio frame buffer.
 // - frame_length [i]   : Length of audio frame buffer in number of samples.
 //
-// returns              : 1 - (Active Voice),
-//                        0 - (Non-active Voice),
-//                       -1 - (Error)
-int WebRtcVad_Process(VadInst* handle, int fs, const int16_t* audio_frame,
+
+VadResult WebRtcVad_Process(VadInst* handle, int fs, const int16_t* audio_frame,
                       size_t frame_length);
 
 // Checks for valid combinations of |rate| and |frame_length|. We support 10,

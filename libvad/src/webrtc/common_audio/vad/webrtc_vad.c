@@ -41,7 +41,6 @@ int WebRtcVad_Init(VadInst* handle) {
   return WebRtcVad_InitCore((VadInstT*) handle);
 }
 
-// TODO(bjornv): Move WebRtcVad_set_mode_core() code here.
 int WebRtcVad_set_mode(VadInst* handle, int mode) {
   VadInstT* self = (VadInstT*) handle;
 
@@ -55,39 +54,57 @@ int WebRtcVad_set_mode(VadInst* handle, int mode) {
   return WebRtcVad_set_mode_core(self, mode);
 }
 
-int WebRtcVad_Process(VadInst* handle, int fs, const int16_t* audio_frame,
+VadResult WebRtcVad_Process(VadInst* handle, int fs, const int16_t* audio_frame,
                       size_t frame_length) {
+  VadResult result;
+  result.total_energy = 0;
+
   int vad = -1;
   VadInstT* self = (VadInstT*) handle;
 
   if (handle == NULL) {
-    return -1;
+    vad = -1;
+    result.vad = vad;
+    return result;
+
   }
 
   if (self->init_flag != kInitCheck) {
-    return -1;
+    vad = -1;
+    result.vad = vad;
+    return result;
   }
   if (audio_frame == NULL) {
-    return -1;
+    vad = -1;
+    result.vad = vad;
+    return result;
   }
   if (WebRtcVad_ValidRateAndFrameLength(fs, frame_length) != 0) {
-    return -1;
+    vad = -1;
+    result.vad = vad;
+    return result;
   }
 
+
+  VadResultT vad_result;
   if (fs == 48000) {
-      vad = WebRtcVad_CalcVad48khz(self, audio_frame, frame_length);
+      vad_result = WebRtcVad_CalcVad48khz(self, audio_frame, frame_length);
   } else if (fs == 32000) {
-    vad = WebRtcVad_CalcVad32khz(self, audio_frame, frame_length);
+    vad_result = WebRtcVad_CalcVad32khz(self, audio_frame, frame_length);
   } else if (fs == 16000) {
-    vad = WebRtcVad_CalcVad16khz(self, audio_frame, frame_length);
+    vad_result = WebRtcVad_CalcVad16khz(self, audio_frame, frame_length);
   } else if (fs == 8000) {
-    vad = WebRtcVad_CalcVad8khz(self, audio_frame, frame_length);
+    vad_result = WebRtcVad_CalcVad8khz(self, audio_frame, frame_length);
   }
 
-  if (vad > 0) {
-    vad = 1;
+  if (vad_result.vad > 0) {
+    vad_result.vad = 1;
   }
-  return vad;
+
+  result.vad = vad_result.vad;
+  result.total_energy = vad_result.total_energy;
+  
+  return result;
 }
 
 int WebRtcVad_ValidRateAndFrameLength(int rate, size_t frame_length) {

@@ -9,23 +9,12 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   libvad
+  squirrel_vad_msgs
 )
 
-## System dependencies are found with CMake's conventions
-#find_package(Boost REQUIRED COMPONENTS system)
-
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include/squirrel_vad
-  CATKIN_DEPENDS roscpp rospy std_msgs libvad
+  CATKIN_DEPENDS roscpp rospy std_msgs libvad squirrel_vad_msgs
   DEPENDS boost_program_options pulse pulse-simple 
 )
 
@@ -48,11 +37,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(include ${PROJECT_SOURCE_DIR}/include/squirrel_vad)
 
 #paths for pulseaudio and boost
-include_directories(include /usr/local/include)
-INCLUDE_DIRECTORIES(include /usr/include)
-
-#paths for pulseaudio(only if installed) 
-link_directories(/usr/local/lib)
+#We assume that all libraries are installed into the default folder.
 
 find_library(Boost_LIBRARIES 
 		NAMES boost_program_options 
