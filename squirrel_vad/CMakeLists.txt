@@ -6,7 +6,6 @@ project(squirrel_vad)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rospy
   std_msgs
   libvad
   squirrel_vad_msgs
@@ -18,13 +17,6 @@ catkin_package(
   DEPENDS boost_program_options pulse pulse-simple 
 )
 
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
@@ -33,11 +25,8 @@ include_directories(
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-#paths for gmm_vad headers
 include_directories(include ${PROJECT_SOURCE_DIR}/include/squirrel_vad)
 
-#paths for pulseaudio and boost
-#We assume that all libraries are installed into the default folder.
 
 find_library(Boost_LIBRARIES 
 		NAMES boost_program_options 
