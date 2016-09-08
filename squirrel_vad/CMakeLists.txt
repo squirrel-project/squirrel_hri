@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include/squirrel_vad
-  CATKIN_DEPENDS roscpp rospy std_msgs libvad squirrel_vad_msgs
+  CATKIN_DEPENDS roscpp std_msgs libvad squirrel_vad_msgs
   DEPENDS boost_program_options pulse pulse-simple 
 )
 
