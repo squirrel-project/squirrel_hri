@@ -12,11 +12,13 @@
   <build_depend>roscpp</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>libvad</build_depend>
+  <build_depend>libpulse-dev</build_depend>
   <build_depend>squirrel_vad_msgs</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>libvad</run_depend>
   <run_depend>squirrel_vad_msgs</run_depend>
+  <run_depend>libpulse-dev</run_depend>
 
 </package>
