@@ -11,6 +11,7 @@
   <run_depend>squirrel_expression</run_depend> 
   <run_depend>squirrel_speech_rec</run_depend> 
   <run_depend>squirrel_leg_detector</run_depend> 
+  <run_depend>squirrel_vad</run_depend>
 
   <export>
 	<metapackage/>
