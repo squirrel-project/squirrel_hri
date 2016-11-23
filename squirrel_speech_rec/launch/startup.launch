@@ -3,7 +3,7 @@
   <!-- We need one such node per microphone, with each node running on a separate computer.
        Change the name, such that it is unique. -->
   <node pkg="squirrel_speech_rec" type="sq_ros_speech_rec.py" name="sq_ros_speech_rec1" output="screen">
-    <param name="dev_id" value="3" />
+    <param name="device_id" value="0" />
     <param name="speaker_id" value="2" />
     <param name="language" value="de" />
   </node>
