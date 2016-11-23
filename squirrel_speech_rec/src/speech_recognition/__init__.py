@@ -101,7 +101,7 @@ chunk default = 1024
             self.stream = self.audio.open(
                 input_device_index = self.device_index, channels = 1,
                 format = self.format, rate = self.SAMPLE_RATE, frames_per_buffer = self.CHUNK,
-                input = True, # stream is an input stream
+                input = True  # stream is an input stream
             )
             return self
 
