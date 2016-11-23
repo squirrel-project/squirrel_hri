@@ -17,9 +17,9 @@ def recognizer():
 
     print("SQUIRREL SPEECH RECOGNITION -----------------------------------------------")
 
-    from subprocess import call
-    call(["pulseaudio", "--kill"])
-    call(["jack_control", "start"])
+    #from subprocess import call
+    #call(["pulseaudio", "--kill"])
+    #call(["jack_control", "start"])
 
     pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5)
     msg = RecognizedSpeech()
