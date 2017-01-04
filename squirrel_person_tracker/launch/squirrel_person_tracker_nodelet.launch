@@ -1,9 +1,9 @@
 <launch>
 	<arg name="camera_id" default="kinect" />
 	<arg name="is_srv_used" default="false" />
-	<arg name="static_plane" default="false" />
+	<arg name="static_plane" default="false" /> <!-- This can't be true without the robotino. If false the camera has to capture the floor-->
 	<arg name="pub_filtered_pc" default="false" />
-	<arg name="publish_skeleton" default="false" />
+	<arg name="publish_skeleton" default="true" />
 	<arg name="track_wave_user" default="true" />
 
 	<include file="$(find openni2_launch)/launch/openni2.launch">

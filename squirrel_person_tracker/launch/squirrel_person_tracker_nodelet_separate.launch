@@ -1,6 +1,6 @@
 <launch>
 	<arg name="camera_id" default="kinect" />
-	<arg name="is_srv_used" default="true" />
+	<arg name="is_srv_used" default="false" />
 	<arg name="static_plane" default="false" />
 	<arg name="pub_filtered_pc" default="false" />
 	<arg name="publish_skeleton" default="true" />
