@@ -31,4 +31,6 @@
 		<param name="track_wave_user" type="bool" value="$(arg track_wave_user)" />
 	</node>
 
+	<node pkg="spt_helper" type="spt_user_info" name="matchstick_man" />
+
 </launch>
