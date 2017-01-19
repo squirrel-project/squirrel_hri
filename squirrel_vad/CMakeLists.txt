@@ -4,6 +4,7 @@ project(squirrel_vad)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -43,9 +44,10 @@ message(STATUS ${Boost_LIBRARIES})
 message(STATUS ${Pulse_LIBRARIES})
 message(STATUS ${Pulse-Simple_LIBRARIES})
 
-SET(Vad_LIBRARIES vad)
+#SET(Vad_LIBRARIES vad)
 
 #main source file
 add_executable(voice_detector ./src/voice_detector.cpp)
-target_link_libraries(voice_detector ${catkin_LIBRARIES} ${Vad_LIBRARIES} ${Boost_LIBRARIES} ${Pulse_LIBRARIES} ${Pulse-Simple_LIBRARIES})
+target_link_libraries(voice_detector ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${Pulse_LIBRARIES} ${Pulse-Simple_LIBRARIES})
+#target_link_libraries(voice_detector ${catkin_LIBRARIES} ${Vad_LIBRARIES} ${Boost_LIBRARIES} ${Pulse_LIBRARIES} ${Pulse-Simple_LIBRARIES})
 
