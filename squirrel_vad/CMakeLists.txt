@@ -22,10 +22,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-
-
-include_directories(include ${catkin_INCLUDE_DIRS})
-
 include_directories(include ${PROJECT_SOURCE_DIR}/include/squirrel_vad)
 
 
@@ -44,10 +40,7 @@ message(STATUS ${Boost_LIBRARIES})
 message(STATUS ${Pulse_LIBRARIES})
 message(STATUS ${Pulse-Simple_LIBRARIES})
 
-#SET(Vad_LIBRARIES vad)
-
 #main source file
 add_executable(voice_detector ./src/voice_detector.cpp)
 target_link_libraries(voice_detector ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${Pulse_LIBRARIES} ${Pulse-Simple_LIBRARIES})
-#target_link_libraries(voice_detector ${catkin_LIBRARIES} ${Vad_LIBRARIES} ${Boost_LIBRARIES} ${Pulse_LIBRARIES} ${Pulse-Simple_LIBRARIES})
 
