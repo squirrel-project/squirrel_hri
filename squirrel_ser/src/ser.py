@@ -132,6 +132,10 @@ def ser(args):
 	p.terminate()	
 
 if __name__ == '__main__':
+
+	sys.argv[len(sys.argv) - 1] = '--name'
+	sys.argv[len(sys.argv) - 2] = '--default'
+
 	parser = argparse.ArgumentParser()
 
 	#options for VAD
@@ -151,6 +155,8 @@ if __name__ == '__main__':
 	parser.add_argument("-task", "--task", dest = "task", type=str, help ="tasks (arousal,valence)", default='emotion_category')
 	parser.add_argument("--stl", help="stl", action="store_true")
 	parser.add_argument("--default", help="default", action="store_true")
+	parser.add_argument("--name", help="name", action="store_true")
+
 	#parser.add_argument("-h", "--help", help="help", action="store_true")
 
 	args = parser.parse_args()

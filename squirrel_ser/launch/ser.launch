@@ -1,3 +1,8 @@
 <launch>
-  <node pkg="squirrel_ser" type="ser.py" name="$(anon get_sound_direction)" output="screen" args="-md src/squirrel_hri/squirrel_ser/model/dnn.framelevell.MSPEC.AIBO.p_a.conv.f_dnn.post_elm.0.h5 -elm_md src/squirrel_hri/squirrel_ser/model/dnn.framelevell.MSPEC.AIBO.p_a.conv.f_dnn.post_elm.0.elm.ckpt -c_len 10 --stl -n_class 2" respawn="true"/>
+  <arg name="model"/>
+  <arg name="elm_model"/>
+  <node pkg="squirrel_ser" name="$(anon ser)" output="screen" type="ser.py" args="-md $(arg model) -elm_md $(arg elm_model) --stl" respawn="true"/>
 </launch>
+
+
+

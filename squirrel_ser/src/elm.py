@@ -31,13 +31,13 @@ class ELM(object):
 
     self._W = tf.Variable(
       tf.random_normal([self._input_len, self._hidden_num]),
-      trainable=False, dtype=tf.float32)
+      trainable=False, dtype=tf.float32, name='w')
     self._b = tf.Variable(
       tf.random_normal([self._hidden_num]),
-      trainable=False, dtype=tf.float32)
+      trainable=False, dtype=tf.float32, name='b')
     self._beta = tf.Variable(
       tf.zeros([self._hidden_num, self._output_len]),
-      trainable=False, dtype=tf.float32)
+      trainable=False, dtype=tf.float32, name='beta')
     self._var_list = [self._W, self._b, self._beta]
 
     self.H0 = tf.matmul(self._x0, self._W) + self._b # N x L
@@ -88,9 +88,11 @@ class ELM(object):
     self._init = True
   def save(self, path):
     saver = tf.train.Saver(self._var_list)
+    #saver = tf.train.Saver()
     saver.save(self._sess, path)
   def load(self, path):
     saver = tf.train.Saver(self._var_list)
+    #saver = tf.train.Saver()
     saver.restore(self._sess, path)
     print("elm params are loaded")
     self._feed = True
