@@ -139,21 +139,21 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 
 	#options for VAD
-	parser.add_argument("-sr", "--sample_rate", dest= 'sample_rate', type=int, help="number of samples per sec(8000,16000,32000 only)", default=16000)
-	parser.add_argument("-fd", "--frame_duration", dest= 'frame_duration', type=int, help="a duration of a frame (10,20,30msec)", default=20)
-	parser.add_argument("-vm", "--vad_mode", dest= 'vad_mode', type=int, help="vad mode(0,1,2,3)", default=0)
-	parser.add_argument("-vd", "--vad_duration", dest= 'vad_duration', type=int, help="vad duration(1000)", default=100)
-	parser.add_argument("-d_id", "--device_id", dest= 'device_id', type=int, help="device id", default=0)
+	parser.add_argument("-sr", "--sample_rate", dest= 'sample_rate', type=int, help="number of samples per sec, only accept [8000|16000|32000]", default=16000)
+	parser.add_argument("-fd", "--frame_duration", dest= 'frame_duration', type=int, help="a duration of a frame msec, only accept [10|20|30]", default=20)
+	parser.add_argument("-vm", "--vad_mode", dest= 'vad_mode', type=int, help="vad mode, only accept [0|1|2|3], 0 more quiet 3 more noisy", default=0)
+	parser.add_argument("-vd", "--vad_duration", dest= 'vad_duration', type=int, help="minimum length(ms) of speech for emotion detection", default=100)
+	parser.add_argument("-d_id", "--device_id", dest= 'device_id', type=int, help="device id for microphone", default=0)
 
 	#options for Model
-	parser.add_argument("-fp", "--feat_path", dest= 'feat_path', type=str, help="feat path", default='./temp.csv')
-	parser.add_argument("-md", "--model_file", dest= 'model_file', type=str, help="model path")
-	parser.add_argument("-elm_md", "--elm_model_file", dest= 'elm_model_file', type=str, help="elm_model_file")
-	parser.add_argument("-c_len", "--context_len", dest= 'context_len', type=int, help="context_len", default=10)
-	parser.add_argument("-m_t_step", "--max_time_steps", dest= 'max_time_steps', type=int, help="max_time_steps", default=500)
+	parser.add_argument("-fp", "--feat_path", dest= 'feat_path', type=str, help="temporay feat path", default='./temp.csv')
+	parser.add_argument("-md", "--model_file", dest= 'model_file', type=str, help="keras model path")
+	parser.add_argument("-elm_md", "--elm_model_file", dest= 'elm_model_file', type=str, help="elm model_file")
+	parser.add_argument("-c_len", "--context_len", dest= 'context_len', type=int, help="context window's length", default=10)
+	parser.add_argument("-m_t_step", "--max_time_steps", dest= 'max_time_steps', type=int, help="maximum time steps for DNN", default=500)
 	parser.add_argument("-n_class", "--n_class", dest= 'n_class', type=int, help="number of class", default=2)
 	parser.add_argument("-task", "--task", dest = "task", type=str, help ="tasks (arousal,valence)", default='emotion_category')
-	parser.add_argument("--stl", help="stl", action="store_true")
+	parser.add_argument("--stl", help="only for single task learning model", action="store_true")
 	parser.add_argument("--default", help="default", action="store_true")
 	parser.add_argument("--name", help="name", action="store_true")
 
