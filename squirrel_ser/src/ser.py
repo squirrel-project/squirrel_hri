@@ -114,8 +114,11 @@ def ser(args):
 				raw_frames = np.fromstring(frames, dtype=np.int16)
 				results = dec.predict(raw_frames)
 				rospy.loginfo(results)
-				task_outputs = dec.returnLabel(results)
 
+				if args.reg:
+					task_outputs = dec.returnDiff(results)
+				else:
+					task_outputs = dec.returnLabel(results)
 				rospy.loginfo(task_outputs)
 				for id in range(0, len(task_publisher)):
 					for frame_output in task_outputs[id]:
@@ -154,6 +157,7 @@ if __name__ == '__main__':
 	parser.add_argument("-n_class", "--n_class", dest= 'n_class', type=int, help="number of class", default=2)
 	parser.add_argument("-task", "--task", dest = "task", type=str, help ="tasks (arousal,valence)", default='emotion_category')
 	parser.add_argument("--stl", help="only for single task learning model", action="store_true")
+	parser.add_argument("--reg", help="regression mode", action="store_true")
 	parser.add_argument("--default", help="default", action="store_true")
 	parser.add_argument("--name", help="name", action="store_true")
 

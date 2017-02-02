@@ -78,7 +78,19 @@ class Decoder(object):
 
 		#but results are always multi-tasks format
 		return labels
-				
+
+	def returnDiff(self, result):
+		labels = []
+		#multi-tasks output format
+		if (len(result.shape) == 3):
+			for task in result:
+				label = (task.T[1] - task.T[0])
+				labels.append(label)
+		else:#single task output
+			labels.append((result.T[1] - result.T[0]))
+
+		#but results are always multi-tasks format
+		return labels		
 
 if __name__ == "__main__":
 	print('example of decoding')
