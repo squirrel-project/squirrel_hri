@@ -28,6 +28,11 @@ pip install -r requirements.txt
 Please use catkin_make to build this.
 
 ## 3. Usage <a id="3--usage"/>
+For a quick start, if your current folder is a catkin workspace, run
+
+roslaunch squirrel_ser ser.launch model:=$PWD/src/squirrel_hri/squirrel_ser/model/test.p_a.0.h5 elm_model:=$PWD/src/squirrel_hri/squirrel_ser/model/test.p_a.0.elm.ckpt
+
+
 To get information of parameters, 
 
 rosrun squirrel_ser ser.py
@@ -102,6 +107,10 @@ for keras_model_path
 
 for elm_model path
 "./squirrel_ser/model/test.p_a.0.elm.ckpt"
+
+Hence, using the provided launch, 
+
+roslaunch squirrel_ser ser.launch model:=$PWD/src/squirrel_hri/squirrel_ser/model/test.p_a.0.h5 elm_model:=$PWD/src/squirrel_hri/squirrel_ser/model/test.p_a.0.elm.ckpt
 
 To see a published topic,
 
