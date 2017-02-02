@@ -114,13 +114,13 @@ def elm_predict(model, X_train, X_test, X_valid, multiTasks, unweighted, stl, di
         
         print('elm training')
         elm.feed(feat_train, dictForLabelsTrain[task])
-        elm.save(elm_save_path)
+        elm.save(elm_save_path + "." + str(task) + ".elm.ckpt")
 
         print('elm testing')
         if unweighted:
             labels = dictForLabelsTest[task]
             preds = elm.test(feat_test)
-            scores.append(unweighted_recall(preds, labels))
+            scores.append(unweighted_recall(preds, labels, task))
         else:
             acc = elm.test(feat_test, labels)
             scores.append(acc)
@@ -130,7 +130,7 @@ def elm_predict(model, X_train, X_test, X_valid, multiTasks, unweighted, stl, di
             if unweighted:
                 labels = dictForLabelsValid[task]
                 preds = elm.test(feat_valid)
-                scores.append(unweighted_recall(preds, labels))
+                scores.append(unweighted_recall(preds, labels, task))
             else:
                 acc = elm.test(feat_valid, labels)
                 scores.append(acc)
@@ -156,7 +156,7 @@ def elm_load_predict(model, X_test, multiTasks, unweighted, stl, dictForLabelsTe
         if unweighted:
             labels = dictForLabelsTest[task]
             preds = elm.test(feat_test)
-            scores.append(unweighted_recall(preds, labels))
+            scores.append(unweighted_recall(preds, labels, task))
         else:
             acc = elm.test(feat_test, labels)
             scores.append(acc)
