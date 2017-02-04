@@ -5,7 +5,7 @@ import numpy as np
 omega = 1.
 
 class ELM(object):
-  def __init__(self, sess, batch_size, input_len, hidden_num, output_len):
+  def __init__(self, sess, batch_size, input_len, hidden_num, output_len, task = 'main'):
     '''
     Args:
       sess : TensorFlow session.
@@ -31,13 +31,13 @@ class ELM(object):
 
     self._W = tf.Variable(
       tf.random_normal([self._input_len, self._hidden_num]),
-      trainable=False, dtype=tf.float32, name='w')
+      trainable=False, dtype=tf.float32, name= task + '_w')
     self._b = tf.Variable(
       tf.random_normal([self._hidden_num]),
-      trainable=False, dtype=tf.float32, name='b')
+      trainable=False, dtype=tf.float32, name= task + '_b')
     self._beta = tf.Variable(
       tf.zeros([self._hidden_num, self._output_len]),
-      trainable=False, dtype=tf.float32, name='beta')
+      trainable=False, dtype=tf.float32, name= task + '_beta')
     self._var_list = [self._W, self._b, self._beta]
 
     self.H0 = tf.matmul(self._x0, self._W) + self._b # N x L

@@ -110,7 +110,7 @@ def elm_predict(model, X_train, X_test, X_valid, multiTasks, unweighted, stl, di
 
     scores = []
     for task, classes, idx in multiTasks:
-        elm = ELM(sess, feat_train.shape[0], feat_train.shape[1], hidden_num, dictForLabelsTrain[task].shape[1])
+        elm = ELM(sess, feat_train.shape[0], feat_train.shape[1], hidden_num, dictForLabelsTrain[task].shape[1], task = str(task))
         
         print('elm training')
         elm.feed(feat_train, dictForLabelsTrain[task])

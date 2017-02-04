@@ -14,17 +14,36 @@ from high_level import *
 
 
 class Decoder(object):
-	def __init__(self, model_file = './model.h5', elm_model_file = './model.elm.ckpt', feat_path = './temp.csv', context_len = 5, max_time_steps = 300, n_class = 3, elm_hidden_num = 50, stl = True, elm_main_task_id = 0, sr = 16000):
+	def __init__(self, model_file = './model.h5', elm_model_files = './model.elm.ckpt', feat_path = './temp.csv', context_len = 5, max_time_steps = 300, elm_hidden_num = 50, stl = True, elm_main_task_id = -1, sr = 16000, tasks = 'arousal:2,valence:2'):
 		
 		self.stl = stl
 		self.model = keras.models.load_model(model_file)
-		self.elm_model_file = elm_model_file
+		self.elm_model_files = elm_model_files
 		self.sess = tf.Session()
-		if self.elm_model_file != None:
-			self.elm_model = ELM(self.sess, 1, n_class * 4, elm_hidden_num, n_class)
-			self.elm_model.load(elm_model_file)
-			self.elm_hidden_num = elm_hidden_num
-			self.elm_main_task_id = elm_main_task_id
+		self.elm_model = []
+		self.tasks = []
+		self.tasks_names = []
+		self.total_high_level_feat = 0
+		for task in tasks.split(","):
+			task_n_class = task.split(':') 
+			self.tasks.append(int(task_n_class[1]))
+			self.tasks_names.append(task_n_class[0])
+			self.total_high_level_feat = self.total_high_level_feat + int(task_n_class[1])            
+		if self.elm_model_files != None:
+			elm_tasks = elm_model_files.split(',')
+			if len(elm_tasks) == len(self.tasks):
+				print("#tasks: ", len(self.tasks))
+
+				for i in range(0, len(self.tasks)):
+					elm_model_task = ELM(self.sess, 1, self.total_high_level_feat * 4, elm_hidden_num, self.tasks[i], task = self.tasks_names[i])
+					elm_model_task.load(elm_tasks[i])
+
+					self.elm_model.append(elm_model_task)	
+				self.elm_hidden_num = elm_hidden_num
+				self.elm_main_task_id = elm_main_task_id
+			else:
+				print("mismatch between tasks and elm models")
+				exit()
 
 		self.sr = sr
 		self.feat_path = feat_path
@@ -44,14 +63,23 @@ class Decoder(object):
 		return self.temporal_predict(temporal_feat)
 	
 	def temporal_predict(self, temporal_feat):	
+		print(str(temporal_feat))
 		predictions = self.model.predict(temporal_feat)
 
-		if self.elm_model_file == None:
-			return predictions
+		if self.elm_model_files == None:
+			preds = []
+			print("no elm post")
+			#print(str(predictions))
+			for i in range(0, len(self.tasks)):
+				preds.append(predictions[i])
 		else:
 			feat_test = high_level_feature_mtl(predictions, threshold = 0.3, stl = self.stl, main_task_id = self.elm_main_task_id)
-			preds = self.elm_model.test(feat_test)
-			return preds
+			preds = []
+			#print("feat: ", str(feat_test))
+			for i in range(0, len(self.tasks)):
+				preds.append(self.elm_model[i].test(feat_test))
+		
+		return preds
 
 	def build_temporal_feat(self, mspec):
 		input_dim = mspec.shape[1]
@@ -68,27 +96,25 @@ class Decoder(object):
 
 	def returnLabel(self, result):
 		labels = []
+		
 		#multi-tasks output format
-		if (len(result.shape) == 3):
-			for task in result:
-				label = np.argmax(task, 1)
-				labels.append(label)
-		else:#single task output
-			labels.append(np.argmax(result, 1))
-
+		
+		for task in result:
+			label = np.argmax(task, 1)
+			labels.append(label)
+		
 		#but results are always multi-tasks format
 		return labels
 
 	def returnDiff(self, result):
 		labels = []
 		#multi-tasks output format
-		if (len(result.shape) == 3):
-			for task in result:
-				label = (task.T[1] - task.T[0])
-				labels.append(label)
-		else:#single task output
-			labels.append((result.T[1] - result.T[0]))
-
+		
+		for task in result:
+			values = task.T
+			label = values[len(values) - 1] - values[0]
+			labels.append(label)
+		
 		#but results are always multi-tasks format
 		return labels		
 
@@ -97,22 +123,23 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-wav", "--wave", dest= 'wave', type=str, help="wave file", default='./test.wav')
 	parser.add_argument("-md", "--model_file", dest= 'model_file', type=str, help="model file", default='./model.h5')
-	parser.add_argument("-elm_md", "--elm_model_file", dest= 'elm_model_file', type=str, help="elm_model_file")
+	parser.add_argument("-elm_md", "--elm_model_files", dest= 'elm_model_files', type=str, help="elm_model_file")
 	parser.add_argument("-c_len", "--context_len", dest= 'context_len', type=int, help="context_len", default=5)
-	parser.add_argument("-m_t_step", "--max_time_steps", dest= 'max_time_steps', type=int, help="max_time_steps", default=5)
-	parser.add_argument("-n_class", "--n_class", dest= 'n_class', type=int, help="number of class", default=2)
+	parser.add_argument("-m_t_step", "--max_time_steps", dest= 'max_time_steps', type=int, help="max_time_steps", default=500)
+	#parser.add_argument("-n_class", "--n_class", dest= 'n_class', type=int, help="number of class", default=2)
 	parser.add_argument("--default", help="default", action="store_true")
 	parser.add_argument("--stl", help="stl", action="store_true")
-
+	parser.add_argument("-tasks", "--tasks", dest = "tasks", type=str, help ="tasks (arousal:2,valence:2)", default='emotion_category')
+	
 	args = parser.parse_args()
 	if len(sys.argv) == 1:
 		parser.print_help()
 		sys.exit(1)
 
 	if args.stl:
-		dec = Decoder(model_file = args.model_file, elm_model_file = args.elm_model_file, feat_path = './temp.csv', context_len = args.context_len, max_time_steps = args.max_time_steps, n_class = args.n_class)
+		dec = Decoder(model_file = args.model_file, elm_model_files = args.elm_model_files, feat_path = './temp.csv', context_len = args.context_len, max_time_steps = args.max_time_steps, tasks=args.tasks)
 	else:
-		dec = Decoder(model_file = args.model_file, elm_model_file = args.elm_model_file, feat_path = './temp.csv', context_len = args.context_len, max_time_steps = args.max_time_steps, n_class = args.n_class, stl = False)
+		dec = Decoder(model_file = args.model_file, elm_model_files = args.elm_model_files, feat_path = './temp.csv', context_len = args.context_len, max_time_steps = args.max_time_steps, tasks=args.tasks, stl = False)
 	
 	result = dec.predict_file(args.wave)
 	print(result)
