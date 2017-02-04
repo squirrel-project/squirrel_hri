@@ -14,7 +14,7 @@ from high_level import *
 
 
 class Decoder(object):
-	def __init__(self, model_file = './model.h5', elm_model_files = './model.elm.ckpt', feat_path = './temp.csv', context_len = 5, max_time_steps = 300, elm_hidden_num = 50, stl = True, elm_main_task_id = -1, sr = 16000, tasks = 'arousal:2,valence:2'):
+	def __init__(self, model_file = './model.h5', elm_model_files = None, feat_path = './temp.csv', context_len = 5, max_time_steps = 300, elm_hidden_num = 50, stl = True, elm_main_task_id = -1, sr = 16000, tasks = 'arousal:2,valence:2'):
 		
 		self.stl = stl
 		self.model = keras.models.load_model(model_file)
@@ -29,7 +29,9 @@ class Decoder(object):
 			self.tasks.append(int(task_n_class[1]))
 			self.tasks_names.append(task_n_class[0])
 			self.total_high_level_feat = self.total_high_level_feat + int(task_n_class[1])            
+		
 		if self.elm_model_files != None:
+			print("elm model is loaded")
 			elm_tasks = elm_model_files.split(',')
 			if len(elm_tasks) == len(self.tasks):
 				print("#tasks: ", len(self.tasks))
@@ -63,21 +65,25 @@ class Decoder(object):
 		return self.temporal_predict(temporal_feat)
 	
 	def temporal_predict(self, temporal_feat):	
-		print(str(temporal_feat))
+		print("temporal feat shape: ", temporal_feat.shape)
 		predictions = self.model.predict(temporal_feat)
 
 		if self.elm_model_files == None:
 			preds = []
 			print("no elm post")
+			
 			#print(str(predictions))
 			for i in range(0, len(self.tasks)):
-				preds.append(predictions[i])
+				print("shape", predictions[i][0].shape)
+				preds.append(predictions[i][0])
 		else:
 			feat_test = high_level_feature_mtl(predictions, threshold = 0.3, stl = self.stl, main_task_id = self.elm_main_task_id)
 			preds = []
 			#print("feat: ", str(feat_test))
 			for i in range(0, len(self.tasks)):
-				preds.append(self.elm_model[i].test(feat_test))
+				elm_predictions = self.elm_model[i].test(feat_test)
+				print("shape", elm_predictions.shape)
+				preds.append(elm_predictions)
 		
 		return preds
 
@@ -142,7 +148,6 @@ if __name__ == "__main__":
 		dec = Decoder(model_file = args.model_file, elm_model_files = args.elm_model_files, feat_path = './temp.csv', context_len = args.context_len, max_time_steps = args.max_time_steps, tasks=args.tasks, stl = False)
 	
 	result = dec.predict_file(args.wave)
-	print(result)
 	print(dec.returnLabel(result))
 	
 	

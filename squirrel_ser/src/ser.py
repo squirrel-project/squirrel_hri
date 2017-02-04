@@ -12,7 +12,7 @@ import wave
 import rospy
 import sys
 import struct
-import threading
+from threading import Thread
 
 from std_msgs.msg import Int32, Header
 from squirrel_vad_msgs.msg import RecognisedResult 
@@ -23,22 +23,35 @@ def listup_devices():
 	for i in range(p.get_device_count()):
 		print p.get_device_info_by_index(i)
  
-class StoringThread(threading.Thread):
-    def __init__(self, target, *args):
-        self._target = target
-        self._args = args
-        threading.Thread.__init__(self)
- 
+class DNNThread(Thread):
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs={}, Verbose=None):
+        Thread.__init__(self, group, target, name, args, kwargs, Verbose)
+        self._return = None
     def run(self):
-        self._target(*self._args)
+        if self._Thread__target is not None:
+            self._return = self._Thread__target(*self._Thread__args,
+                                                **self._Thread__kwargs)
+    def join(self):
+        Thread.join(self)
+        return self._return
 
-def store_2_wav(path, frames, p, rate = 16000, format = pyaudio.paInt16):
+
+def predict(dec, pyaudio, path, frames, rate = 16000,  reg = None, format = pyaudio.paInt16):
 	wf = wave.open(path, 'wb')
 	wf.setnchannels(1)
-	wf.setsampwidth(p.get_sample_size(format))
+	wf.setsampwidth(pyaudio.get_sample_size(format))
 	wf.setframerate(rate)
 	wf.writeframes(b''.join(frames))
 	wf.close()
+
+	results = dec.predict_file(path)
+	if reg:
+		task_outputs = dec.returnDiff(results)
+	else:
+		task_outputs = dec.returnLabel(results)
+
+	return task_outputs
 
 def ser(args):
 	#ros node initialisation
@@ -60,6 +73,7 @@ def ser(args):
 
 	#audio device setup
 	format = pyaudio.paInt16
+	#format = pyaudio.paFloat32
 	n_channel = 1
 	sample_rate = args.sample_rate
 	frame_duration = args.frame_duration
@@ -134,24 +148,12 @@ def ser(args):
 			#if duration of speech is longer than a minimum speech
 			if args.model_file and total_frame_len > min_voice_frame_len:		
 				
-				if args.save:
-					sThread = StoringThread(store_2_wav, args.save + "/" + str(rospy.Time.now()) + '.wav', frames, p)
-					sThread.start()				
-
-				total_frame_len = 0
-				raw_frames = np.fromstring(frames, dtype=np.int16)
-				results = dec.predict(raw_frames)
-				rospy.loginfo(results)
-
-				if args.reg:
-					task_outputs = dec.returnDiff(results)
-				else:
-					task_outputs = dec.returnLabel(results)
+				#raw_frames = np.fromstring(frames, dtype=np.int16)
+				#results = dec.predict(raw_frames)
 				
-				if args.save:
-					sThread.join()
+				task_outputs = predict(dec, p, args.save + "/" + str(rospy.Time.now()) + '.wav', frames, reg = args.reg)
+				rospy.loginfo(str(task_outputs))
 
-				rospy.loginfo(task_outputs)
 				for id in range(0, len(task_publisher)):
 					for frame_output in task_outputs[id]:
 						msg = RecognisedResult()
@@ -160,6 +162,7 @@ def ser(args):
 						msg.header = he
 						msg.label = frame_output
 						task_publisher[id].publish(msg)
+
 			#initialise threshold values
 			total_frame_len = 0
 				#finish writing
@@ -195,7 +198,7 @@ if __name__ == '__main__':
 	parser.add_argument("-tasks", "--tasks", dest = "tasks", type=str, help ="tasks (arousal:2,valence:2)", default='emotion_category')
 	parser.add_argument("--stl", help="only for single task learning model", action="store_true")
 	parser.add_argument("--reg", help="regression mode", action="store_true")
-	parser.add_argument("-save", "--save", dest = "save", type=str, help ="save directory")
+	parser.add_argument("-save", "--save", dest = "save", type=str, help ="save directory", default='./')
 
 	parser.add_argument("--default", help="default", action="store_true")
 	parser.add_argument("--name", help="name", action="store_true")
