@@ -37,7 +37,7 @@ class DNNThread(Thread):
         return self._return
 
 
-def predict(dec, pyaudio, path, frames, rate = 16000,  reg = None, format = pyaudio.paInt16):
+def predict(dec, pyaudio, path, frames, rate = 16000,  reg = None, format = pyaudio.paInt16, g_min_max = None):
 	wf = wave.open(path, 'wb')
 	wf.setnchannels(1)
 	wf.setsampwidth(pyaudio.get_sample_size(format))
@@ -45,7 +45,7 @@ def predict(dec, pyaudio, path, frames, rate = 16000,  reg = None, format = pyau
 	wf.writeframes(b''.join(frames))
 	wf.close()
 
-	results = dec.predict_file(path)
+	results = dec.predict_file(path, g_min_max = g_min_max)
 	if reg:
 		task_outputs = dec.returnDiff(results)
 	else:
@@ -88,6 +88,12 @@ def ser(args):
 	#initialise vad
 	vad = webrtcvad.Vad()
 	vad.set_mode(vad_mode)
+
+	#automatic gain normalisation
+	if args.g_min and args.g_max:
+		g_min_max = (args.g_min, args.g_max)
+	else:
+		g_min_max = None
 
 	if args.model_file:
 		#initialise model
@@ -151,7 +157,7 @@ def ser(args):
 				#raw_frames = np.fromstring(frames, dtype=np.int16)
 				#results = dec.predict(raw_frames)
 				
-				task_outputs = predict(dec, p, args.save + "/" + str(rospy.Time.now()) + '.wav', frames, reg = args.reg)
+				task_outputs = predict(dec, p, args.save + "/" + str(rospy.Time.now()) + '.wav', frames, reg = args.reg, g_min_max = g_min_max)
 				rospy.loginfo(str(task_outputs))
 
 				for id in range(0, len(task_publisher)):
@@ -187,7 +193,10 @@ if __name__ == '__main__':
 	parser.add_argument("-vd", "--vad_duration", dest= 'vad_duration', type=int, help="minimum length(ms) of speech for emotion detection", default=500)
 	parser.add_argument("-me", "--min_energy", dest= 'min_energy', type=int, help="minimum energy of speech for emotion detection", default=1000)
 	parser.add_argument("-d_id", "--device_id", dest= 'device_id', type=int, help="device id for microphone", default=0)
-
+	#automatic gain normalisation
+	parser.add_argument("-g_min", "--gain_min", dest= 'g_min', type=float, help="min value of automatic gain normalisation", default=-1.37686)
+	parser.add_argument("-g_max", "--gain_max", dest= 'g_max', type=float, help="max value of automatic gain normalisation", default=1.55433)
+	
 	#options for Model
 	parser.add_argument("-fp", "--feat_path", dest= 'feat_path', type=str, help="temporay feat path", default='./temp.csv')
 	parser.add_argument("-md", "--model_file", dest= 'model_file', type=str, help="keras model path")

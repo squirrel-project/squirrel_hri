@@ -59,8 +59,8 @@ class Decoder(object):
 		return self.temporal_predict(temporal_feat)
 
     
-	def predict_file(self, input_file):
-		mspec = extract_melspec_file(input_file, file = self.feat_path, n_mels = 80)
+	def predict_file(self, input_file, g_min_max = None):
+		mspec = extract_melspec_file(input_file, file = self.feat_path, n_mels = 80, min_max = g_min_max)
 		temporal_feat = self.build_temporal_feat(mspec)
 		return self.temporal_predict(temporal_feat)
 	
