@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>squirrel_people_tracker</name>
+  <version>0.0.1</version>
+  <description>
+    The squirrel_people_tracker package is intended to act as a single package
+    to collect data from all nodes, that detect or track different features
+    of humans. Some of them include leg detection and tracking via laser
+    data, face detection in rgb(-d)/stereo camera data or full body skeleton
+    tracking in rgbd.
+    The squirrel_people_tracker merges this data and outputs the tracker people
+    as people_msgs/People message and put this information into the
+    knowledge database.
+  </description>
+
+  <maintainer email="bajones@acin.tuwien.ac.at">Markus Bajones</maintainer>
+  <license>MIT</license>
+
+  <build_depend>people_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>libpcl-all-dev</build_depend>
+  
+  <run_depend>libpcl-all</run_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>
