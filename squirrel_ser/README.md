@@ -1,6 +1,6 @@
 <a id="top"/> 
 # squirrel_ser
-This folder has source codes for deep convolutional neural network-based speech emotion recognition. Note that this module relies on many machine learning packages and platforms such as Google Tensorflow and Keras, which is comptutationally expensive without GPU supports. Hence, it may not be operationable on the robot, rather deployment on an external machine is recommended. This module requires two trained models: keras-model and elm-model. Keras-model is either convolutional DNN or convolutional LSTM, which output frame-level prediction. If elm-model is given, it proceeds the outputs of keras-model to predict utterance-level prediction. (The latter gives better results so far).
+This folder has source codes for deep convolutional neural network-based speech emotion recognition. Note that this module relies on many machine learning packages and platforms such as Google Tensorflow and Keras, which is comptutationally expensive without GPU supports. Hence, it may not be operationable on the robot, rather deployment on an external machine is recommended. This module requires two trained models: keras-model and elm-model. Keras-model is either convolutional DNN or convolutional LSTM, which output frame-level prediction. If elm-model is given, it proceeds the outputs of keras-model to predict utterance-level prediction. (The latter gives better results so far). Performance varies on speakers and environment.
 
 Maintainer: [**batikim09**](https://github.com/**github-user**/) (**batikim09**) - **j.kim@utwente.nl**
 
@@ -28,96 +28,98 @@ pip install -r requirements.txt
 Please use catkin_make to build this.
 
 ## 3. Usage <a id="3--usage"/>
-For a quick start, if your current folder is a catkin workspace, run
+For a quick start, if your current folder is a catkin workspace and the source location is
+./src/squirrel_hri/squirrel_ser
 
-roslaunch squirrel_ser ser.launch model:=$PWD/src/squirrel_hri/squirrel_ser/model/test.p_a.0.h5 elm_model:=$PWD/src/squirrel_hri/squirrel_ser/model/test.p_a.0.elm.ckpt
+To save wave files,
+mkdir ./data
+
+then, run in the terminal:
+
+rosrun squirrel_ser ser.py --reg --save $PWD/data -md $PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.h5 -elm_md $PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.arousal.elm.ckpt,$PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.valence.elm.ckpt -tasks arousal:2,valence:2 -c_len 10 -m_t_step 500 -vd 1000
 
 
 To get information of parameters, 
 
 rosrun squirrel_ser ser.py
 
-optional arguments are:
--sr SAMPLE_RATE, --sample_rate SAMPLE_RATE
+usage: --default [-h] [-sr SAMPLE_RATE] [-fd FRAME_DURATION] [-vm VAD_MODE]
+                 [-vd VAD_DURATION] [-me MIN_ENERGY] [-d_id DEVICE_ID]
+                 [-g_min G_MIN] [-g_max G_MAX] [-fp FEAT_PATH]
+                 [-md MODEL_FILE] [-elm_md ELM_MODEL_FILE]
+                 [-c_len CONTEXT_LEN] [-m_t_step MAX_TIME_STEPS]
+                 [-tasks TASKS] [--stl] [--reg] [-save SAVE] [--default]
+                 [--name]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -sr SAMPLE_RATE, --sample_rate SAMPLE_RATE
                         number of samples per sec, only accept
                         [8000|16000|32000]
-
-
--fd FRAME_DURATION, --frame_duration FRAME_DURATION
+  -fd FRAME_DURATION, --frame_duration FRAME_DURATION
                         a duration of a frame msec, only accept [10|20|30]
-
-
--vm VAD_MODE, --vad_mode VAD_MODE
+  -vm VAD_MODE, --vad_mode VAD_MODE
                         vad mode, only accept [0|1|2|3], 0 more quiet 3 more
                         noisy
-
-
--vd VAD_DURATION, --vad_duration VAD_DURATION
+  -vd VAD_DURATION, --vad_duration VAD_DURATION
                         minimum length(ms) of speech for emotion detection
-
-
--d_id DEVICE_ID, --device_id DEVICE_ID
+  -me MIN_ENERGY, --min_energy MIN_ENERGY
+                        minimum energy of speech for emotion detection
+  -d_id DEVICE_ID, --device_id DEVICE_ID
                         device id for microphone
-
-
--fp FEAT_PATH, --feat_path FEAT_PATH
+  -g_min G_MIN, --gain_min G_MIN
+                        min value of automatic gain normalisation
+  -g_max G_MAX, --gain_max G_MAX
+                        max value of automatic gain normalisation
+  -fp FEAT_PATH, --feat_path FEAT_PATH
                         temporay feat path
-
-
--md MODEL_FILE, --model_file MODEL_FILE
+  -md MODEL_FILE, --model_file MODEL_FILE
                         keras model path
-
-
--elm_md ELM_MODEL_FILE, --elm_model_file ELM_MODEL_FILE
+  -elm_md ELM_MODEL_FILE, --elm_model_file ELM_MODEL_FILE
                         elm model_file
-
-
--c_len CONTEXT_LEN, --context_len CONTEXT_LEN
+  -c_len CONTEXT_LEN, --context_len CONTEXT_LEN
                         context window's length
-
-
--m_t_step MAX_TIME_STEPS, --max_time_steps MAX_TIME_STEPS
+  -m_t_step MAX_TIME_STEPS, --max_time_steps MAX_TIME_STEPS
                         maximum time steps for DNN
+  -tasks TASKS, --tasks TASKS
+                        tasks (arousal:2,valence:2)
+  --stl                 only for single task learning model
+  --reg                 regression mode
+  -save SAVE, --save SAVE
+                        save directory
+  --default             default
+  --name                name
+  
+  
+To run voice detection with default parameters,
 
+rosrun squirrel_ser ser.py --default
 
--n_class N_CLASS, --n_class N_CLASS
-                        number of class
-
-
--task TASK, --task TASK
-                        tasks (arousal,valence)
-
-
---stl                 only for single task learning model
-
-To run vad with default parameters,
-
-rosrun squirrel_ser ser.py
 (in this case, it performs only voice detection but not emotion detection since models are not specified.)
 
 For a complete operation of emotion detection,
 You must specify locations of models by passing arguments to ser.py as follows:
--md keras_model_path -elm_md tensorflow_elm_model_path
+-md $(keras_model_path) -elm_md $(tensorflow_elm_model_path)
 
 You can find provided models in "./model/"
-Particularly, you have to provide the relative paths of models from your current directory or absolute paths. Currently, children-specific models to classify positive and negative emotion are provided.
+Particularly, you have to provide the relative paths of models from your current directory or absolute paths. Currently, arousal and valence models are provided.
 
-for keras_model_path
-"./squirrel_ser/model/test.p_a.0.h5"
+For keras_model_path, 
 
-for elm_model path
-"./squirrel_ser/model/test.p_a.0.elm.ckpt"
+$PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.h5
 
-Hence, using the provided launch, 
+For tensorflow_elm_model_path, 
 
-roslaunch squirrel_ser ser.launch model:=$PWD/src/squirrel_hri/squirrel_ser/model/test.p_a.0.h5 elm_model:=$PWD/src/squirrel_hri/squirrel_ser/model/test.p_a.0.elm.ckpt
+$PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.arousal.elm.ckpt,$PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.valence.elm.ckpt
 
 To see a published topic,
 
-rostopic echo /emotional_category
+rostopic echo /arousal
+
+rostopic echo /valence
 
 ROS Messages are defined in :
 
-squirrel_common/squirrel_vad_msgs
+squirrel_common/squirrel_vad_msgs/RecognisedResult.msg
 
 <a href="#top">top</a>
