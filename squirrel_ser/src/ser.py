@@ -36,6 +36,25 @@ class DNNThread(Thread):
         Thread.join(self)
         return self._return
 
+def broadcast_result(task_publisher, task_outputs):
+	for id in range(0, len(task_publisher)):
+		for frame_output in task_outputs[id]:
+			msg = RecognisedResult()
+			he = Header()
+			he.stamp = rospy.Time.now()
+			msg.header = he
+			msg.label = frame_output
+			task_publisher[id].publish(msg)
+
+def decay_result(task_publisher, prev_task_outputs, decay = 0.7):
+	for task_id in range(0, len(task_publisher)):
+		outputs = prev_task_outputs[task_id]
+		for frame_id in range(0, len(outputs)):
+			if outputs[frame_id] < 0.001:
+				outputs[frame_id] = 0.0
+			else:
+				outputs[frame_id] = outputs[frame_id] * decay
+	return prev_task_outputs
 
 def predict(dec, pyaudio, path, frames, rate = 16000,  reg = None, format = pyaudio.paInt16, g_min_max = None):
 	wf = wave.open(path, 'wb')
@@ -117,6 +136,7 @@ def ser(args):
 	is_currently_speech = False
 	total_frame_len = 0
 	frames = ''
+	prev_task_outputs = None
 
 	while not rospy.is_shutdown():
 		data = s.read(chunk)
@@ -154,25 +174,19 @@ def ser(args):
 			#if duration of speech is longer than a minimum speech
 			if args.model_file and total_frame_len > min_voice_frame_len:		
 				
-				#raw_frames = np.fromstring(frames, dtype=np.int16)
-				#results = dec.predict(raw_frames)
-				
 				task_outputs = predict(dec, p, args.save + "/" + str(rospy.Time.now()) + '.wav', frames, reg = args.reg, g_min_max = g_min_max)
 				rospy.loginfo(str(task_outputs))
 
-				for id in range(0, len(task_publisher)):
-					for frame_output in task_outputs[id]:
-						msg = RecognisedResult()
-						he = Header()
-						he.stamp = rospy.Time.now()
-						msg.header = he
-						msg.label = frame_output
-						task_publisher[id].publish(msg)
-
+				prev_task_outputs = task_outputs
+				#broadcast results
+				broadcast_result(task_publisher, task_outputs)
 			#initialise threshold values
 			total_frame_len = 0
-				#finish writing
-				
+			continue
+
+		if prev_task_outputs and args.decay != 0.0:
+			prev_task_outputs = decay_result(task_publisher, prev_task_outputs, decay = args.decay)	
+			broadcast_result(task_publisher, prev_task_outputs)
 
 	rospy.loginfo("---done---")
 
@@ -191,12 +205,13 @@ if __name__ == '__main__':
 	parser.add_argument("-fd", "--frame_duration", dest= 'frame_duration', type=int, help="a duration of a frame msec, only accept [10|20|30]", default=20)
 	parser.add_argument("-vm", "--vad_mode", dest= 'vad_mode', type=int, help="vad mode, only accept [0|1|2|3], 0 more quiet 3 more noisy", default=0)
 	parser.add_argument("-vd", "--vad_duration", dest= 'vad_duration', type=int, help="minimum length(ms) of speech for emotion detection", default=500)
-	parser.add_argument("-me", "--min_energy", dest= 'min_energy', type=int, help="minimum energy of speech for emotion detection", default=1000)
+	parser.add_argument("-me", "--min_energy", dest= 'min_energy', type=int, help="minimum energy of speech for emotion detection", default=100)
 	parser.add_argument("-d_id", "--device_id", dest= 'device_id', type=int, help="device id for microphone", default=0)
 	#automatic gain normalisation
 	parser.add_argument("-g_min", "--gain_min", dest= 'g_min', type=float, help="min value of automatic gain normalisation", default=-1.37686)
 	parser.add_argument("-g_max", "--gain_max", dest= 'g_max', type=float, help="max value of automatic gain normalisation", default=1.55433)
-	
+	parser.add_argument("-decay", "--decay", dest= 'decay', type=float, help="decay", default=0.9)
+
 	#options for Model
 	parser.add_argument("-fp", "--feat_path", dest= 'feat_path', type=str, help="temporay feat path", default='./temp.csv')
 	parser.add_argument("-md", "--model_file", dest= 'model_file', type=str, help="keras model path")
