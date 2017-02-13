@@ -43,4 +43,4 @@ message(STATUS ${Pulse-Simple_LIBRARIES})
 #main source file
 add_executable(voice_detector ./src/voice_detector.cpp)
 target_link_libraries(voice_detector ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${Pulse_LIBRARIES} ${Pulse-Simple_LIBRARIES})
-
+add_dependencies(voice_detector squirrel_vad_msgs_generate_messages_cpp)
