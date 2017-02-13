@@ -1,0 +1,8 @@
+<launch>
+  <arg name="model"/>
+  <arg name="elm_model"/>
+  <node pkg="squirrel_ser" name="$(anon ser)" output="screen" type="ser.py" args="-md $(arg model) -elm_md $(arg elm_model) --stl" respawn="true"/>
+</launch>
+
+
+
