@@ -36,7 +36,7 @@ mkdir ./data
 
 then, run in the terminal:
 
-rosrun squirrel_ser ser.py --reg --save $PWD/data -md $PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.h5 -elm_md $PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.arousal.elm.ckpt,$PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.valence.elm.ckpt -tasks arousal:2,valence:2 -c_len 10 -m_t_step 500 -vd 1000
+rosrun squirrel_ser ser.py --reg --save $PWD/data -md MSPEC_MM.all.ar_vl.0.h5 -elm_md MSPEC_MM.all.ar_vl.0.arousal.elm.ckpt,MSPEC_MM.all.ar_vl.0.valence.elm.ckpt -tasks arousal:2,valence:2 -c_len 10 -m_t_step 500 -vd 1000
 
 
 To get information of parameters, 
@@ -106,11 +106,11 @@ Particularly, you have to provide the relative paths of models from your current
 
 For keras_model_path, 
 
-$PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.h5
+MSPEC_MM.all.ar_vl.0.h5
 
 For tensorflow_elm_model_path, 
 
-$PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.arousal.elm.ckpt,$PWD/src/squirrel_hri/squirrel_ser/model/MSPEC_MM.all.ar_vl.0.valence.elm.ckpt
+MSPEC_MM.all.ar_vl.0.arousal.elm.ckpt,MSPEC_MM.all.ar_vl.0.valence.elm.ckpt
 
 To see a published topic,
 
