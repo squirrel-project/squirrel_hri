@@ -76,11 +76,11 @@ class Decoder(object):
 
 		if self.elm_model_files == None:
 			preds = []
-			print("no elm post")
+			#print("no elm post")
 			
 			#print(str(predictions))
 			for i in range(0, len(self.tasks)):
-				print("shape", predictions[i][0].shape)
+				#print("shape", predictions[i][0].shape)
 				preds.append(predictions[i][0])
 		else:
 			feat_test = high_level_feature_mtl(predictions, threshold = 0.3, stl = self.stl, main_task_id = self.elm_main_task_id)
@@ -88,7 +88,7 @@ class Decoder(object):
 			#print("feat: ", str(feat_test))
 			for i in range(0, len(self.tasks)):
 				elm_predictions = self.elm_model[i].test(feat_test)
-				print("shape", elm_predictions.shape)
+				#print("shape", elm_predictions.shape)
 				preds.append(elm_predictions)
 		
 		return preds
