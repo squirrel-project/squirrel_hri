@@ -36,3 +36,5 @@ include_directories(
 
 add_executable(speech_visu src/speech_visu.cpp)
 target_link_libraries(speech_visu ${catkin_LIBRARIES})
+
+add_dependencies(speech_visu squirrel_speech_msgs generate_messages_cpp)
