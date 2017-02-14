@@ -6,10 +6,18 @@ project(libvad)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED)
 
+###################################
+## catkin specific configuration ##
+###################################
+catkin_package(
+  INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src
+  LIBRARIES vad
+)
+
 # paths to include headers
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src)
 
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+#SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 add_compile_options( -std=c++11 )
 
@@ -17,14 +25,8 @@ add_compile_options( -std=c++11 )
 FILE(GLOB_RECURSE SOURCES "${PROJECT_SOURCE_DIR}/src/webrtc/*.c*")
 
 ## Declare a C++ library
-add_library(vad SHARED ${SOURCES})
+add_library(vad ${SOURCES})
 
-###################################
-## catkin specific configuration ##
-###################################
-catkin_package(
-  INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src
-)
 
 ###########
 ## Build ##

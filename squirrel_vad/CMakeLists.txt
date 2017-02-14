@@ -4,9 +4,9 @@ project(squirrel_vad)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rospy
   std_msgs
   libvad
   squirrel_vad_msgs
@@ -14,30 +14,16 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include/squirrel_vad
-  CATKIN_DEPENDS roscpp rospy std_msgs libvad squirrel_vad_msgs
+  CATKIN_DEPENDS roscpp std_msgs libvad squirrel_vad_msgs
   DEPENDS boost_program_options pulse pulse-simple 
 )
 
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-
-
-include_directories(include ${catkin_INCLUDE_DIRS})
-
-#paths for gmm_vad headers
 include_directories(include ${PROJECT_SOURCE_DIR}/include/squirrel_vad)
 
-#paths for pulseaudio and boost
-#We assume that all libraries are installed into the default folder.
 
 find_library(Boost_LIBRARIES 
 		NAMES boost_program_options 
@@ -54,9 +40,7 @@ message(STATUS ${Boost_LIBRARIES})
 message(STATUS ${Pulse_LIBRARIES})
 message(STATUS ${Pulse-Simple_LIBRARIES})
 
-SET(Vad_LIBRARIES vad)
-
 #main source file
 add_executable(voice_detector ./src/voice_detector.cpp)
-target_link_libraries(voice_detector ${catkin_LIBRARIES} ${Vad_LIBRARIES} ${Boost_LIBRARIES} ${Pulse_LIBRARIES} ${Pulse-Simple_LIBRARIES})
-
+target_link_libraries(voice_detector ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${Pulse_LIBRARIES} ${Pulse-Simple_LIBRARIES})
+add_dependencies(voice_detector squirrel_vad_msgs_generate_messages_cpp)

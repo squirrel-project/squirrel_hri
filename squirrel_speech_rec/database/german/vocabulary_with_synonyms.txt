@@ -1,15 +1,15 @@
 roboter:kenny,robotino,can i,kevin,jenny,roberto,robbie
-gehe:geht,bewege
+gehe:geht,bewege,fahr,fahre,geh
 stop:stopp,anhalten,halte an,halt
 ja:okay,bestätige
-beginn:start,starte,beginnen,beginne,big in
+start:starte,beginnen,beginne,beginn,big in
 zurück:
 drehe:dreh
 nehme:nimm
 lass fallen:fallen lassen
 spielzeug:
-links:
-rechts:
+links:link,leck
+rechts:recht
 vor:vorwärts
 rückwärts:
 hoch:hochwärts
@@ -18,4 +18,4 @@ programm:
 beenden:
 hallo:hey,hi 
 grad:
-
+komme:komm,folge,folg
