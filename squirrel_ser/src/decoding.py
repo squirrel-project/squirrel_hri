@@ -110,10 +110,10 @@ class Decoder(object):
 		labels = []
 		
 		#multi-tasks output format
-		
 		for task in result:
 			label = np.argmax(task, 1)
-			labels.append(label)
+			most_frequent = np.bincount(label).argmax()
+			labels.append(most_frequent)
 		
 		#but results are always multi-tasks format
 		return labels
@@ -125,7 +125,8 @@ class Decoder(object):
 		for task in result:
 			values = task.T
 			label = values[len(values) - 1] - values[0]
-			labels.append(label)
+			avg = np.mean(label)
+			labels.append(avg)
 		
 		#but results are always multi-tasks format
 		return labels		
