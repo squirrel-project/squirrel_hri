@@ -7,10 +7,15 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <run_depend>libnite2</run_depend>
+  <run_depend>libvad</run_depend>
+  <!--run_depend>spt_server</run_depend-->
+  <!--run_depend>squirrel_engagement</run_depend-->
+  <run_depend>squirrel_expression</run_depend>
+  <run_depend>squirrel_leg_detector</run_depend>
   <run_depend>squirrel_person_tracker</run_depend>
-  <run_depend>squirrel_expression</run_depend> 
+  <run_depend>squirrel_ser</run_depend>
   <run_depend>squirrel_speech_rec</run_depend> 
-  <run_depend>squirrel_leg_detector</run_depend> 
+  <run_depend>squirrel_vad</run_depend>
 
   <export>
 	<metapackage/>

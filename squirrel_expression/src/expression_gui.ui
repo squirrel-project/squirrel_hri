@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>512</width>
+    <height>316</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>SQUIRREL Expression Gui</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>110</y>
+      <width>171</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Camera movement</string>
+    </property>
+    <widget class="QWidget" name="verticalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>30</y>
+       <width>160</width>
+       <height>95</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QPushButton" name="upButton">
+        <property name="text">
+         <string>UP</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="straightButton">
+        <property name="text">
+         <string>STRAIGHT</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="downButton">
+        <property name="text">
+         <string>DOWN</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <zorder>verticalLayoutWidget</zorder>
+    <zorder>groupBox_2</zorder>
+    <zorder>groupBox_2</zorder>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>110</y>
+      <width>180</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Wiggle</string>
+    </property>
+    <widget class="QWidget" name="verticalLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>30</y>
+       <width>160</width>
+       <height>80</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QPushButton" name="wiggleNoButton">
+        <property name="text">
+         <string>no</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="wiggleErrorButton">
+        <property name="text">
+         <string>error</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>521</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Sound output</string>
+    </property>
+    <widget class="QWidget" name="horizontalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>30</y>
+       <width>465</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="helloButton">
+        <property name="text">
+         <string>HELLO</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="hereButton">
+        <property name="text">
+         <string>HERE_HERE</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ohnoButton">
+        <property name="text">
+         <string>OH_NO</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="yeahButton">
+        <property name="text">
+         <string>YEAH</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="whatButton">
+        <property name="text">
+         <string>WHAT?</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>512</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuSQUIRREL_expression_gui">
+    <property name="title">
+     <string>SQUIRREL expression gui</string>
+    </property>
+   </widget>
+   <addaction name="menuSQUIRREL_expression_gui"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

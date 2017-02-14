@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   squirrel_speech_msgs
+  squirrel_hri_msgs
 )
 
 catkin_package(
@@ -17,6 +18,7 @@ catkin_package(
     rospy 
     std_msgs
     squirrel_speech_msgs
+    squirrel_hri_msgs
 #  DEPENDS system_lib
 )
 
