@@ -6,15 +6,17 @@ import webrtcvad
 import argparse
 import thread
 import sys
+import os
 import numpy as np
 from decoding import Decoder 
 import wave
 import rospy
 import sys
 import struct
-from threading import Thread
+import rospkg
 
-from std_msgs.msg import Int32, Header
+from threading import Thread
+from std_msgs.msg import Int32, Float32, Header
 from squirrel_vad_msgs.msg import RecognisedResult 
 
 def listup_devices():
@@ -23,21 +25,35 @@ def listup_devices():
 	for i in range(p.get_device_count()):
 		print p.get_device_info_by_index(i)
  
-class DNNThread(Thread):
-    def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs={}, Verbose=None):
-        Thread.__init__(self, group, target, name, args, kwargs, Verbose)
-        self._return = None
-    def run(self):
-        if self._Thread__target is not None:
-            self._return = self._Thread__target(*self._Thread__args,
-                                                **self._Thread__kwargs)
-    def join(self):
-        Thread.join(self)
-        return self._return
+def broadcast_result(task_publisher, task_outputs):
+	for id in range(0, len(task_publisher)):
+		output = task_outputs[id]
+		msg = RecognisedResult()
+		he = Header()
+		he.stamp = rospy.Time.now()
+		msg.header = he
+		msg.label = output
+		task_publisher[id].publish(msg)
 
+def dummy_result(task_publisher):
+	for id in range(0, len(task_publisher)):
+		msg = RecognisedResult()
+		he = Header()
+		he.stamp = rospy.Time.now()
+		msg.header = he
+		msg.label = -1.0
+		task_publisher[id].publish(msg)
 
-def predict(dec, pyaudio, path, frames, rate = 16000,  reg = None, format = pyaudio.paInt16, g_min_max = None):
+def decay_result(task_publisher, prev_task_outputs, decay = 0.7):
+	for task_id in range(0, len(task_publisher)):
+		output = prev_task_outputs[task_id]
+		if output < 0.001:
+			output = 0.0
+		else:
+			output = output * decay
+	return prev_task_outputs
+
+def predict(dec, pyaudio, path, frames, rate = 16000,  reg = None, format = pyaudio.paInt16, g_min_max = None, save = False):
 	wf = wave.open(path, 'wb')
 	wf.setnchannels(1)
 	wf.setsampwidth(pyaudio.get_sample_size(format))
@@ -46,6 +62,10 @@ def predict(dec, pyaudio, path, frames, rate = 16000,  reg = None, format = pyau
 	wf.close()
 
 	results = dec.predict_file(path, g_min_max = g_min_max)
+	
+	if save == False:
+		os.remove(path)
+
 	if reg:
 		task_outputs = dec.returnDiff(results)
 	else:
@@ -54,8 +74,22 @@ def predict(dec, pyaudio, path, frames, rate = 16000,  reg = None, format = pyau
 	return task_outputs
 
 def ser(args):
-	#ros node initialisation
 
+	#set temporay folder
+	rospack = rospkg.RosPack()
+	data_path = rospack.get_path("squirrel_ser") + "/data"
+
+	try:
+		os.mkdir(data_path)
+	except:
+		rospy.loginfo('Data folder already exists')
+
+	if args.save:
+		save = True
+	else:
+		save = False
+
+	#ros node initialisation
 	#tasks parsing
 	tasks = args.tasks.split(",")
 	task_publisher = []
@@ -64,16 +98,14 @@ def ser(args):
 		task_n_class = task.split(":")
 		task_publisher.append(rospy.Publisher(task_n_class[0], RecognisedResult, queue_size=10))
 	
-	duration_pub = rospy.Publisher('speech_duration', Int32, queue_size=10)
-	vad_pub = rospy.Publisher('vad', Int32, queue_size=10)
+	duration_pub = rospy.Publisher('speech_duration', Float32, queue_size=10)
 	
 	rospy.init_node('ser')
-	
 	rate = rospy.Rate(500)
 
 	#audio device setup
 	format = pyaudio.paInt16
-	#format = pyaudio.paFloat32
+	
 	n_channel = 1
 	sample_rate = args.sample_rate
 	frame_duration = args.frame_duration
@@ -117,6 +149,8 @@ def ser(args):
 	is_currently_speech = False
 	total_frame_len = 0
 	frames = ''
+	prev_task_outputs = None
+	speech_frame_len = 0
 
 	while not rospy.is_shutdown():
 		data = s.read(chunk)
@@ -127,52 +161,71 @@ def ser(args):
 		if mx < args.min_energy:
 			is_speech = 0
 
-		rospy.logdebug('gain: %d, vad: %d', mx, is_speech)
-		
-		vad_pub.publish(is_speech)
-		
+		rospy.loginfo('gain: %d, vad: %d', mx, is_speech)
+			
+		if args.sync:#synchronous mode
+			if is_speech == 1:
+				speech_frame_len = speech_frame_len + frame_len
 
-		#Speech starts
-		if is_currently_speech == False and is_speech == True:
-			is_currently_speech = True
-			rospy.loginfo("speech starts")
-			frames = data
+			if frames == '': 
+				frames = data
+			else:
+				frames = frames + data
+
 			total_frame_len = total_frame_len + frame_len
-		elif is_currently_speech == True and is_speech == True:
-			#rospy.loginfo("speech keeps coming")
 
-			frames = frames + data
-			total_frame_len = total_frame_len + frame_len
-		elif is_currently_speech == True and is_speech == False:
-			#Speech ends
-			is_currently_speech = False
-			total_frame_len = total_frame_len + frame_len
-			rospy.loginfo("Detected speech duration: %d", total_frame_len)
-
-			duration_pub.publish(total_frame_len)
-
-			#if duration of speech is longer than a minimum speech
 			if args.model_file and total_frame_len > min_voice_frame_len:		
 				
-				#raw_frames = np.fromstring(frames, dtype=np.int16)
-				#results = dec.predict(raw_frames)
-				
-				task_outputs = predict(dec, p, args.save + "/" + str(rospy.Time.now()) + '.wav', frames, reg = args.reg, g_min_max = g_min_max)
-				rospy.loginfo(str(task_outputs))
+				if float(speech_frame_len)/total_frame_len > args.speech_ratio:
 
-				for id in range(0, len(task_publisher)):
-					for frame_output in task_outputs[id]:
-						msg = RecognisedResult()
-						he = Header()
-						he.stamp = rospy.Time.now()
-						msg.header = he
-						msg.label = frame_output
-						task_publisher[id].publish(msg)
+					task_outputs = predict(dec, p, data_path + "/" + str(rospy.Time.now()) + '.wav', frames, reg = args.reg, g_min_max = g_min_max, save = save)
+					#rospy.loginfo(str(task_outputs))
+					#broadcast results
+					broadcast_result(task_publisher, task_outputs)
+				else:
+					dummy_result(task_publisher)
 
-			#initialise threshold values
-			total_frame_len = 0
-				#finish writing
-				
+				#initialise threshold values
+				duration_pub.publish(float(speech_frame_len)/total_frame_len)
+			
+				total_frame_len = 0
+				speech_frame_len = 0
+				frames = ''
+
+		else:#asynchronous mode
+
+			#Speech starts
+			if is_currently_speech == False and is_speech == True:
+				is_currently_speech = True
+				rospy.loginfo("speech starts")
+				frames = data
+				total_frame_len = total_frame_len + frame_len
+			elif is_currently_speech == True and is_speech == True:
+				#rospy.loginfo("speech keeps coming")
+
+				frames = frames + data
+				total_frame_len = total_frame_len + frame_len
+			elif is_currently_speech == True and is_speech == False:
+				#Speech ends
+				is_currently_speech = False
+				total_frame_len = total_frame_len + frame_len
+				rospy.loginfo("Detected speech duration: %d", total_frame_len)
+
+				duration_pub.publish(total_frame_len)
+
+				#if duration of speech is longer than a minimum speech
+				if args.model_file and total_frame_len > min_voice_frame_len:		
+					
+					task_outputs = predict(dec, p, data_path + "/" + str(rospy.Time.now()) + '.wav', frames, reg = args.reg, g_min_max = g_min_max)
+					rospy.loginfo(str(task_outputs))
+
+					#broadcast results
+					broadcast_result(task_publisher, task_outputs)
+				#initialise threshold values
+				total_frame_len = 0
+				continue
+
+		rate.sleep()
 
 	rospy.loginfo("---done---")
 
@@ -191,12 +244,13 @@ if __name__ == '__main__':
 	parser.add_argument("-fd", "--frame_duration", dest= 'frame_duration', type=int, help="a duration of a frame msec, only accept [10|20|30]", default=20)
 	parser.add_argument("-vm", "--vad_mode", dest= 'vad_mode', type=int, help="vad mode, only accept [0|1|2|3], 0 more quiet 3 more noisy", default=0)
 	parser.add_argument("-vd", "--vad_duration", dest= 'vad_duration', type=int, help="minimum length(ms) of speech for emotion detection", default=500)
-	parser.add_argument("-me", "--min_energy", dest= 'min_energy', type=int, help="minimum energy of speech for emotion detection", default=1000)
+	parser.add_argument("-me", "--min_energy", dest= 'min_energy', type=int, help="minimum energy of speech for emotion detection", default=100)
 	parser.add_argument("-d_id", "--device_id", dest= 'device_id', type=int, help="device id for microphone", default=0)
 	#automatic gain normalisation
 	parser.add_argument("-g_min", "--gain_min", dest= 'g_min', type=float, help="min value of automatic gain normalisation", default=-1.37686)
 	parser.add_argument("-g_max", "--gain_max", dest= 'g_max', type=float, help="max value of automatic gain normalisation", default=1.55433)
-	
+	parser.add_argument("-s_ratio", "--speech_ratio", dest= 'speech_ratio', type=float, help="speech ratio", default=0.3)
+
 	#options for Model
 	parser.add_argument("-fp", "--feat_path", dest= 'feat_path', type=str, help="temporay feat path", default='./temp.csv')
 	parser.add_argument("-md", "--model_file", dest= 'model_file', type=str, help="keras model path")
@@ -207,10 +261,11 @@ if __name__ == '__main__':
 	parser.add_argument("-tasks", "--tasks", dest = "tasks", type=str, help ="tasks (arousal:2,valence:2)", default='emotion_category')
 	parser.add_argument("--stl", help="only for single task learning model", action="store_true")
 	parser.add_argument("--reg", help="regression mode", action="store_true")
-	parser.add_argument("-save", "--save", dest = "save", type=str, help ="save directory", default='./')
-
+	
+	parser.add_argument("--sync", help="sync", action="store_true")
 	parser.add_argument("--default", help="default", action="store_true")
 	parser.add_argument("--name", help="name", action="store_true")
+	parser.add_argument("--save", help="save voice files", action="store_true")
 
 	#parser.add_argument("-h", "--help", help="help", action="store_true")
 

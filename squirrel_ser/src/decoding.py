@@ -4,6 +4,7 @@ import keras
 import tensorflow as tf
 import sys
 import argparse
+import rospkg
 
 from keras import backend as K
 from keras.models import Model
@@ -17,13 +18,17 @@ class Decoder(object):
 	def __init__(self, model_file = './model.h5', elm_model_files = None, feat_path = './temp.csv', context_len = 5, max_time_steps = 300, elm_hidden_num = 50, stl = True, elm_main_task_id = -1, sr = 16000, tasks = 'arousal:2,valence:2'):
 		
 		self.stl = stl
-		self.model = keras.models.load_model(model_file)
+		rospack = rospkg.RosPack()
+		self.base_path = rospack.get_path("squirrel_ser") + "/model/"
+
+		self.model = keras.models.load_model(self.base_path + model_file)
 		self.elm_model_files = elm_model_files
 		self.sess = tf.Session()
 		self.elm_model = []
 		self.tasks = []
 		self.tasks_names = []
 		self.total_high_level_feat = 0
+
 		for task in tasks.split(","):
 			task_n_class = task.split(':') 
 			self.tasks.append(int(task_n_class[1]))
@@ -38,7 +43,8 @@ class Decoder(object):
 
 				for i in range(0, len(self.tasks)):
 					elm_model_task = ELM(self.sess, 1, self.total_high_level_feat * 4, elm_hidden_num, self.tasks[i], task = self.tasks_names[i])
-					elm_model_task.load(elm_tasks[i])
+					elm_path = self.base_path + elm_tasks[i] 
+					elm_model_task.load(elm_path)
 
 					self.elm_model.append(elm_model_task)	
 				self.elm_hidden_num = elm_hidden_num
@@ -70,11 +76,11 @@ class Decoder(object):
 
 		if self.elm_model_files == None:
 			preds = []
-			print("no elm post")
+			#print("no elm post")
 			
 			#print(str(predictions))
 			for i in range(0, len(self.tasks)):
-				print("shape", predictions[i][0].shape)
+				#print("shape", predictions[i][0].shape)
 				preds.append(predictions[i][0])
 		else:
 			feat_test = high_level_feature_mtl(predictions, threshold = 0.3, stl = self.stl, main_task_id = self.elm_main_task_id)
@@ -82,7 +88,7 @@ class Decoder(object):
 			#print("feat: ", str(feat_test))
 			for i in range(0, len(self.tasks)):
 				elm_predictions = self.elm_model[i].test(feat_test)
-				print("shape", elm_predictions.shape)
+				#print("shape", elm_predictions.shape)
 				preds.append(elm_predictions)
 		
 		return preds
@@ -104,10 +110,10 @@ class Decoder(object):
 		labels = []
 		
 		#multi-tasks output format
-		
 		for task in result:
 			label = np.argmax(task, 1)
-			labels.append(label)
+			most_frequent = np.bincount(label).argmax()
+			labels.append(most_frequent)
 		
 		#but results are always multi-tasks format
 		return labels
@@ -119,7 +125,8 @@ class Decoder(object):
 		for task in result:
 			values = task.T
 			label = values[len(values) - 1] - values[0]
-			labels.append(label)
+			avg = np.mean(label)
+			labels.append(avg)
 		
 		#but results are always multi-tasks format
 		return labels		
@@ -128,15 +135,15 @@ if __name__ == "__main__":
 	print('example of decoding')
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-wav", "--wave", dest= 'wave', type=str, help="wave file", default='./test.wav')
+	parser.add_argument("-wav_list", "--wave_list", dest= 'wav_list', type=str, help="wave file list", default='./test.wav.txt')
 	parser.add_argument("-md", "--model_file", dest= 'model_file', type=str, help="model file", default='./model.h5')
 	parser.add_argument("-elm_md", "--elm_model_files", dest= 'elm_model_files', type=str, help="elm_model_file")
 	parser.add_argument("-c_len", "--context_len", dest= 'context_len', type=int, help="context_len", default=5)
 	parser.add_argument("-m_t_step", "--max_time_steps", dest= 'max_time_steps', type=int, help="max_time_steps", default=500)
-	#parser.add_argument("-n_class", "--n_class", dest= 'n_class', type=int, help="number of class", default=2)
+	parser.add_argument("-tasks", "--tasks", dest = "tasks", type=str, help ="tasks (arousal:2,valence:2)", default='emotion_category')
 	parser.add_argument("--default", help="default", action="store_true")
 	parser.add_argument("--stl", help="stl", action="store_true")
-	parser.add_argument("-tasks", "--tasks", dest = "tasks", type=str, help ="tasks (arousal:2,valence:2)", default='emotion_category')
-	
+	parser.add_argument("--reg", help="regression mode", action="store_true")
 	args = parser.parse_args()
 	if len(sys.argv) == 1:
 		parser.print_help()
@@ -147,8 +154,25 @@ if __name__ == "__main__":
 	else:
 		dec = Decoder(model_file = args.model_file, elm_model_files = args.elm_model_files, feat_path = './temp.csv', context_len = args.context_len, max_time_steps = args.max_time_steps, tasks=args.tasks, stl = False)
 	
-	result = dec.predict_file(args.wave)
-	print(dec.returnLabel(result))
+	if args.wav_list:
+		inputs = open(args.wav_list, 'r')
+		output = open(args.wav_list + '.out', 'w')
+		for input in inputs:
+			input = input.rstrip()
+			result = dec.predict_file(input)
+			print(result)
+			if args.reg:
+				result = dec.returnDiff(result)
+			else:
+				result = dec.returnLabel(result)
+			print(result)
+			output.write(str(result) + "\n")
+		output.close()
+	else:
+		result = dec.predict_file(args.wave)
+		print(result)
+		if args.reg:
+			result = dec.returnDiff(result)
+		else:
+			result = dec.returnLabel(result)
 	
-	
-
