@@ -8,6 +8,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <run_depend>libnite2</run_depend>
   <run_depend>squirrel_person_tracker</run_depend>
+  <run_depend>squirrel_people_tracker</run_depend>
   <run_depend>squirrel_expression</run_depend> 
   <run_depend>squirrel_speech_rec</run_depend> 
   <run_depend>squirrel_leg_detector</run_depend> 
