@@ -1,10 +1,13 @@
 #ifndef FOCUS_HEAD_H
 #define FOCUS_HEAD_H
 
+#include <vector>
 #include <ros/ros.h>
 #include <std_srvs/SetBool.h>
 #include <boost/thread/mutex.hpp>
 #include <sensor_msgs/PointCloud2.h>
+#include <people_msgs/PositionMeasurement.h>
+#include <people_msgs/PositionMeasurementArray.h>
 
 class FocusHead
 {
@@ -13,10 +16,11 @@ public:
   ~FocusHead();
 
   void initialize(int argc, char **argv);
+  void moveHead();
 
-  void cloudCallback(const sensor_msgs::PointCloud2::ConstPtr &cloud_msg);
-  void faceCallback(const people_msgs::PositionMeasurement &face_msgs);
-  void legCallback(const sensor_msgs::PointCloud2ConstPtr &cloud_msg);
+  void cloudCallback(const sensor_msgs::PointCloud2::ConstPtr &msg);
+  void faceCallback(const people_msgs::PositionMeasurement::ConstPtr &msg);
+  void legCallback(const people_msgs::PositionMeasurementArray::ConstPtr &msg);
 
   bool set_focus_on_head(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp);
 
@@ -34,6 +38,8 @@ private:
 
   /* === MISC ===*/
   boost::mutex mutex_;
+  std::vector<people_msgs::PositionMeasurement> possible_positions_;
+  double height_;
 
   bool enabled_;
 };
