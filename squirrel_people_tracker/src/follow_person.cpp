@@ -1,0 +1,114 @@
+/**
+ * FollowPerson.cpp
+ *
+ * Attends to the legs in the laser data and faces in the camera data.
+ * 
+ * 
+ * @author Michael Zillich zillich@acin.tuwien.ac.at
+ * @author Markus Bajones bajones@acin.tuwien.ac.at
+ * @date Sept 2015
+ */
+
+#include <math.h>
+#include <ios>
+#include <robotino_msgs/LookAtPosition.h>
+#include <squirrel_people_tracker/follow_person.h>
+#include <people_msgs/People.h>
+#include <tf/LinearMath/Transform.h>
+#include <squirrel_speech_msgs/RecognizedCommand.h>
+
+using namespace std;
+
+FollowPerson::FollowPerson()
+{
+  legsSub_ = nh_.subscribe("/leg_persons", 2, &FollowPerson::legsCallback, this);
+  controllerSrv_ = nh_.serviceClient<robotino_msgs::LookAtPosition>("/attention/look_at_position");
+  timer = nh_.createTimer(ros::Duration(2.5), &FollowPerson::observeTimerCallback, this);
+  facetimer = nh_.createTimer(ros::Duration(2.5), &FollowPerson::faceTimerCallback, this);
+  last_observation_ = ros::Time::now();
+  attentionSub = nh_.subscribe("actual_focus_of_attention", 2, &FollowPerson::robotInFovCallback, this);
+}
+
+FollowPerson::~FollowPerson()
+{
+}
+
+void FollowPerson::run()
+{
+  ros::spin();
+}
+
+void FollowPerson::faceTimerCallback(const ros::TimerEvent&)
+{
+}
+
+void FollowPerson::observeTimerCallback(const ros::TimerEvent&)
+{
+}
+
+void FollowPerson::legsCallback(const people_msgs::People& msg)
+{
+  ROS_INFO("legsCallback");
+  for (size_t i = 0; i < msg.people.size(); i++)
+  {
+    ROS_INFO("possible person at %.3f %.3f", msg.people[i].position.x, msg.people[i].position.y);
+    if ((msg.people.size() == 1) && (abs(msg.people[i].position.y) < 0.2))
+    {
+      ROS_INFO("person right in front of the robot");
+      continue;
+    }
+    geometry_msgs::PointStamped tmp_point;
+    tmp_point.header.frame_id = msg.header.frame_id;
+    tmp_point.header.stamp = msg.header.stamp;
+    tmp_point.point.x = msg.people[i].position.x;
+    tmp_point.point.y = msg.people[i].position.y;
+    tmp_point.point.z = msg.people[i].position.z;
+    try{
+      // service expects a geometry_msgs::Point in base_link instead of kinect_rgb_optical_frame
+      listener_.waitForTransform("base_link", "hokuyo_link", ros::Time::now(), ros::Duration(3.0));
+      listener_.transformPoint("base_link", tmp_point, next_); 
+      ROS_INFO("hokuyo_link: (%.2f, %.2f. %.2f) -----> base_link: (%.2f, %.2f, %.2f) at time %.2f",
+	       tmp_point.point.x, tmp_point.point.y, tmp_point.point.z, next_.point.x, next_.point.y, next_.point.z, next_.header.stamp.toSec());
+    }
+    catch (tf::TransformException ex){
+      ROS_ERROR("%s",ex.what());
+      ros::Duration(1.0).sleep();
+    }
+    
+    ROS_INFO("look at person at %.3f %.3f", next_.point.x, next_.point.y);
+    observeMutex_.lock();
+    reason_ = "leg";
+    observeMutex_.unlock();
+
+    robotino_msgs::LookAtPosition srv;
+    srv.request.target = next_.point;
+    srv.request.why = reason_;
+    
+    if (controllerSrv_.call(srv))
+    {
+      ROS_INFO("call service /attention/look_at_position with: %f %f %f", next_.point.x, next_.point.y, next_.point.z);
+    ros::Duration(2.5).sleep();
+    }
+    else
+    {
+      ROS_ERROR("Failed to call service /attention/look_at_position");
+    }
+ } 
+}
+
+void faceCallback(const people_msgs::People& msg)
+{
+}
+
+void FollowPerson::robotInFovCallback(const std_msgs::String& msg)
+{
+}
+
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "squirrel_follow_person");
+  FollowPerson f;
+  ros::spin();
+
+  return 0;
+}
