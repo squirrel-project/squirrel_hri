@@ -121,7 +121,9 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg
         pos.header.stamp = laserMsg->header.stamp;
         pos.header.frame_id = fixed_frame_;
         pos.name = "leg_detector";
-        pos.object_id = "0";
+        std::stringstream ss;
+        ss << i;
+        pos.object_id = ss.str();
         pos.pos.x = center.x;
         pos.pos.y = center.y;
         pos.pos.z = 0.16; //height of the laser
