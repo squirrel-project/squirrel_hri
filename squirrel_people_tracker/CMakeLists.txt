@@ -120,9 +120,9 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 add_library(squirrel_people_tracker
    src/squirrel_people_tracker.cpp
 )
-#add_library(squirrel_focus_on_head
-#   src/focus_head.cpp
-#)
+add_library(squirrel_focus_on_head
+   src/focus_head.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -131,12 +131,12 @@ add_library(squirrel_people_tracker
 
 ## Declare a C++ executable
 add_executable(squirrel_people_tracker_node src/squirrel_people_tracker_node.cpp)
-#add_executable(squirrel_focus_on_head_node src/squirrel_focus_on_head_node.cpp)
+add_executable(squirrel_focus_on_head_node src/squirrel_focus_on_head_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(squirrel_people_tracker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#add_dependencies(squirrel_focus_on_head_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(squirrel_focus_on_head_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(squirrel_people_tracker_node
@@ -147,10 +147,10 @@ target_link_libraries(squirrel_people_tracker
   ${PCL_INCLUDE_DIRS}
   ${catkin_LIBRARIES}
 )
-#target_link_libraries(squirrel_focus_on_head_node
-#   ${catkin_LIBRARIES}
-#   squirrel_focus_on_head
-#)
+target_link_libraries(squirrel_focus_on_head_node
+   ${catkin_LIBRARIES}
+   squirrel_focus_on_head
+)
 
 
 #############

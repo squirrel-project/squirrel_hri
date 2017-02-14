@@ -14,7 +14,9 @@ public:
 
   void initialize(int argc, char **argv);
 
-  void cloudCallback(const sensor_msgs::PointCloud2ConstPtr &cloud_msg);
+  void cloudCallback(const sensor_msgs::PointCloud2::ConstPtr &cloud_msg);
+  void faceCallback(const people_msgs::PositionMeasurement &face_msgs);
+  void legCallback(const sensor_msgs::PointCloud2ConstPtr &cloud_msg);
 
   bool set_focus_on_head(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &resp);
 
@@ -23,7 +25,9 @@ private:
   ros::NodeHandle *nh_;
 
   /* === SUBSCRIBERS === */
-  ros::Subscriber cloud_sub_;  // subscriber for face detections
+  ros::Subscriber cloud_sub_;  // subscriber for head locatlization 
+  ros::Subscriber face_sub_;  // subscriber for face detections
+  ros::Subscriber leg_sub_;  // subscriber for face detections
 
   /* === SERVICES === */
   ros::ServiceServer enable_focus_on_head_srv_;

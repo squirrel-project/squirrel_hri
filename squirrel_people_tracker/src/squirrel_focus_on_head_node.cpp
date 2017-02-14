@@ -6,6 +6,8 @@ int main(int argc, char **argv)
 
   FocusHead focus_on_head;
   focus_on_head.initialize(argc, argv);
+  
+  ros::spin();
 
   return 0;
 }
