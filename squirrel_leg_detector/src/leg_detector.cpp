@@ -24,6 +24,9 @@
 #include <squirrel_leg_detector/leg_detector.h>
 #include <people_msgs/People.h>
 #include <people_msgs/Person.h>
+#include <people_msgs/PositionMeasurementArray.h>
+
+using namespace std;
 
 LegDetector::LegDetector()
 {
@@ -45,6 +48,7 @@ void LegDetector::initialise(int argc, char **argv)
   nh_.param("segmentation_distance", sw_param.dseg, 0.2);
   // feature set mix, default 0:all
   nh_.param("feature_mix", sw_param.featuremix, 0);
+  nh_.param("fixed_frame", fixed_frame_, string("hokuyo_link"));
 
   ppl2D_ = new people2D_engine(sw_param);
   ppl2D_->set_featureset();
@@ -57,7 +61,7 @@ void LegDetector::initialise(int argc, char **argv)
   markerPub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 0, true);
   personPub_ = nh_.advertise<std_msgs::String>("laser_person", 0);
   peoplePub_ = nh_.advertise<people_msgs::People>("/leg_persons", 0);
-  peopleFilteredPub_ = nh_.advertise<people_msgs::People>("/leg_persons_filtered", 0);
+  positionPub_ = nh_.advertise<people_msgs::PositionMeasurement>("people_tracker_measurements", 0);
 
 }
 
@@ -72,8 +76,6 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg
   std::vector<LSL_Point3D_container> people;
   scan.data.pts.resize(laserMsg->ranges.size());
   scan.timestamp = 0.;
-//  FILE *dumpfile = fopen("laserdump.txt", "w");
-//  fprintf(dumpfile, "%.6f ", scan.timestamp);
   for(size_t i = 0; i < laserMsg->ranges.size(); i++)
   {
     float r = std::max(std::min(laserMsg->ranges[i], laserMsg->range_max), laserMsg->range_min);
@@ -82,43 +84,67 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg
     scan.data.pts[i].x = r*cos(laserMsg->angle_min + (float)i*laserMsg->angle_increment);
     scan.data.pts[i].y = r*sin(laserMsg->angle_min + (float)i*laserMsg->angle_increment);
     scan.data.pts[i].label = 1;
-//    fprintf(dumpfile, "%.6f %.6f %d ", scan.data.pts[i].x, scan.data.pts[i].y, scan.data.pts[i].label);
-  }
-//  fclose(dumpfile);
-  //visualiseScan(laserMsg);  // HACK
-  ppl2D_->detect_people(scan, people);
-  if(people.size() > 0)
-  {
-    std_msgs::String pos;
-    std::stringstream poss;
-    LSL_Point3D_str center;
-    std::vector<LSL_Point3D_str> center_points;
-    people_msgs::Person person;
-    people_msgs::People people_vector;
-    
-    for(size_t i = 0; i < people.size(); i++)
-    {
-      std::stringstream personss;
-      LSL_Point3D_str center;
-      people[i].compute_cog(&center);
-      center_points.push_back(center);
 
-      ROS_INFO("person %ld at %.2f(x) %.2f(y)", i, center.x, center.y);
-      visualisePerson(people[i]);
-      personss << "id: " << i;
-      people_vector.header.stamp = ros::Time::now();
-      people_vector.header.frame_id = "hokuyo_link";
-      person.name = personss.str();
-      person.position.x = center.x;
-      person.position.y = center.y;
-      person.position.z = center.z;
-      people_vector.people.push_back(person);
-    }
+    ppl2D_->detect_people(scan, people);
+    if(people.size() > 0)
+    {
+      std_msgs::String pos;
+      std::stringstream poss;
+      LSL_Point3D_str center;
+      std::vector<LSL_Point3D_str> center_points;
+      people_msgs::Person person;
+      people_msgs::People people_vector;
+      people_msgs::PositionMeasurementArray measurements;
+      vector<people_msgs::PositionMeasurement> legs;
+
+      for(size_t i = 0; i < people.size(); i++)
+      {
+        people_msgs::PositionMeasurement measurement;
+        std::stringstream personss;
+        LSL_Point3D_str center;
+
+        people[i].compute_cog(&center);
+        center_points.push_back(center);
+
+        ROS_INFO("person %ld at %.2f(x) %.2f(y)", i, center.x, center.y);
+        visualisePerson(people[i]);
+        personss << "id: " << i;
+        people_vector.header.stamp = ros::Time::now();
+        people_vector.header.frame_id = fixed_frame_;
+        person.name = personss.str();
+        person.position.x = center.x;
+        person.position.y = center.y;
+        person.position.z = center.z;
+        people_vector.people.push_back(person);
+
+        people_msgs::PositionMeasurement pos;
+        pos.header.stamp = laserMsg->header.stamp;
+        pos.header.frame_id = fixed_frame_;
+        pos.name = "leg_detector";
+        pos.object_id = "0";
+        pos.pos.x = center.x;
+        pos.pos.y = center.y;
+        pos.pos.z = 0.16; //height of the laser
+        pos.reliability = 1.0; //hack
+        pos.covariance[0] = pow(0.3 / pos.reliability, 2.0);
+        pos.covariance[1] = 0.0;
+        pos.covariance[2] = 0.0;
+        pos.covariance[3] = 0.0;
+        pos.covariance[4] = pow(0.3 / pos.reliability, 2.0);
+        pos.covariance[5] = 0.0;
+        pos.covariance[6] = 0.0;
+        pos.covariance[7] = 0.0;
+        pos.covariance[8] = 10000.0;
+        pos.initialization = 0;
+        legs.push_back(pos);
+      }
+
     peoplePub_.publish(people_vector);
     ROS_INFO("--");
     poss << center_points[0].x << " " << center_points[0].y;
     pos.data = poss.str();
     personPub_.publish(pos);
+    }
   }
 }
 
@@ -135,7 +161,7 @@ void LegDetector::visualiseScan(const sensor_msgs::LaserScan::ConstPtr& laserMsg
     float y = r*sin(laserMsg->angle_min + (float)i*laserMsg->angle_increment);
 
 	  visualization_msgs::Marker marker;
-	  marker.header.frame_id = "hokuyo_link";
+	  marker.header.frame_id = fixed_frame_;
 	  marker.header.stamp = ros::Time::now();
 	  marker.ns = "laserdot";
 	  marker.id = i;
@@ -169,7 +195,7 @@ void LegDetector::visualisePerson(LSL_Point3D_container &person)
 
   visualization_msgs::Marker marker;
   ROS_INFO("Publish Marker");
-  marker.header.frame_id = "hokuyo_link";
+  marker.header.frame_id = fixed_frame_;
   marker.header.stamp = ros::Time::now();
   marker.ns = "person";
   marker.id = cnt;
