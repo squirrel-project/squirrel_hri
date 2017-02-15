@@ -15,7 +15,6 @@
 #include <squirrel_people_tracker/follow_person.h>
 #include <people_msgs/People.h>
 #include <tf/LinearMath/Transform.h>
-#include <squirrel_speech_msgs/RecognizedCommand.h>
 
 using namespace std;
 

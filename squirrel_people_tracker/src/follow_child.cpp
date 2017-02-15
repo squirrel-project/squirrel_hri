@@ -1,4 +1,5 @@
 #include "squirrel_people_tracker/follow_child.h"
+#include <string>
 
 ChildFollowingAction::~ChildFollowingAction(void)
 {
@@ -19,14 +20,12 @@ ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, fa
 void ChildFollowingAction::goalCB()
 {
   goal_ = as_.acceptNewGoal();
-  // start a new ros timer to stop as soon as the defined timeout has been reached
-  nh_.createTimer(ros::Duration(goal->time_standing_still), ChildFollowingAction::timerCB);
 }
 
-void ChildFollowingAction::timerCB(const ros::TimerEvent &eventconst ros::TimerEvent &event)
+void ChildFollowingAction::timerCB(const ros::TimerEvent &event)
 {
-  result_.final_location = feedback_.final_location;
-  as_.setAborted(result_, "Timeout reached.");
+  //result_.final_location = feedback_.final_location;
+  //as_.setAborted(result_, "Timeout reached.");
 }
 
 void ChildFollowingAction::preemptCB()
@@ -44,12 +43,12 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
 
   for (size_t i = 0; i < msg->people.size(); ++i)
   {
-    if (strcmp(msg->people[i].object_id, goal_->child_id)
+    if (msg->people[i].object_id == "test");//goal_->child_id_to_follow)
     {
       for (size_t j = 0; i < goal_->target_locations.size(); ++j)
       {
-        double distx = pow((target_locations[j].point x - msg->people[i].pos.x), 2);
-        double disty = pow((target_locations[j].point y - msg->people[i].pos.y), 2);
+        double distx = pow((goal_->target_locations[j].pos.x - msg->people[i].pos.x), 2);
+        double disty = pow((goal_->target_locations[j].pos.y - msg->people[i].pos.y), 2);
         if ((abs(sqrt(distx - disty))) < target_distance_)
         {
           ROS_INFO("%s: Succeeded", action_name_.c_str());

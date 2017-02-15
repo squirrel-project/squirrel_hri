@@ -1,10 +1,10 @@
 /**
- * FollowPerson.h
+ * follow_child.h
  *
- * Attends to the legs in the laser data and faces in the camera data.
+ * Follows a specified child based on position measurements
  *
- * @author Michael Zillich zillich@acin.tuwien.ac.at
- * @date Sept 2015
+ * @author Markus 'bajo' Bajones bajones@acin.tuwien.ac.at
+ * @date Feb 2017
  */
 
 #ifndef FOLLOW_CHILD_H
@@ -17,12 +17,14 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <tf/transform_listener.h>
 #include <squirrel_hri_msgs/FollowChildAction.h>
+#include <actionlib/server/simple_action_server.h>
+#include <boost/shared_ptr.hpp>
 
 class ChildFollowingAction
 {
 protected:
   ros::NodeHandle nh_;
-  actionlib::SimpleActionServer<squirrel_hri_msgs::ChildFollowingAction> as_;  // NodeHandle instance must be
+  actionlib::SimpleActionServer<squirrel_hri_msgs::FollowChildAction> as_;  // NodeHandle instance must be
                                                                                // created before this line.
                                                                                // Otherwise strange error
                                                                                // occurs.
@@ -30,7 +32,7 @@ protected:
   // create messages that are used to published feedback/result
   squirrel_hri_msgs::FollowChildFeedback feedback_;
   squirrel_hri_msgs::FollowChildResult result_;
-  squirrel_hri_msgs::FollowChildGoal goal_;
+  boost::shared_ptr<squirrel_hri_msgs::FollowChildGoal> goal_;
   geometry_msgs::PoseStamped point_;
   double distance_;
   double target_distance_;
@@ -43,6 +45,7 @@ public:
   ros::ServiceClient tilt_speed_client_;
   ros::Publisher pan_pub_;
   ros::Publisher tilt_pub_;
+  ros::Subscriber sub_;
   ros::Timer timer;
 
   void goalCB();
