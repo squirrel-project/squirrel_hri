@@ -19,6 +19,9 @@ find_package(catkin REQUIRED COMPONENTS
   squirrel_person_tracker_msgs
   nodelet
   std_srvs
+  cv_bridge
+  image_transport
+  sensor_msgs
   ${catkin_BUILD_PACKAGES}
 )
 
@@ -63,6 +66,9 @@ include_directories(
 add_executable(squirrel_person_tracker src/squirrel_person_tracker_main.cpp src/floor_pointer.cpp src/squirrel_person_tracker.cpp)
 target_link_libraries(squirrel_person_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES})
 add_dependencies(squirrel_person_tracker ${catkin_EXPORTED_TARGETS})
+
+add_executable(people_recognition src/people_recognition.cpp src/ImageUtils.cpp)
+target_link_libraries(people_recognition ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES})
 
 add_library(squirrel_person_tracker_nodelet src/squirrel_person_tracker_nodelet.cpp src/floor_pointer.cpp src/squirrel_person_tracker.cpp)
 target_link_libraries(squirrel_person_tracker_nodelet ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} )

@@ -17,8 +17,7 @@
 #include <libnite2/NiTE.h>
 #include <tf/transform_listener.h>
 
-class SquirrelTracker : public nite::UserTracker::NewFrameListener
-{
+class SquirrelTracker : public nite::UserTracker::NewFrameListener {
 protected:
   ros::NodeHandle pnh_;
 public:
@@ -26,9 +25,9 @@ public:
   bool ISWAVEDETECTED;
   bool SWITCHSKELTRACKON;
   bool ISWAVEUSERVISBLE;
-  bool static_plane_;
+  bool tf_plane_;
   bool pub_filtered_pc_;
-  bool publish_skeleton_;
+  bool publish_wuser_skeleton_;
   bool track_wave_user_;
   double beginUnvis;
   int durationUnvis;
@@ -38,14 +37,9 @@ public:
   nite::Status nstatus;
   nite::UserTracker uTracker;
   nite::UserTrackerFrameRef userFrame;
-  nite::UserMap usersMap;
   nite::UserId wavingUserID;
   nite::Point3f floorPoint;
-  nite::Point3f pointingHead;
-  nite::Point3f pointingHand;
-  nite::Plane floor_;
 
-  openni::VideoFrameRef userDepthFrame;
   openni::Status ostatus;
   openni::Device device;
   openni::VideoStream depthSensor;
@@ -68,7 +62,6 @@ public:
   squirrel_person_tracker_msgs::HeadHandPoints squirrelHeadHand;
   FloorPointer pDetector;
   geometry_msgs::PointStamped odom_point_origin_, odom_point_ez_, optical_point_origin_, optical_point_ez_;
-
 
   SquirrelTracker(ros::NodeHandle& pnh_);
 /////////////////////////////////////////////////////////////////////
@@ -94,9 +87,11 @@ public:
                                const std::string& frame_id, const std::string& child_frame_id,
                                const ros::Time& timestamp);
 
-  squirrel_person_tracker_msgs::SkeletonJoint transformOfJoint(const nite::UserId& userID, const nite::SkeletonJoint& joint,
-                        const std::string& frame_id, const std::string& child_frame_id,
-                        const ros::Time& timestamp);
+  squirrel_person_tracker_msgs::SkeletonJoint transformOfJoint(const nite::UserId& userID,
+                                                               const nite::SkeletonJoint& joint,
+                                                               const std::string& frame_id,
+                                                               const std::string& child_frame_id,
+                                                               const ros::Time& timestamp);
 /////////////////////////////////////////////////////////////////////////
   void publishPoseStampedArrayOfUsers(const nite::Point3f& point, const ros::Time& timestamp);
 /////////////////////////////////////////////////////////////////////////
@@ -119,7 +114,7 @@ public:
 /////////////////////////////////////////////////////////////////////
   void stopSquirrelTracker();
 /////////////////////////////////////////////////////////////////////
-  void publishUsersData(const nite::Array<nite::UserData>& users, const ros::Time& timestamp);
+  void publishUsersData(const nite::Array<nite::UserData>& users, const ros::Time& timestamp, nite::Plane& floor);
 };
 
 #endif
