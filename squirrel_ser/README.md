@@ -21,6 +21,8 @@ Please run the following steps BEFORE you run catkin_make.
 `sudo apt-get install python-pip python-dev libhdf5-dev portaudio19-dev'
 
 Next, using pip, install all pre-required modules.
+(pip version 8.1 is required.)
+
 pip install -r requirements.txt
 
 ## 2. Build <a id="2--build"/>
