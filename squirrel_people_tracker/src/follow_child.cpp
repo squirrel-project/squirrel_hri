@@ -20,12 +20,12 @@ ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, fa
 void ChildFollowingAction::goalCB()
 {
   goal_ = as_.acceptNewGoal();
+  nh_.createTimer(ros::Duration(goal_->time_standing_still), &ChildFollowingAction::timerCB, this);
 }
 
 void ChildFollowingAction::timerCB(const ros::TimerEvent &event)
 {
-  //result_.final_location = feedback_.final_location;
-  //as_.setAborted(result_, "Timeout reached.");
+  as_.setAborted(result_, "Timeout reached.");
 }
 
 void ChildFollowingAction::preemptCB()
@@ -47,12 +47,12 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
     {
       for (size_t j = 0; i < goal_->target_locations.size(); ++j)
       {
-        double distx = pow((goal_->target_locations[j].pos.x - msg->people[i].pos.x), 2);
-        double disty = pow((goal_->target_locations[j].pos.y - msg->people[i].pos.y), 2);
+        double distx = pow((goal_->target_locations[j].x - msg->people[i].pos.x), 2);
+        double disty = pow((goal_->target_locations[j].y - msg->people[i].pos.y), 2);
         if ((abs(sqrt(distx - disty))) < target_distance_)
         {
           ROS_INFO("%s: Succeeded", action_name_.c_str());
-          ROS_INFO("Child is at (x,y): (%f, %f)", msg->people[i].x, msg->people[i].y);
+          ROS_INFO("Child is at (x,y): (%f, %f)", msg->people[i].pos.x, msg->people[i].pos.y);
           // set the action state to succeeded
           as_.setSucceeded(result_);
         }
@@ -60,13 +60,13 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
       // calculate a point between the child and the robot
       // (x, y) = (c_x +- d/sqrt(2), c_y +- d/sqrt(2))
       point_.header.stamp = ros::Time::now();
-      point_.point.x = msg->people[i].pos.x - distance_ / sqrt(2);
-      point_.point.y = msg->people[i].pos.y - distance_ / sqrt(2);
+      point_.pose.position.x = msg->people[i].pos.x - distance_ / sqrt(2);
+      point_.pose.position.y = msg->people[i].pos.y - distance_ / sqrt(2);
 
       // store last position in result_
-      feedback_.final_location.header.stamp = point_.header.stamppoint_.header.stamp;
-      feedback_.final_location.point.x = point_.point.x;
-      feedback_.final_location.point.y = point_.point.y;
+      result_.final_location.header.stamp = point_.header.stamp;
+      result_.final_location.pose.position.x = point_.pose.position.x;
+      result_.final_location.pose.position.y = point_.pose.position.y;
 
     }
   }

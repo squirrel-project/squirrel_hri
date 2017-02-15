@@ -32,7 +32,7 @@ protected:
   // create messages that are used to published feedback/result
   squirrel_hri_msgs::FollowChildFeedback feedback_;
   squirrel_hri_msgs::FollowChildResult result_;
-  boost::shared_ptr<squirrel_hri_msgs::FollowChildGoal> goal_;
+  squirrel_hri_msgs::FollowChildGoal::ConstPtr goal_;
   geometry_msgs::PoseStamped point_;
   double distance_;
   double target_distance_;
