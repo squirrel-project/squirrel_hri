@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+
+
+<component name="liveVadFrontEnd" type="edu.cmu.sphinx.frontend.FrontEnd">
+    <propertylist name="pipeline">
+       <item>streamDataSource </item>
+       <item>dataBlocker </item>
+       <item>speechClassifier </item>       
+       <item>speechMarker </item>
+       <item>wavWriter</item>
+       </propertylist>
+    </component>
+
+<component name="spectogramFrontEnd" type="edu.cmu.sphinx.frontend.FrontEnd">
+        <propertylist name="pipeline">
+            <item>audioFileDataSource</item>
+            <item>dataBlocker </item>
+            <item>preemphasizer</item>
+            <item>windower</item>.
+            <item>fft</item>
+            <item>wienerFilter</item>
+            <item>speechClassifier </item>
+           <item>speechMarker </item>
+           <item>wavWriter</item> 
+            <!--item>dataDumper</item-->
+        </propertylist>
+</component>
+
+ <component name="audioFileDataSource" type="edu.cmu.sphinx.frontend.util.AudioFileDataSource"/>
+
+<component name="streamDataSource"
+               type="edu.cmu.sphinx.frontend.util.StreamDataSource">
+        <property name="sampleRate" value="16000"/>
+    </component>
+
+  <component name="dataBlocker" type="edu.cmu.sphinx.frontend.DataBlocker"/>
+
+  <component name="speechClassifier"
+    type="edu.cmu.sphinx.frontend.endpoint.SpeechClassifier">
+    <property name="threshold" value="10" />
+    <property name="windowSize" value="5" />
+  </component>
+
+  <component name="nonSpeechDataFilter"
+    type="edu.cmu.sphinx.frontend.endpoint.NonSpeechDataFilter"/>
+
+   <component name="wienerFilter"
+    type="edu.cmu.sphinx.frontend.endpoint.WienerFilter">
+      <property name="classifier" value="speechClassifier"/>
+      <property name="onlyEstimate" value="true"/>
+      <property name="windowSize" value="1"/>
+      <!--property name="featPath" value="/Users/kimj/Exp/weka/tr/feat.csv"/-->
+    </component>
+
+  <component name="wienerFilterOffline"
+    type="edu.cmu.sphinx.frontend.endpoint.WienerFilter">
+      <property name="classifier" value="speechClassifier"/>
+      <property name="onlyEstimate" value="true"/>
+      <property name="windowSize" value="-1"/>
+      <property name="minVadSNR" value="40"/>
+    </component>
+
+  <component name="speechMarker"
+    type="edu.cmu.sphinx.frontend.endpoint.SpeechMarker" >
+    <property name="startSpeech" value="100"/>
+    <property name="endSilence" value="100"/>
+    <property name="speechLeader" value="150"/>
+    <property name="speechTrailer" value="150"/>
+    
+  </component>
+
+  <component name="preemphasizer"
+    type="edu.cmu.sphinx.frontend.filter.Preemphasizer"/>
+
+  <component name="windower"
+    type="edu.cmu.sphinx.frontend.window.RaisedCosineWindower">
+  </component>
+
+  <component name="fft"
+    type="edu.cmu.sphinx.frontend.transform.DiscreteFourierTransform">
+  </component>
+  <component name="ifft"
+    type="edu.cmu.sphinx.frontend.transform.DiscreteFourierTransform">
+    <property name="invert" value="true"/>
+  </component>
+
+    <component name="dataDumper" 
+                type="edu.cmu.sphinx.frontend.util.DataDumper"/>
+  <component name="autoCepstrum"
+    type="edu.cmu.sphinx.frontend.AutoCepstrum">
+    <property name="loader" value="acousticModelLoader"/>
+  </component>
+
+
+  <component name="featureExtraction"
+    type="edu.cmu.sphinx.frontend.feature.DeltasFeatureExtractor"/>
+
+  <component name="featureTransform"
+    type="edu.cmu.sphinx.frontend.feature.FeatureTransform">
+    <property name="loader" value="acousticModelLoader"/>
+  </component>
+  <component name="melFilterBank" type="edu.cmu.sphinx.frontend.frequencywarp.MelFrequencyFilterBank">
+    <property name="numberFilters" value="31"/>
+    <property name="minimumFrequency" value="200"/>
+    <property name="maximumFrequency" value="3500"/>
+  </component>
+  <component name="confidenceScorer"
+    type="edu.cmu.sphinx.result.MAPConfidenceScorer">
+    <property name="languageWeight" value="${languageWeight}"/>
+  </component>
+   <component name="dct"
+               type="edu.cmu.sphinx.frontend.transform.DiscreteCosineTransform"/>
+   <component name="wavWriter" type="edu.cmu.sphinx.frontend.util.WavWriter">    
+    <property name="captureUtterances" value="true"/>
+    </component>
+</config>

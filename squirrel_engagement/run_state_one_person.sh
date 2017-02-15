@@ -1,0 +1,1 @@
+java -jar StateMonitor.jar -voice:/Users/kimj/workplace/workspace_sq/squirrel_hri/squirrel_engagement/speech_1.wav.feat -feat_ext_config:./config/feat_ext.config -svm_config:./config/svm.rank.config -decayRate:1.0 -windowSize:5000
