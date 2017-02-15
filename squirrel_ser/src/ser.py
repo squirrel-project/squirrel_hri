@@ -153,6 +153,7 @@ def ser(args):
 			data = s.read(chunk)
 		except:
 			rospy.loginfo("overflow, needs a higer priority")
+			continue
 
 		#check gain
 		mx = audioop.max(data, 2)
