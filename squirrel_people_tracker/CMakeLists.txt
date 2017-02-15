@@ -45,52 +45,7 @@ find_package(PCL 1.7 REQUIRED)
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
 
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
-
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
-
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-## To declare and build dynamic reconfigure parameters within this
-## package, follow these steps:
-## * In the file package.xml:
-##   * add a build_depend and a run_depend tag for "dynamic_reconfigure"
-## * In this file (CMakeLists.txt):
-##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * uncomment the "generate_dynamic_reconfigure_options" section below
-##     and list every .cfg file to be processed
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
 
 ###################################
 ## catkin specific configuration ##
@@ -132,11 +87,13 @@ add_library(squirrel_focus_on_head
 ## Declare a C++ executable
 add_executable(squirrel_people_tracker_node src/squirrel_people_tracker_node.cpp)
 add_executable(squirrel_focus_on_head_node src/squirrel_focus_on_head_node.cpp)
+add_executable(squirrel_follow_child_node src/follow_child.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(squirrel_people_tracker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(squirrel_focus_on_head_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(squirrel_follow_child_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(squirrel_people_tracker_node
@@ -150,6 +107,9 @@ target_link_libraries(squirrel_people_tracker
 target_link_libraries(squirrel_focus_on_head_node
    ${catkin_LIBRARIES}
    squirrel_focus_on_head
+)
+target_link_libraries(squirrel_follow_child_node
+   ${catkin_LIBRARIES}
 )
 
 
