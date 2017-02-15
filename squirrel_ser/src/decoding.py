@@ -70,8 +70,21 @@ class Decoder(object):
 		temporal_feat = self.build_temporal_feat(mspec)
 		return self.temporal_predict(temporal_feat)
 	
+	def predict_long_file(self, input_file, g_min_max = None):
+		mspec = extract_melspec_file(input_file, file = self.feat_path, n_mels = 80, min_max = g_min_max)
+
+		n_turns = mspec.shape[0] / self.max_time_steps
+		result = []
+		for i in range(0, n_turns):
+			start = i * self.max_time_steps
+			end = (i + 1) * self.max_time_steps
+			temporal_feat = self.build_temporal_feat(mspec[start:end])
+			result.append(self.temporal_predict(temporal_feat))
+
+		return result
+
 	def temporal_predict(self, temporal_feat):	
-		print("temporal feat shape: ", temporal_feat.shape)
+		#print("temporal feat shape: ", temporal_feat.shape)
 		predictions = self.model.predict(temporal_feat)
 
 		if self.elm_model_files == None:
@@ -132,10 +145,12 @@ class Decoder(object):
 		return labels		
 
 if __name__ == "__main__":
-	print('example of decoding')
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-wav", "--wave", dest= 'wave', type=str, help="wave file", default='./test.wav')
-	parser.add_argument("-wav_list", "--wave_list", dest= 'wav_list', type=str, help="wave file list", default='./test.wav.txt')
+	parser.add_argument("-l_wav", "--long_wave", dest= 'long_wave', type=str, help="long wave file")
+	parser.add_argument("-wav_list", "--wave_list", dest= 'wave_list', type=str, help="wave file list", default='./test.wav.txt')
+	parser.add_argument("-g_min", "--gain_min", dest= 'g_min', type=float, help="min value of automatic gain normalisation", default=-1.37686)
+	parser.add_argument("-g_max", "--gain_max", dest= 'g_max', type=float, help="max value of automatic gain normalisation", default=1.55433)
 	parser.add_argument("-md", "--model_file", dest= 'model_file', type=str, help="model file", default='./model.h5')
 	parser.add_argument("-elm_md", "--elm_model_files", dest= 'elm_model_files', type=str, help="elm_model_file")
 	parser.add_argument("-c_len", "--context_len", dest= 'context_len', type=int, help="context_len", default=5)
@@ -149,24 +164,50 @@ if __name__ == "__main__":
 		parser.print_help()
 		sys.exit(1)
 
+	if args.g_min and args.g_max:
+		g_min_max = (args.g_min, args.g_max)
+	else:
+		g_min_max = None
+
 	if args.stl:
 		dec = Decoder(model_file = args.model_file, elm_model_files = args.elm_model_files, feat_path = './temp.csv', context_len = args.context_len, max_time_steps = args.max_time_steps, tasks=args.tasks)
 	else:
 		dec = Decoder(model_file = args.model_file, elm_model_files = args.elm_model_files, feat_path = './temp.csv', context_len = args.context_len, max_time_steps = args.max_time_steps, tasks=args.tasks, stl = False)
 	
-	if args.wav_list:
-		inputs = open(args.wav_list, 'r')
-		output = open(args.wav_list + '.out', 'w')
+	if args.long_wave:
+		results = dec.predict_long_file(args.long_wave, g_min_max)
+		output = open(args.long_wave + '.out', 'w')
+
+		for result in results:
+			if args.reg:
+				result = dec.returnDiff(result)
+			else:
+				result = dec.returnLabel(result)
+			print(result)
+			for task_id in range(0, len(result)):
+				output.write(str(result[task_id]) + '\t')
+			output.write('\n')
+		output.close()
+		print('batch decoding is done, total number of outputs: ', len(results))
+		
+	elif args.wave_list:
+		inputs = open(args.wave_list, 'r')
+		output = open(args.wave_list + '.out', 'w')
+		
 		for input in inputs:
 			input = input.rstrip()
-			result = dec.predict_file(input)
+			result = dec.predict_file(input, g_min_max)
 			print(result)
 			if args.reg:
 				result = dec.returnDiff(result)
 			else:
 				result = dec.returnLabel(result)
 			print(result)
-			output.write(str(result) + "\n")
+			output.write(input + '\t')
+			for task_id in range(0, len(result)):
+				output.write(str(result[task_id]) + '\t')
+			output.write('\n')
+
 		output.close()
 	else:
 		result = dec.predict_file(args.wave)
