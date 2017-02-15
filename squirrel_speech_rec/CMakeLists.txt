@@ -5,6 +5,7 @@ project(squirrel_speech_rec)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
   rospy
   std_msgs
   squirrel_speech_msgs
@@ -33,3 +34,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+add_executable(speech_visu src/speech_visu.cpp)
+target_link_libraries(speech_visu ${catkin_LIBRARIES})
+
+add_dependencies(speech_visu squirrel_speech_msgs generate_messages_cpp)

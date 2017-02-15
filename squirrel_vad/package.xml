@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>squirrel_vad</name>
+  <version>0.0.0</version>
+  <description>The squirrel_vad package</description>
+
+  <maintainer email="j.kim@utwente.nl">batikim09</maintainer>
+
+  <license>BSD,Boost Software License</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>libvad</build_depend>
+  <build_depend>libpulse-dev</build_depend>
+  <build_depend>squirrel_vad_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>libvad</run_depend>
+  <run_depend>squirrel_vad_msgs</run_depend>
+  <run_depend>libpulse-dev</run_depend>
+
+</package>
