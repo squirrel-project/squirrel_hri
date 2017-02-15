@@ -13,7 +13,7 @@ ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, fa
   as_.registerPreemptCallback(boost::bind(&ChildFollowingAction::preemptCB, this));
 
   // subscribe to the data topic of interest
-  sub_ = nh_.subscribe("", 1, &ChildFollowingAction::analysisCB, this);
+  sub_ = nh_.subscribe("people_tracker_filter", 1, &ChildFollowingAction::analysisCB, this);
   as_.start();
 }
 
