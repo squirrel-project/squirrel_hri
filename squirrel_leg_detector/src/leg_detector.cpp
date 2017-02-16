@@ -57,7 +57,7 @@ void LegDetector::initialise(int argc, char **argv)
   markerPub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 0, true);
   personPub_ = nh_.advertise<std_msgs::String>("laser_person", 0);
   peoplePub_ = nh_.advertise<people_msgs::People>("/leg_persons", 0);
-  peopleFilteredPub_ = nh_.advertise<people_msgs::People>("/leg_persons_filtered", 0);
+  positionPub_ = nh_.advertise<people_msgs::PositionMeasurement>("people_tracker_measurements", 0);
 }
 
 void LegDetector::run()
@@ -101,6 +101,7 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr &laserMsg
       LSL_Point3D_str center;
       people[i].compute_cog(&center);
       center_points.push_back(center);
+      people_msgs::PositionMeasurement position;
 
       ROS_INFO("person %ld at %.2f(x) %.2f(y)", i, center.x, center.y);
       visualisePerson(people[i]);
@@ -112,6 +113,29 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr &laserMsg
       person.position.y = center.y;
       person.position.z = center.z;
       people_vector.people.push_back(person);
+
+      position.header.stamp = laserMsg->header.stamp;
+      position.header.frame_id = fixed_frame_;
+      position.name = "leg_detector";
+      std::stringstream ss;
+      ss << i;
+      position.object_id = ss.str();
+      position.pos.x = center.x;
+      position.pos.y = center.y;
+      position.pos.z = 0.16;       // height of the laser
+      position.reliability = 1.0;  // hack
+      position.covariance[0] = pow(0.3 / position.reliability, 2.0);
+      position.covariance[1] = 0.0;
+      position.covariance[2] = 0.0;
+      position.covariance[3] = 0.0;
+      position.covariance[4] = pow(0.3 / position.reliability, 2.0);
+      position.covariance[5] = 0.0;
+      position.covariance[6] = 0.0;
+      position.covariance[7] = 0.0;
+      position.covariance[8] = 10000.0;
+      position.initialization = 0;
+
+      positionPub_.publish(position);
     }
     peoplePub_.publish(people_vector);
     ROS_INFO("--");
