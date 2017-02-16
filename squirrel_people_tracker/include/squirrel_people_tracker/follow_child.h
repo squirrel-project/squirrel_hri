@@ -19,21 +19,25 @@
 #include <squirrel_hri_msgs/FollowChildAction.h>
 #include <actionlib/server/simple_action_server.h>
 #include <boost/shared_ptr.hpp>
+#include <move_base_msgs/MoveBaseAction.h>
+#include <actionlib/client/simple_action_client.h>
 
 class ChildFollowingAction
 {
 protected:
   ros::NodeHandle nh_;
+  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_base_ac_;
   actionlib::SimpleActionServer<squirrel_hri_msgs::FollowChildAction> as_;  // NodeHandle instance must be
-                                                                               // created before this line.
-                                                                               // Otherwise strange error
-                                                                               // occurs.
+                                                                            // created before this line.
+                                                                            // Otherwise strange error
+                                                                            // occurs.
   std::string action_name_;
   // create messages that are used to published feedback/result
   squirrel_hri_msgs::FollowChildFeedback feedback_;
   squirrel_hri_msgs::FollowChildResult result_;
   squirrel_hri_msgs::FollowChildGoal::ConstPtr goal_;
   geometry_msgs::PoseStamped point_;
+  move_base_msgs::MoveBaseGoal move_base_goal_;
   double distance_;
   double target_distance_;
 

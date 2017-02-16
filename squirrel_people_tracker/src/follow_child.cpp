@@ -7,6 +7,11 @@ ChildFollowingAction::~ChildFollowingAction(void)
 
 ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, false), action_name_(name)
 {
+  MoveBaseClient move_base_ac_("move_base", true);
+  while (!ac.waitForServer(ros::Duration(5.0)))
+  {
+    ROS_INFO("Waiting for the move_base action server to come up");
+  }
   distance_ = 0.4;
   // register the goal and feeback callbacks
   as_.registerGoalCallback(boost::bind(&ChildFollowingAction::goalCB, this));
@@ -43,7 +48,8 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
 
   for (size_t i = 0; i < msg->people.size(); ++i)
   {
-    if (msg->people[i].object_id == "test");//goal_->child_id_to_follow)
+    if (msg->people[i].object_id == "test")
+      ;  // goal_->child_id_to_follow)
     {
       for (size_t j = 0; i < goal_->target_locations.size(); ++j)
       {
@@ -68,6 +74,17 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
       result_.final_location.pose.position.x = point_.pose.position.x;
       result_.final_location.pose.position.y = point_.pose.position.y;
 
+      goal.target_pose.header.frame_id = "hokuyo_link";
+      goal.target_pose.header.stamp = ros::Time::now();
+
+      goal.target_pose.pose.position.x = point_.pose.position.xpoint_.pose.position.x;
+      goal.target_pose.pose.position.y = point_.pose.position.xpoint_.pose.position.y;
+      goal.target_pose.pose.orientation.w = 1.0;
+
+      ROS_INFO("Sending goal");
+      ac.sendGoal(goal);
+
+      ros::Duration(1.0).sleep();
     }
   }
 }
