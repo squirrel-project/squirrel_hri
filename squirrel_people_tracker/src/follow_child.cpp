@@ -3,12 +3,14 @@
 
 ChildFollowingAction::~ChildFollowingAction(void)
 {
+  if (move_base_ac_)
+    delete move_base_ac_;
 }
 
 ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, false), action_name_(name)
 {
-  MoveBaseClient move_base_ac_("move_base", true);
-  while (!ac.waitForServer(ros::Duration(5.0)))
+  new MoveBaseClient("move_base", true);
+  while (!move_base_ac_.waitForServer(ros::Duration(5.0)))
   {
     ROS_INFO("Waiting for the move_base action server to come up");
   }
@@ -83,7 +85,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
       move_base_goal_.target_pose.pose.orientation.w = 1.0;
 
       ROS_INFO("Sending goal");
-      move_base_ac_.sendGoal(goal);
+      move_base_ac_.sendGoal(move_base_goal_);
 
       ros::Duration(1.0).sleep();
     }

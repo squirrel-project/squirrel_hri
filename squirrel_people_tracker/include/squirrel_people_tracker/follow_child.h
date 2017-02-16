@@ -26,7 +26,7 @@ class ChildFollowingAction
 {
 protected:
   ros::NodeHandle nh_;
-  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_base_ac_;
+  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> *move_base_ac_;
   actionlib::SimpleActionServer<squirrel_hri_msgs::FollowChildAction> as_;  // NodeHandle instance must be
                                                                             // created before this line.
                                                                             // Otherwise strange error
