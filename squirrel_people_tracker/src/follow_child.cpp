@@ -1,5 +1,6 @@
 #include "squirrel_people_tracker/follow_child.h"
 #include <string>
+typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
 ChildFollowingAction::~ChildFollowingAction(void)
 {
@@ -10,7 +11,7 @@ ChildFollowingAction::~ChildFollowingAction(void)
 ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, false), action_name_(name)
 {
   new MoveBaseClient("move_base", true);
-  while (!move_base_ac_.waitForServer(ros::Duration(5.0)))
+  while (!move_base_ac_->waitForServer(ros::Duration(5.0)))
   {
     ROS_INFO("Waiting for the move_base action server to come up");
   }
@@ -85,7 +86,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
       move_base_goal_.target_pose.pose.orientation.w = 1.0;
 
       ROS_INFO("Sending goal");
-      move_base_ac_.sendGoal(move_base_goal_);
+      move_base_ac_->sendGoal(move_base_goal_);
 
       ros::Duration(1.0).sleep();
     }
