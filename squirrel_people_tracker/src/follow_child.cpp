@@ -10,7 +10,7 @@ ChildFollowingAction::~ChildFollowingAction(void)
 
 ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, false), action_name_(name)
 {
-  new MoveBaseClient("move_base", true);
+  move_base_ac_ = new MoveBaseClient("move_base", true);
   while (!move_base_ac_->waitForServer(ros::Duration(5.0)))
   {
     ROS_INFO("Waiting for the move_base action server to come up");
