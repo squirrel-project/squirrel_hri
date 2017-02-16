@@ -68,6 +68,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
       point_.header.stamp = ros::Time::now();
       point_.pose.position.x = msg->people[i].pos.x - distance_ / sqrt(2);
       point_.pose.position.y = msg->people[i].pos.y - distance_ / sqrt(2);
+      ROS_INFO("Setting nav goal to (x, y): (%f, %f)", point_.pose.position.x, point_.pose.position.y);
 
       // store last position in result_
       result_.final_location.header.stamp = point_.header.stamp;
