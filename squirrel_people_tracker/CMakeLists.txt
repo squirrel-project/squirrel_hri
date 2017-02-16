@@ -102,10 +102,10 @@ add_dependencies(squirrel_follow_child_node ${${PROJECT_NAME}_EXPORTED_TARGETS} 
 #   squirrel_people_tracker
 #)
 
-target_link_libraries(squirrel_people_tracker
-  ${PCL_INCLUDE_DIRS}
-  ${catkin_LIBRARIES}
-)
+#target_link_libraries(squirrel_people_tracker
+#  ${PCL_INCLUDE_DIRS}
+#  ${catkin_LIBRARIES}
+#)
 
 target_link_libraries(squirrel_focus_on_head_node
    ${catkin_LIBRARIES}
