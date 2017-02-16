@@ -106,7 +106,7 @@ def ser(args):
 	#audio device setup
 	format = pyaudio.paInt16
 	
-	n_channel = args.channels
+	n_channel = 1
 	sample_rate = args.sample_rate
 	frame_duration = args.frame_duration
 	frame_len = (sample_rate * frame_duration / 1000)
@@ -136,33 +136,52 @@ def ser(args):
 			
 	p = pyaudio.PyAudio()
 
-	#open mic
-	#s = p.open(format = format, channels = n_channel,rate = sample_rate,input = True, input_device_index = args.device_id,frames_per_buffer = chunk)
-	s = p.open(format = format, channels = n_channel, rate = sample_rate, input = True, frames_per_buffer = chunk)
-	
-	rospy.loginfo("---MIC Starting---")
+	#open file (offline mode)
+	if args.wave:
+		f = wave.open(args.wave)
+
+		if args.play:
+			s = p.open(format = p.get_format_from_width(f.getsampwidth()),
+                    channels = f.getnchannels(),
+                    rate = f.getframerate(),
+                    output = True)
+	else:
+		rospy.loginfo("no input wav file!")
+		exit()
+
+	rospy.loginfo("---Starting---")
 
 	is_currently_speech = False
 	total_frame_len = 0
 	frames = ''
 	prev_task_outputs = None
 	speech_frame_len = 0
+	total_frame_count = 0
 
+	#read first frame
 	while not rospy.is_shutdown():
-		try:
-			data = s.read(chunk)
-		except:
-			rospy.loginfo("overflow, needs a higer priority")
-			continue
+		data = f.readframes(chunk)
+		
+		if data == '':
+			break
+
+		#play stream
+		if args.play:
+			s.write(data)
 
 		#check gain
 		mx = audioop.max(data, 2)
 		#vad
-		is_speech = vad.is_speech(data, sample_rate)
+		try:
+			is_speech = vad.is_speech(data, sample_rate)
+		except:
+			rospy.loginfo("end of speech")
+			break
+
 		if mx < args.min_energy:
 			is_speech = 0
 
-		rospy.loginfo('gain: %d, vad: %d', mx, is_speech)
+		rospy.logdebug('gain: %d, vad: %d', mx, is_speech)
 			
 		if args.sync:#synchronous mode
 			if is_speech == 1:
@@ -180,7 +199,6 @@ def ser(args):
 				if float(speech_frame_len)/total_frame_len > args.speech_ratio:
 
 					task_outputs = predict(dec, p, data_path + "/" + str(rospy.Time.now()) + '.wav', frames, reg = args.reg, g_min_max = g_min_max, save = save)
-					#rospy.loginfo(str(task_outputs))
 					#broadcast results
 					broadcast_result(task_publisher, task_outputs)
 				else:
@@ -192,6 +210,9 @@ def ser(args):
 				total_frame_len = 0
 				speech_frame_len = 0
 				frames = ''
+
+			total_frame_count = total_frame_count + 1
+			rospy.loginfo("total frame: %d", total_frame_count)
 
 		else:#asynchronous mode
 
@@ -226,11 +247,16 @@ def ser(args):
 				total_frame_len = 0
 				continue
 
-		rate.sleep()
+		#rate.sleep()
 
 	rospy.loginfo("---done---")
 
-	s.close()
+	if args.wave:
+		f.close()
+	if args.play:
+		s.stop_stream()
+		s.close()
+
 	p.terminate()	
 
 if __name__ == '__main__':
@@ -241,13 +267,13 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 
 	#options for VAD
-	parser.add_argument("-ch", "--channels", dest= 'channels', type=int, help="number of channels", default=1)
 	parser.add_argument("-sr", "--sample_rate", dest= 'sample_rate', type=int, help="number of samples per sec, only accept [8000|16000|32000]", default=16000)
 	parser.add_argument("-fd", "--frame_duration", dest= 'frame_duration', type=int, help="a duration of a frame msec, only accept [10|20|30]", default=20)
 	parser.add_argument("-vm", "--vad_mode", dest= 'vad_mode', type=int, help="vad mode, only accept [0|1|2|3], 0 more quiet 3 more noisy", default=0)
 	parser.add_argument("-vd", "--vad_duration", dest= 'vad_duration', type=int, help="minimum length(ms) of speech for emotion detection", default=500)
 	parser.add_argument("-me", "--min_energy", dest= 'min_energy', type=int, help="minimum energy of speech for emotion detection", default=100)
-	parser.add_argument("-d_id", "--device_id", dest= 'device_id', type=int, help="device id for microphone", default=0)
+	parser.add_argument("-wav", "--wave", dest= 'wave', type=str, help="wave file (offline mode)")
+	
 	#automatic gain normalisation
 	parser.add_argument("-g_min", "--gain_min", dest= 'g_min', type=float, help="min value of automatic gain normalisation", default=-1.37686)
 	parser.add_argument("-g_max", "--gain_max", dest= 'g_max', type=float, help="max value of automatic gain normalisation", default=1.55433)
@@ -268,6 +294,7 @@ if __name__ == '__main__':
 	parser.add_argument("--default", help="default", action="store_true")
 	parser.add_argument("--name", help="name", action="store_true")
 	parser.add_argument("--save", help="save voice files", action="store_true")
+	parser.add_argument("--play", help="real time play", action="store_true")
 
 	#parser.add_argument("-h", "--help", help="help", action="store_true")
 
