@@ -21,7 +21,14 @@ Please run the following steps BEFORE you run catkin_make.
 `sudo apt-get install python-pip python-dev libhdf5-dev portaudio19-dev'
 
 Next, using pip, install all pre-required modules.
-pip install -r requirements.txt
+(pip version 8.1 is required.)
+
+http://askubuntu.com/questions/712339/how-to-upgrade-pip-to-latest
+
+sudo pip install -r requirements.txt
+
+If you have numpy already, it must be higher than 1.12.0
+try to install tensorflow using pip, then it will install the proper version of numpy.
 
 ## 2. Build <a id="2--build"/>
 
