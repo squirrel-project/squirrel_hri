@@ -78,12 +78,12 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
       goal.target_pose.header.frame_id = "hokuyo_link";
       goal.target_pose.header.stamp = ros::Time::now();
 
-      goal.target_pose.pose.position.x = point_.pose.position.xpoint_.pose.position.x;
-      goal.target_pose.pose.position.y = point_.pose.position.xpoint_.pose.position.y;
+      goal.target_pose.pose.position.x = point_.point_.pose.position.x;
+      goal.target_pose.pose.position.y = point_.point_.pose.position.y;
       goal.target_pose.pose.orientation.w = 1.0;
 
       ROS_INFO("Sending goal");
-      ac.sendGoal(goal);
+      move_base_ac_.sendGoal(goal);
 
       ros::Duration(1.0).sleep();
     }
