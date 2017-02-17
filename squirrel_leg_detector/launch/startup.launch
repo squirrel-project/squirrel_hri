@@ -5,7 +5,7 @@
   <include file="$(find squirrel_leg_detector)/launch/close_to_pose.launch" />
 
   <include file="$(find people_tracking_filter)/launch/filter.launch"/>
-  <param name="people_tracker/fixed_frame" type="string" value="hokuyo_link"/>
+  <param name="people_tracker/fixed_frame" type="string" value="map"/>
   <param name="people_tracker/follow_one_person" type="bool" value="false"/>
 
 </launch>
