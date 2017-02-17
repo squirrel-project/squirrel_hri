@@ -1,5 +1,5 @@
 /**
- * leg_detector.h
+ * leg_detector.cpp
  *
  * Detects persons as pairs of legs in 2D laser range data.
  *
@@ -24,6 +24,7 @@
 #include <squirrel_leg_detector/leg_detector.h>
 #include <people_msgs/People.h>
 #include <people_msgs/Person.h>
+#include <people_msgs/PositionMeasurement.h>
 
 LegDetector::LegDetector()
 {
