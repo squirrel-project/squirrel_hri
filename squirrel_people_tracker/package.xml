@@ -34,5 +34,8 @@
   <run_depend>tf2</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>move_base_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
   <run_depend>squirrel_leg_detector</run_depend>
 </package>
