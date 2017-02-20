@@ -1,0 +1,15 @@
+<launch>
+
+  <arg name="sound_directory" default="$(find squirrel_expression)/data/sounds"/>
+  <node pkg="squirrel_expression" type="squirrel_expression" name="squirrel_expression" output="screen">
+    <param name="sound_directory" value="$(arg sound_directory)" />
+  </node>
+
+  <node pkg="squirrel_expression" type="squirrel_motion_expression" name="squirrel_motion_expression" output="screen" />
+
+  <!-- for now this is started on an external PC
+  <node pkg="sound_play" type="soundplay_node.py" name="soundplay_node.py" output="screen" />
+  -->
+
+</launch>
+

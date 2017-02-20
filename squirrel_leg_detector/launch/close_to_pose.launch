@@ -1,5 +1,5 @@
 <launch>
   <param name="threshold" type="double" value="0.35"/>
   <rosparam param="target_pose"> [1.35,1.11,1.57] </rosparam>
-  <node pkg="squirrel_leg_detector" type="squirrel_legs_close_to_pose" name="squirrel_legs_close_to_pose" output="screen" respawn="true" />
+  <node pkg="squirrel_leg_detector" type="squirrel_legs_close_to_pose" name="squirrel_legs_close_to_pose" output="log" respawn="true" />
 </launch>
