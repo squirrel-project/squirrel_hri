@@ -7,9 +7,10 @@ roscpp
 sensor_msgs
 move_base_msgs
 pcl_conversions pcl_ros
+geometry_msgs people_msgs std_msgs tf
 )
 
-find_package(Boost REQUIRED COMPONENTS system geometry_msgs move_base_msgs people_msgs sensor_msgs std_msgs std_srvs tf)
+find_package(Boost REQUIRED COMPONENTS system)
 find_package(PCL 1.7 REQUIRED)
 
 catkin_package(
