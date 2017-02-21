@@ -116,11 +116,9 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr &laserMsg
       people_vector.people.push_back(person);
 
       position.header.stamp = laserMsg->header.stamp;
-      position.header.frame_id = fixed_frame_;
+      position.header.frame_id = "hokuyo_link";
       position.name = "leg_detector";
-      std::stringstream ss;
-      ss << i;
-      position.object_id = ss.str();
+      position.object_id = "";
       position.pos.x = center.x;
       position.pos.y = center.y;
       position.pos.z = 0.16;       // height of the laser
@@ -134,7 +132,7 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr &laserMsg
       position.covariance[6] = 0.0;
       position.covariance[7] = 0.0;
       position.covariance[8] = 10000.0;
-      position.initialization = 0;
+      position.initialization = 1;
 
       positionPub_.publish(position);
     }
