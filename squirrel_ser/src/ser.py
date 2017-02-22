@@ -21,10 +21,11 @@ from squirrel_vad_msgs.msg import RecognisedResult
 
 def listup_devices():
 	p = pyaudio.PyAudio()
-	#list up devices
-	for i in range(p.get_device_count()):
-		print p.get_device_info_by_index(i)
- 
+	info = p.get_host_api_info_by_index(0)
+	numdevices = info.get('deviceCount')
+	for i in range(0, numdevices):
+		if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+			print "Input Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0, i).get('name'), " - ch: ", p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')
 def broadcast_result(task_publisher, task_outputs):
 	for id in range(0, len(task_publisher)):
 		output = task_outputs[id]
@@ -247,7 +248,7 @@ if __name__ == '__main__':
 	parser.add_argument("-vm", "--vad_mode", dest= 'vad_mode', type=int, help="vad mode, only accept [0|1|2|3], 0 more quiet 3 more noisy", default=0)
 	parser.add_argument("-vd", "--vad_duration", dest= 'vad_duration', type=int, help="minimum length(ms) of speech for emotion detection", default=500)
 	parser.add_argument("-me", "--min_energy", dest= 'min_energy', type=int, help="minimum energy of speech for emotion detection", default=100)
-	parser.add_argument("-d_id", "--device_id", dest= 'device_id', type=int, help="device id for microphone", default=0)
+	parser.add_argument("-d_id", "--device_id", dest= 'device_id', type=int, help="device id for microphone", default=None)
 	#automatic gain normalisation
 	parser.add_argument("-g_min", "--gain_min", dest= 'g_min', type=float, help="min value of automatic gain normalisation", default=-1.37686)
 	parser.add_argument("-g_max", "--gain_max", dest= 'g_max', type=float, help="max value of automatic gain normalisation", default=1.55433)
