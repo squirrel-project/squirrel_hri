@@ -70,8 +70,8 @@ class SoundViz(object):
 		ma1.scale.z = 1*(1 + self.arousal * 2)
 		
 		ma1.color.a = 1.0
-		ma1.color.r = 1.0 if self.valence < 0.5 else 0.0
-		ma1.color.g = 1.0 if self.valence > 0.5 else 0.0
+		ma1.color.r = 1.0 if self.valence < self.threshold else 0.0
+		ma1.color.g = 1.0 if self.valence > self.threshold else 0.0
 		ma1.color.b = 1.0 if self.valence == 0.0 else 0.0
 
 		ma1.lifetime = rospy.Duration(0.1)
@@ -110,8 +110,7 @@ if __name__ == '__main__':
 	parser.add_argument("-v_min", "--v_min", dest= 'v_min', type=float, help="min value of valence", default=-1.0)
 	parser.add_argument("-v_max", "--v_max", dest= 'v_max', type=float, help="max value of valence", default=1.0)
 
-	parser.add_argument("-dr", "--duration", dest= 'duration', type=float, help="duration threshold", default=0.1)
-
+	parser.add_argument("-th", "--threshold", dest= 'threshold', type=float, help="threshold", default=0.3)
 	parser.add_argument("--default", help="default", action="store_true")
 	parser.add_argument("--name", help="name", action="store_true")
 
@@ -120,5 +119,5 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	rospy.init_node('ser_features_visualizer', anonymous=True)
-	sv = SoundViz(args.a_min, args.a_max, args.v_min, args.v_max, args.duration)
+	sv = SoundViz(args.a_min, args.a_max, args.v_min, args.v_max, args.threshold)
 	rospy.spin()

@@ -1,0 +1,6 @@
+<launch>
+
+<include file="$(find squirrel_leg_detector)/launch/startup.launch" />
+<node pkg="squirrel_people_tracker" type="squirrel_follow_child_node" name="squirrel_follow_child_node" output="screen"/>
+
+</launch>
