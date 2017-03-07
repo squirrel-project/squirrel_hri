@@ -32,12 +32,15 @@ public:
 
 private:
   people2D_engine *ppl2D_;
+
   ros::NodeHandle nh_;
   ros::Subscriber laserSub_;
   ros::Publisher personPub_;
   ros::Publisher peoplePub_;
-  ros::Publisher peopleFilteredPub_;
+  ros::Publisher positionPub_;
   ros::Publisher markerPub_;
+
+  std::string fixed_frame_;
 
   void laserCallback(const sensor_msgs::LaserScan::ConstPtr& laserMsg);
   void visualisePerson(LSL_Point3D_container &person);
