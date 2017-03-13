@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="squirrel_ser" name="$(anon visualisation_ser)" output="screen" type="visualisation_ser.py" args="" respawn="true"/>
+</launch>
+
+
+

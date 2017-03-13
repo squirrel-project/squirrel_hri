@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>squirrel_speech_rec</name>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <description>The squirrel_speech_rec package</description>
 
   <maintainer email="florian.voigtlaender@festo.com"> Florian Voigtländer </maintainer>
@@ -10,15 +10,19 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>squirrel_speech_msgs</build_depend>
   <build_depend>squirrel_hri_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
 
+  <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>squirrel_speech_msgs</run_depend>
   <run_depend>squirrel_hri_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
