@@ -46,11 +46,23 @@ public:
   {
     geometry_msgs::PoseStamped robot_pose, child_pose, tmp_pose, out_pose;
     move_base_msgs::MoveBaseGoal move_base_goal_;
-    
+    double min_distance = 1000.0;
+    int index = 0;
+
     if (msg->people.size() == 0)
       return;
     
-    int index = 0;
+    // calculate distance to select the closest personCB
+    for (size_t i = 0; i < msg->people.size(); ++i)
+    {
+      double distance = (sqrt(msg->people[i].pos.x*msg->people[i].pos.x + msg->people[i].pos.y*msg->people[i].pos.y));
+      if (distance < min_distance)
+      {
+        index = i;
+        min_distance = distance;
+      }
+    }
+    
     double alpha = 0.0;
     tmp_pose.header.stamp = ros::Time(0);
     tmp_pose.header.frame_id = "hokuyo_link";
@@ -59,7 +71,7 @@ public:
     tmp_pose.pose.orientation =  tf::createQuaternionMsgFromYaw(alpha);
     ROS_INFO("Person detected at (x, y): (%f, %f) hokuyo_link", tmp_pose.pose.position.x, tmp_pose.pose.position.y);
 
-// calculate a point between the child and the robot
+    // calculate a point between the child and the robot
     alpha = atan2(tmp_pose.pose.position.y, tmp_pose.pose.position.x);
     double k = sqrt(tmp_pose.pose.position.x * tmp_pose.pose.position.x + tmp_pose.pose.position.y * tmp_pose.pose.position.y);
     

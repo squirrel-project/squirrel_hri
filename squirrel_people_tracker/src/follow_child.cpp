@@ -59,7 +59,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   {
     double k = 10.0;
     k = (sqrt(msg->people[i].pos.x*msg->people[i].pos.x + msg->people[i].pos.y*msg->people[i].pos.y));
-    ROS_INFO("k: %f, abs(k): %f", k, abs(k) );
+    ROS_INFO("k: %f, fabs(k): %f", k, fabs(k) );
     if (k < dist)
     {
       index = i;
@@ -101,7 +101,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
     disty = pow((goal_->target_locations[j].y - msg->people[index].pos.y), 2);
     distance = (sqrt(distx + disty));
     ROS_INFO("Distance to target position is %f", distance);
-    if (abs(distance) < distance_)
+    if (fabs(distance) < distance_)
     {
       ROS_INFO("Set success");
       // set the action state to succeeded
