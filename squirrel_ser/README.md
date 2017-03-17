@@ -25,6 +25,10 @@ Next, using pip, install all pre-required modules.
 
 http://askubuntu.com/questions/712339/how-to-upgrade-pip-to-latest
 
+If you have old numpy (<1.12) please remove it.
+https://github.com/tensorflow/tensorflow/issues/559
+
+Then,
 sudo pip install -r requirements.txt
 
 If you have numpy already, it must be higher than 1.12.0
