@@ -44,9 +44,10 @@ public:
     int getPixelColorType(int H, int S, int V);
     void sync_cb(const sensor_msgs::ImageConstPtr& imgIn, const sensor_msgs::PointCloud2ConstPtr& pcloud);
     void pixelTo3DPoint(const sensor_msgs::PointCloud2& pCloud, const int u, const int v, geometry_msgs::Point &p);
-    ros::NodeHandle nh_;
+    ros::NodeHandle nh_, gh;
     ros::Publisher imagePub_;
     ros::Publisher poseArrayPub_;
+    ros::Publisher shirtPub_;
     boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> > sync;
     boost::shared_ptr<message_filters::Subscriber<sensor_msgs::Image> > image_sub_;
     boost::shared_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2> > pc_sub_;

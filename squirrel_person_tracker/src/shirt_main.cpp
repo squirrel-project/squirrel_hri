@@ -14,7 +14,7 @@
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "shirt_detector");
-    ros::NodeHandle nh_;
+    ros::NodeHandle nh_("~");
     ShirtDetector sd((ros::package::getPath("squirrel_person_tracker") + "/config/haarcascades_frontalfaces_alt.xml").c_str(),
                      nh_);
     ros::spin();

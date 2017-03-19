@@ -4,14 +4,21 @@ using namespace cv;
 using namespace std;
 
 ShirtDetector::ShirtDetector(const std::string& file_path, ros::NodeHandle& nh) :
-        nh_(nh) {
+        nh_(nh),gh() {
+    std::string camera;
+    if (!nh_.getParam("camera", camera)) {
+      camera = "camera";
+      ROS_INFO("camera is not set. Default value: camera, NH NS %s",nh_.getNamespace().c_str());
+    }
     cascadeFileFace = file_path;
-    image_sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>(nh_, "/camera/rgb/image_raw", 1));
-    pc_sub_.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, "/camera/depth/points", 1));
+    image_sub_.reset(new message_filters::Subscriber<sensor_msgs::Image>(gh, camera + "/rgb/image_raw", 1));
+    pc_sub_.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(gh, camera + "/depth/points", 1));
     sync.reset(new message_filters::Synchronizer<SyncPolicy>(10, *image_sub_, *pc_sub_));
     sync->registerCallback(boost::bind(&ShirtDetector::sync_cb, this, _1, _2));
     imagePub_ = nh_.advertise<sensor_msgs::Image>("shirtImage", 1);
     poseArrayPub_ = nh_.advertise<geometry_msgs::PoseArray>("facePoints", 1);
+    shirtPub_ = nh_.advertise<squirrel_person_tracker_msgs::ShirtMsg>("shirtInfo", 1);
+
 }
 
 /**
@@ -65,9 +72,10 @@ void ShirtDetector::sync_cb(const sensor_msgs::ImageConstPtr& imgIn, const senso
         pose.orientation.w = 1;
         pose.position = gpoint;
         poseArrayMsg.poses.push_back(pose);
-        msg.pose[i] = pose;
+        msg.pose.push_back(pose);
     }
     poseArrayPub_.publish(poseArrayMsg);
+    shirtPub_.publish(msg);
     ROS_INFO("SYNC CB!!!!!!!!!!!!!!!!!!!!!");
 
 }
@@ -102,7 +110,6 @@ void ShirtDetector::getImgForShirt(const sensor_msgs::ImageConstPtr& imgIn, std:
     cascadeFace.detectMultiScale(imageIn, rectFaces, 1.1, 2, 0 | CV_HAAR_SCALE_IMAGE, Size(30, 30));
 
     msg.color.resize(rectFaces.size());
-    msg.pose.resize(rectFaces.size());
     msg.safety.resize(rectFaces.size());
     // Process each detected face
     std::cout << "Detecting shirt colors below the faces." << std::endl;
