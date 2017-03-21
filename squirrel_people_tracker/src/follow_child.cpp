@@ -91,7 +91,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   move_base_ac_->sendGoal(move_base_goal_);
   ros::Duration(1.5).sleep();
 
-  ROS_INFO("%d",  goal_->target_locations.size());
+  ROS_INFO("%lu",  goal_->target_locations.size());
   for (size_t j = 0; j < goal_->target_locations.size(); j++)
   {
     double distance = 0.001;

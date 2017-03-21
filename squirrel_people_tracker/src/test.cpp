@@ -50,13 +50,30 @@ public:
     double min_distance = 1000.0;
     int index = 0;
 
+    if ((ros::Time::now() - init_).toSec() < 2.5)
+      {
+      ROS_INFO("Exit 0 ..."); 
+      ROS_INFO("5 seconds since last goal was sent");
+      return;
+      }
     actionlib::SimpleClientGoalState state = ac_->getState();
     if ((state != actionlib::SimpleClientGoalState::LOST) && (ros::Time::now() - init_).toSec() < 5.0)
+      {
+      ROS_INFO("Exit 1 ..."); 
+      ROS_INFO("Action in state: %s",state.toString().c_str());
       return;
+      }
+    // this is just useful during debugging
     if ((state == actionlib::SimpleClientGoalState::ACTIVE))
-       return;
-    if (msg->people.size() == 0)
+      {
+      ROS_INFO("Exit. move_base is active"); 
       return;
+      }
+    if (msg->people.size() == 0)
+      {
+      ROS_INFO("Exit. no people in message"); 
+      return;
+      }
     ROS_INFO("Action in state: %s",state.toString().c_str());
     
     // calculate distance to select the closest personCB
@@ -90,11 +107,21 @@ public:
     ROS_INFO("Person detected at (x, y): (%f, %f) hokuyo_link", tmp_pose.pose.position.x, tmp_pose.pose.position.y);
     ROS_INFO("Person detected at (x, y): (%f, %f) map", child_pose.pose.position.x, child_pose.pose.position.y);
 
+    /*
+    // check if the child is in one of the target areas
+    if ((child_pose.pose.position.x - target_location[i].pose.position.x) < 0.25 &&
+        (child_pose.pose.position.y - target_location[i].pose.position.y) < 0.25)
+    {
+      // make sure we stop now
+      done_ = true;
+    }
+    */
+
     // calculate a point between the child and the robot
     alpha = atan2(tmp_pose.pose.position.y, tmp_pose.pose.position.x);
     double k = sqrt(tmp_pose.pose.position.x * tmp_pose.pose.position.x + tmp_pose.pose.position.y * tmp_pose.pose.position.y);
-    ROS_INFO("k: %f, alpha: %f", k, alpha);
-    ROS_INFO("sin(alpha): %f, cos(alpha): %f", sin(alpha), cos(alpha));
+    ROS_DEBUG("k: %f, alpha: %f", k, alpha);
+    ROS_DEBUG("sin(alpha): %f, cos(alpha): %f", sin(alpha), cos(alpha));
     
     tmp_pose.header.stamp = ros::Time(0);
     tmp_pose.header.frame_id = "hokuyo_link";
@@ -114,8 +141,8 @@ public:
       ros::Duration(1.0).sleep();
       return;
     }
-    if ((last_goal_.position.x - out_pose.pose.position.x) < 0.25 && 
-        (last_goal_.position.y - out_pose.pose.position.y) < 0.25 )
+    if ((last_goal_.position.x - out_pose.pose.position.x) < 0.10 && 
+        (last_goal_.position.y - out_pose.pose.position.y) < 0.10 )
     {
     ROS_INFO("Last goal was (x, y): (%f, %f) map", last_goal_.position.x, last_goal_.position.y);
     ROS_INFO("Current nav goal would be (x, y): (%f, %f) map", out_pose.pose.position.x, out_pose.pose.position.y);
