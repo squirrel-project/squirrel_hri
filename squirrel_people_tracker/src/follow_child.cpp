@@ -145,7 +145,8 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
     return;
   }
   if (fabs(last_goal_.position.x - out_pose.pose.position.x) < 0.25 && 
-      fabs(last_goal_.position.y - out_pose.pose.position.y) < 0.25 )
+      fabs(last_goal_.position.y - out_pose.pose.position.y) < 0.25 &&
+      fabs(tf::getYaw(last_goal_.orientation) - tf::getYaw(out_pose.pose.orientation) < 0.26)) //~15 degree
   {
   ROS_INFO("Last goal was (x, y): (%f, %f) map", last_goal_.position.x, last_goal_.position.y);
   ROS_INFO("Current nav goal would be (x, y): (%f, %f) map", out_pose.pose.position.x, out_pose.pose.position.y);
