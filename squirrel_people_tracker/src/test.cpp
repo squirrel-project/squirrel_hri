@@ -53,7 +53,7 @@ public:
     if ((ros::Time::now() - init_).toSec() < 2.5)
       {
       ROS_INFO("Exit 0 ..."); 
-      ROS_INFO("5 seconds since last goal was sent");
+      ROS_INFO("2.5 seconds since last goal was sent");
       return;
       }
     actionlib::SimpleClientGoalState state = ac_->getState();
@@ -95,8 +95,7 @@ public:
     tmp_pose.pose.orientation =  tf::createQuaternionMsgFromYaw(alpha);
     try{
       ros::Time now = ros::Time(0);
-      tfl_.waitForTransform("hokuyo_link", "map",
-                              now, ros::Duration(3.0));
+      tfl_.waitForTransform("hokuyo_link", "map", now, ros::Duration(3.0));
       tfl_.transformPose("map", tmp_pose, child_pose);
     }
     catch (tf::TransformException ex){
@@ -164,12 +163,12 @@ public:
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
-    marker.scale.x = 0.1;
-    marker.scale.y = 0.1;
-    marker.scale.z = 0.1;
+    marker.scale.x = 0.2;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.2;
     marker.color.a = 1.0; // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
     marker.color.b = 0.0; 
     vis_pub_.publish(marker);
     ros::Duration(2.0).sleep();
