@@ -13,6 +13,8 @@
  *
  * @author Michael Zillich zillich@acin.tuwien.ac.at
  * @date Sept 2015
+ * @author Markus Bajones bajones@acin.tuwien.ac.at
+ * @date March 2017
  */
 
 #include <stdlib.h>
@@ -25,6 +27,7 @@
 #include <people_msgs/People.h>
 #include <people_msgs/Person.h>
 #include <people_msgs/PositionMeasurement.h>
+#include <people_msgs/PositionMeasurementArray.h>
 
 LegDetector::LegDetector()
 {
@@ -58,7 +61,7 @@ void LegDetector::initialise(int argc, char **argv)
   markerPub_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 0, true);
   personPub_ = nh_.advertise<std_msgs::String>("laser_person", 0);
   peoplePub_ = nh_.advertise<people_msgs::People>("/leg_persons", 0);
-  positionPub_ = nh_.advertise<people_msgs::PositionMeasurement>("people_tracker_measurements", 0);
+  positionPub_ = nh_.advertise<people_msgs::PositionMeasurementArray>("people_tracker_measurements", 0);
 }
 
 void LegDetector::run()
@@ -95,6 +98,7 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr &laserMsg
     std::vector<LSL_Point3D_str> center_points;
     people_msgs::Person person;
     people_msgs::People people_vector;
+    people_msgs::PositionMeasurementArray position_vector;
 
     for (size_t i = 0; i < people.size(); i++)
     {
@@ -133,10 +137,10 @@ void LegDetector::laserCallback(const sensor_msgs::LaserScan::ConstPtr &laserMsg
       position.covariance[7] = 0.0;
       position.covariance[8] = 10000.0;
       position.initialization = 1;
-
-      positionPub_.publish(position);
+      position_vector.people.push_back(position);
     }
     peoplePub_.publish(people_vector);
+    positionPub_.publish(position_vector);
     ROS_INFO("--");
     poss << center_points[0].x << " " << center_points[0].y;
     pos.data = poss.str();
