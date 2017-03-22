@@ -21,6 +21,7 @@
 #include <boost/shared_ptr.hpp>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
 
 class ChildFollowingAction
 {
@@ -30,7 +31,7 @@ protected:
   actionlib::SimpleActionServer<squirrel_hri_msgs::FollowChildAction> as_;  // NodeHandle instance must be
                                                                             // created before this line.
                                                                             // Otherwise strange error
-                                                                            // occurs.
+                                                                 // occurs.
   std::string action_name_;
   // create messages that are used to published feedback/result
   squirrel_hri_msgs::FollowChildFeedback feedback_;
@@ -40,22 +41,25 @@ protected:
   move_base_msgs::MoveBaseGoal move_base_goal_;
   double distance_;
   double target_distance_;
+  ros::Time init_;
+  geometry_msgs::Pose last_goal_;
 
 public:
   tf::StampedTransform transform;
-  tf::TransformListener listener;
+  tf::TransformListener tfl_;
 
   ros::ServiceClient pan_speed_client_;
   ros::ServiceClient tilt_speed_client_;
   ros::Publisher pan_pub_;
   ros::Publisher tilt_pub_;
+  ros::Publisher vis_pub_;
+  ros::Publisher pub_;
   ros::Subscriber sub_;
-  ros::Timer timer;
 
   void goalCB();
   void preemptCB();
   void analysisCB(const people_msgs::PositionMeasurementArray::ConstPtr &msg);
-  void timerCB(const ros::TimerEvent &event);
+  void publishGoalMarker(float x, float y, float z);
 
   ChildFollowingAction(std::string name);
   ~ChildFollowingAction();
