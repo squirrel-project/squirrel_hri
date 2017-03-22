@@ -71,8 +71,12 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   move_base_msgs::MoveBaseGoal move_base_goal_;
   double min_distance = 1000.0;
   int index = 0;
-
-  //ROS_INFO(("time diff: %f", ros::Time::now() - init_).toSec());
+  double time_diff = (ros::Time::now() - init_).toSec();
+  ROS_INFO("time diff: %f", time_diff);
+  if (time_diff < 1.5)
+  {
+    return;
+  }
   // calculate distance to select the closest personCB
   for (size_t i = 0; i < msg->people.size(); ++i)
   {
@@ -140,8 +144,8 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
     ros::Duration(1.0).sleep();
     return;
   }
-  if (fabs(last_goal_.position.x - out_pose.pose.position.x) < 0.10 && 
-      fabs(last_goal_.position.y - out_pose.pose.position.y) < 0.10 )
+  if (fabs(last_goal_.position.x - out_pose.pose.position.x) < 0.25 && 
+      fabs(last_goal_.position.y - out_pose.pose.position.y) < 0.25 )
   {
   ROS_INFO("Last goal was (x, y): (%f, %f) map", last_goal_.position.x, last_goal_.position.y);
   ROS_INFO("Current nav goal would be (x, y): (%f, %f) map", out_pose.pose.position.x, out_pose.pose.position.y);
