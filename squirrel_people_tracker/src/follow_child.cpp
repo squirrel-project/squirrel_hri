@@ -55,16 +55,16 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   // make sure that the action hasn't been canceled
   if (!as_.isActive())
   {
-    ROS_INFO("Action server is no longer active. Exiting.");
+    ROS_DEBUG("Action server %s is no longer active. Exiting.", action_name_.c_str());
     return;
   }
   if (msg->people.size() == 0)
   {
-    ROS_INFO("Exit. no people in message"); 
+    ROS_DEBUG("No people in message"); 
     return;
   }
   actionlib::SimpleClientGoalState state = move_base_ac_->getState();
-  ROS_INFO("Action in state: %s",state.toString().c_str());
+  ROS_DEBUG("Action in state: %s",state.toString().c_str());
   
 
   geometry_msgs::PoseStamped robot_pose, child_pose, tmp_pose, out_pose;
@@ -72,7 +72,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   double min_distance = 1000.0;
   int index = 0;
   double time_diff = (ros::Time::now() - init_).toSec();
-  ROS_INFO("time diff: %f", time_diff);
+  ROS_DEBUG("time diff: %f", time_diff);
   if (time_diff < 1.5)
   {
     return;
@@ -104,7 +104,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
     ros::Duration(1.0).sleep();
     return;
   }
-  ROS_INFO("Person detected at (x, y): (%f, %f) hokuyo_link", tmp_pose.pose.position.x, tmp_pose.pose.position.y);
+  ROS_DEBUG("Person detected at (x, y): (%f, %f) hokuyo_link", tmp_pose.pose.position.x, tmp_pose.pose.position.y);
   ROS_INFO("Person detected at (x, y): (%f, %f) map", child_pose.pose.position.x, child_pose.pose.position.y);
 
   // check if the child is in one of the target areas
@@ -148,14 +148,14 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
       fabs(last_goal_.position.y - out_pose.pose.position.y) < 0.25 &&
       fabs(tf::getYaw(last_goal_.orientation) - tf::getYaw(out_pose.pose.orientation) < 0.26)) //~15 degree
   {
-  ROS_INFO("Last goal was (x, y): (%f, %f) map", last_goal_.position.x, last_goal_.position.y);
-  ROS_INFO("Current nav goal would be (x, y): (%f, %f) map", out_pose.pose.position.x, out_pose.pose.position.y);
-    ROS_INFO("current goal and last goal are close to each other. Do not send new goal");
+  ROS_DEBUG("Last goal was (x, y): (%f, %f) map", last_goal_.position.x, last_goal_.position.y);
+  ROS_DEBUG("Current nav goal would be (x, y): (%f, %f) map", out_pose.pose.position.x, out_pose.pose.position.y);
+    ROS_DEBUG("current goal and last goal are close to each other. Do not send new goal");
     return;
   }
 
   publishGoalMarker(out_pose.pose.position.x, out_pose.pose.position.y, out_pose.pose.position.z);
-  ROS_INFO("Setting nav goal to (x, y): (%f, %f) hokuyo_link", tmp_pose.pose.position.x, tmp_pose.pose.position.y);
+  ROS_DEBUG("Setting nav goal to (x, y): (%f, %f) hokuyo_link", tmp_pose.pose.position.x, tmp_pose.pose.position.y);
   ROS_INFO("Setting nav goal to (x, y): (%f, %f) map", out_pose.pose.position.x, out_pose.pose.position.y);
 
   last_goal_.position = out_pose.pose.position;
@@ -167,7 +167,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   move_base_goal_.target_pose.pose.position.y = out_pose.pose.position.y;
   move_base_goal_.target_pose.pose.orientation = out_pose.pose.orientation;
 
-  ROS_INFO("Sending goal");
+  ROS_INFO("Sending goal to move_base");
   move_base_ac_->sendGoal(move_base_goal_);
   init_ = ros::Time::now();
   ros::Duration(0.1).sleep();
