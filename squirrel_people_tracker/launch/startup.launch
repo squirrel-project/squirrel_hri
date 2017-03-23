@@ -1,7 +1,7 @@
 <launch>
+  <arg name="hostname" default="localhost" />
+  <arg name="robot" default="tuw-robotino2" />
 
-<include file="$(find squirrel_leg_detector)/launch/startup.launch" />
-<!--
-<node pkg="squirrel_people_tracker" type="squirrel_follow_child_node" name="squirrel_follow_child_node" output="screen"/>
--->
+  <include file="$(find squirrel_leg_detector)/launch/startup.launch" />
+  <node pkg="squirrel_people_tracker" type="squirrel_follow_child_node" name="squirrel_follow_child_node" output="log"/>
 </launch>
