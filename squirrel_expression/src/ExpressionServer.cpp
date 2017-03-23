@@ -37,11 +37,16 @@ namespace SQUIRREL_expression {
 		if(!filename.empty()) {
 			std::stringstream path;
 			path << sound_dir << "/" << filename;
-			sound_play::SoundRequest sound_msg;
+			/*sound_play::SoundRequest sound_msg;
 			sound_msg.sound = -2; // play file
 			sound_msg.command = 1; // play once
 			sound_msg.arg = path.str();
-			sound_pub.publish(sound_msg);
+			sound_pub.publish(sound_msg);*/
+			// HACK: sound play has problems on the Robotino, so just directly use aplay
+			// This should be fixed at some point.
+			std::stringstream cmd;
+        	        cmd << "aplay -D sysdefault " << path.str();
+			system(cmd.str().c_str());
 		}
 		else {
 			ROS_ERROR("unknown expression '%s'", msg->data.c_str());
