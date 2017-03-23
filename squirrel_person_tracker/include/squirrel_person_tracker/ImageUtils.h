@@ -4,8 +4,6 @@
 #ifndef NV_IMAGE_UTILS_H
 #define NV_IMAGE_UTILS_H
 
-#include <opencv/cv.h>
-
 #if defined (__cplusplus)
 extern "C"
 {

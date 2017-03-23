@@ -22,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   sensor_msgs
-  message_filters
   ${catkin_BUILD_PACKAGES}
 )
 
@@ -68,19 +67,13 @@ add_executable(squirrel_person_tracker src/squirrel_person_tracker_main.cpp src/
 target_link_libraries(squirrel_person_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES})
 add_dependencies(squirrel_person_tracker ${catkin_EXPORTED_TARGETS})
 
-add_library(shirt_detector src/people_recognition.cpp src/ImageUtils.cpp)
-target_link_libraries(shirt_detector ${catkin_LIBRARIES} )
-add_dependencies(shirt_detector ${catkin_EXPORTED_TARGETS})
-
-add_executable(shirt_main src/shirt_main.cpp)
-target_link_libraries(shirt_main ${catkin_LIBRARIES} shirt_detector)
-add_dependencies(shirt_main ${catkin_EXPORTED_TARGETS})
-#add_executable(people_recognition src/people_recognition.cpp src/ImageUtils.cpp)
-#target_link_libraries(people_recognition ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES})
+add_executable(people_recognition src/people_recognition.cpp src/ImageUtils.cpp)
+target_link_libraries(people_recognition ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES})
 
 add_library(squirrel_person_tracker_nodelet src/squirrel_person_tracker_nodelet.cpp src/floor_pointer.cpp src/squirrel_person_tracker.cpp)
 target_link_libraries(squirrel_person_tracker_nodelet ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} )
 add_dependencies(squirrel_person_tracker_nodelet ${catkin_EXPORTED_TARGETS})
+
 
 catkin_add_gtest(test_floorpointer test/squirrel_person_tracker_floor_point_test.cpp src/floor_pointer.cpp)
 target_link_libraries(test_floorpointer ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} )
