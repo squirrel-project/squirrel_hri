@@ -18,6 +18,7 @@ ShirtDetector::ShirtDetector(const std::string& file_path, ros::NodeHandle& nh) 
     imagePub_ = nh_.advertise<sensor_msgs::Image>("shirtImage", 1);
     poseArrayPub_ = nh_.advertise<geometry_msgs::PoseArray>("facePoints", 1);
     shirtPub_ = nh_.advertise<squirrel_person_tracker_msgs::ShirtMsg>("shirtInfo", 1);
+    camera_frame_ = camera + "_rgb_optical_frame";
 
 }
 
@@ -60,7 +61,7 @@ void ShirtDetector::sync_cb(const sensor_msgs::ImageConstPtr& imgIn, const senso
     std::vector<Rect> rectShirt;
     squirrel_person_tracker_msgs::ShirtMsg msg;
     geometry_msgs::PoseArray poseArrayMsg;
-    msg.header.frame_id = poseArrayMsg.header.frame_id = "camera_rgb_optical_frame";
+    msg.header.frame_id = poseArrayMsg.header.frame_id = camera_frame_;
     msg.header.stamp = poseArrayMsg.header.stamp = ros::Time::now();
     geometry_msgs::Point gpoint;
     getImgForShirt(imgIn, rectShirt, msg);
@@ -76,18 +77,16 @@ void ShirtDetector::sync_cb(const sensor_msgs::ImageConstPtr& imgIn, const senso
     }
     poseArrayPub_.publish(poseArrayMsg);
     shirtPub_.publish(msg);
-    ROS_INFO("SYNC CB!!!!!!!!!!!!!!!!!!!!!");
-
 }
 void ShirtDetector::getImgForShirt(const sensor_msgs::ImageConstPtr& imgIn, std::vector<Rect>& rectFaces,
                                    squirrel_person_tracker_msgs::ShirtMsg& msg) {
 
-    std::cout << "Loading Face HaarCascade in '" << cascadeFileFace << "'" << std::endl;
+//    std::cout << "Loading Face HaarCascade in '" << cascadeFileFace << "'" << std::endl;
     if (!cascadeFace.load(cascadeFileFace)) {
         std::cerr << "ERROR: Couldn't load face detector classifier in '" << cascadeFileFace << "'\n";
         exit(1);
     }
-    std::cout << "Done!" << std::endl;
+//    std::cout << "Done!" << std::endl;
     cv_bridge::CvImagePtr cv_ptr;
     try {
         cv_ptr = cv_bridge::toCvCopy(imgIn, sensor_msgs::image_encodings::BGR8);
@@ -100,7 +99,7 @@ void ShirtDetector::getImgForShirt(const sensor_msgs::ImageConstPtr& imgIn, std:
 
     cv::Mat &tmpImg = cv_ptr->image;
     IplImage* imageIn = new IplImage(tmpImg);
-    std::cout << "(got a " << imageIn->width << "x" << imageIn->height << " color image)." << std::endl;
+//    std::cout << "(got a " << imageIn->width << "x" << imageIn->height << " color image)." << std::endl;
     IplImage* imageDisplay = cvCloneImage(imageIn);
 
     // First, search for all the frontal faces in the image
@@ -112,7 +111,7 @@ void ShirtDetector::getImgForShirt(const sensor_msgs::ImageConstPtr& imgIn, std:
     msg.color.resize(rectFaces.size());
     msg.safety.resize(rectFaces.size());
     // Process each detected face
-    std::cout << "Detecting shirt colors below the faces." << std::endl;
+//    std::cout << "Detecting shirt colors below the faces." << std::endl;
     for (int r = 0; r < rectFaces.size(); r++) {
         float initialConfidence = 1.0f;
         int bottom;
@@ -129,8 +128,8 @@ void ShirtDetector::getImgForShirt(const sensor_msgs::ImageConstPtr& imgIn, std:
                 + (int)(0.5f * (1.0f - SHIRT_SCALE_Y) * (float)rectFace.height);
         rectShirt.width = (int)(SHIRT_SCALE_X * rectFace.width);
         rectShirt.height = (int)(SHIRT_SCALE_Y * rectFace.height);
-        std::cout << "Shirt region is from " << rectShirt.x << ", " << rectShirt.y << " to " << rectShirt.x + rectShirt.width - 1
-                << ", " << rectShirt.y + rectShirt.height - 1 << std::endl;
+//        std::cout << "Shirt region is from " << rectShirt.x << ", " << rectShirt.y << " to " << rectShirt.x + rectShirt.width - 1
+//                << ", " << rectShirt.y + rectShirt.height - 1 << std::endl;
 
         // If the shirt region goes partly below the image, try just a little below the face
         bottom = rectShirt.y + rectShirt.height - 1;
@@ -142,8 +141,8 @@ void ShirtDetector::getImgForShirt(const sensor_msgs::ImageConstPtr& imgIn, std:
                     + (int)(0.5f * (1.0f - SHIRT_SCALE_Y) * (float)rectFace.height);
             rectShirt.height = (int)(SHIRT_SCALE_Y * rectFace.height);
             initialConfidence = initialConfidence * 0.5f; // Since we are using a smaller region, we are less confident about the results now.
-            std::cout << "Warning: Shirt region goes past the end of the image. Trying to reduce the shirt region position to "
-                    << rectShirt.y << " with a height of " << rectShirt.height << std::endl;
+//            std::cout << "Warning: Shirt region goes past the end of the image. Trying to reduce the shirt region position to "
+//                    << rectShirt.y << " with a height of " << rectShirt.height << std::endl;
         }
 
         // Try once again if it is partly below the image.
@@ -152,14 +151,14 @@ void ShirtDetector::getImgForShirt(const sensor_msgs::ImageConstPtr& imgIn, std:
             bottom = imageIn->height - 1; // Limit the bottom
             rectShirt.height = bottom - (rectShirt.y - 1); // Adjust the height to use the new bottom
             initialConfidence = initialConfidence * 0.7f; // Since we are using a smaller region, we are less confident about the results now.
-            std::cout
-                    << "Warning: Shirt region still goes past the end of the image. Trying to reduce the shirt region height to "
-                    << rectShirt.height << std::endl;
+//            std::cout
+//                    << "Warning: Shirt region still goes past the end of the image. Trying to reduce the shirt region height to "
+//                    << rectShirt.height << std::endl;
         }
 
         // Make sure the shirt region is in the image
         if (rectShirt.height <= 1) {
-            std::cout << "Warning: Shirt region is not in the image at all, so skipping this face." << std::endl;
+//            std::cout << "Warning: Shirt region is not in the image at all, so skipping this face." << std::endl;
             msg.color[r] = "no_shirt";
             msg.safety[r] = 0.0;
         } else {
@@ -204,16 +203,16 @@ void ShirtDetector::getImgForShirt(const sensor_msgs::ImageConstPtr& imgIn, std:
             int pixels = w * h;
             for (int i = 0; i < NUM_COLOR_TYPES; i++) {
                 int v = tallyColors[i];
-                std::cout << sCTypes[i] << " " << (v * 100 / pixels) << "%, ";
+//                std::cout << sCTypes[i] << " " << (v * 100 / pixels) << "%, ";
                 if (v > tallyMaxCount) {
                     tallyMaxCount = tallyColors[i];
                     tallyMaxIndex = i;
                 }
             }
-            std::cout << std::endl;
+//            std::cout << std::endl;
             int percentage = initialConfidence * (tallyMaxCount * 100 / pixels);
-            std::cout << "Color of shirt: " << sCTypes[tallyMaxIndex] << " (" << percentage << "% confidence)." << std::endl
-                    << std::endl;
+//            std::cout << "Color of shirt: " << sCTypes[tallyMaxIndex] << " (" << percentage << "% confidence)." << std::endl
+//                    << std::endl;
 
             msg.color[r] = sCTypes[tallyMaxIndex];
             msg.safety[r] = percentage;
