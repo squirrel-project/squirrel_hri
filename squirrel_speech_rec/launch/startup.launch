@@ -4,8 +4,10 @@
        Change the name, such that it is unique. -->
   <node pkg="squirrel_speech_rec" type="sq_ros_speech_rec.py" name="sq_ros_speech_rec1" output="screen">
     <param name="device_id" value="0" />
-    <param name="speaker_id" value="2" />
+    <param name="speaker_id" value="0" />
     <param name="language" value="de" />
+    <param name="sample_rate" value="48000" />
+    <param name="chunk_size" value="8192" />
   </node>
 
   <!-- This only needs to run once in the system -->
