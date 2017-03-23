@@ -1,10 +1,16 @@
 #!/usr/bin/python
- 
+#
+# GUI to control stuff on the SQUIRREL robot
+# author: Michael Zillich
+# date: March 2017
+
 import sys
 from PyQt4 import QtCore, QtGui, uic
 import rospy
-from std_msgs.msg import String
-from std_msgs.msg import Float64
+import std_msgs
+#.msg import String
+#from std_msgs.msg import Float64
+#from std_msgs.msg import Bool
 
 form_class = uic.loadUiType("expression_gui.ui")[0]
  
@@ -30,71 +36,80 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         # base wiggling
         self.wiggleNoButton.clicked.connect(self.wiggleNoButton_clicked)
         self.wiggleErrorButton.clicked.connect(self.wiggleErrorButton_clicked)
+        # safety reset
+        self.safetyResetButton.clicked.connect(self.safetyResetButton_clicked)
 
         rospy.init_node('expression_gui')
-        self.expr_pub = rospy.Publisher('/expression', String, queue_size=10)
-        self.tilt_pub = rospy.Publisher('/tilt_controller/command', Float64, queue_size=10)
-        self.wiggle_pub = rospy.Publisher('/motion_expression', String, queue_size=10)
+        self.expr_pub = rospy.Publisher('/expression', std_msgs.msg.String, queue_size=10)
+        self.tilt_pub = rospy.Publisher('/tilt_controller/command', std_msgs.msg.Float64, queue_size=10)
+        self.wiggle_pub = rospy.Publisher('/motion_expression', std_msgs.msg.String, queue_size=10)
+        self.reset_safety_pub = rospy.Publisher('/reset_safety', std_msgs.msg.Bool, queue_size=10)
 
     def helloButton_clicked(self):
         print "HELLO"
-        msg = String()
+        msg = std_msgs.msg.String()
         msg.data = "HELLO"
         self.expr_pub.publish(msg)
 
     def hereButton_clicked(self):
         print "HERE_HERE"
-        msg = String()
+        msg = std_msgs.msg.String()
         msg.data = "HERE_HERE"
         self.expr_pub.publish(msg)
 
     def ohnoButton_clicked(self):
         print "OH_NO"
-        msg = String()
+        msg = std_msgs.msg.String()
         msg.data = "OH_NO"
         self.expr_pub.publish(msg)
 
     def yeahButton_clicked(self):
         print "YEAH"
-        msg = String()
+        msg = std_msgs.msg.String()
         msg.data = "YEAH"
         self.expr_pub.publish(msg)
 
     def whatButton_clicked(self):
         print "WHAT"
-        msg = String()
+        msg = std_msgs.msg.String()
         msg.data = "WHAT"
         self.expr_pub.publish(msg)
 
     def upButton_clicked(self):
         print "camera up"
-        msg = Float64()
+        msg = std_msgs.msg.Float64()
         msg.data = -0.2
         self.tilt_pub.publish(msg)
 
     def straightButton_clicked(self):
         print "camera straight"
-        msg = Float64()
+        msg = std_msgs.msg.Float64()
         msg.data = 0.0
         self.tilt_pub.publish(msg)
 
     def downButton_clicked(self):
         print "camera down"
-        msg = Float64()
+        msg = std_msgs.msg.Float64()
         msg.data = 0.8
         self.tilt_pub.publish(msg)
 
     def wiggleNoButton_clicked(self):
         print "wiggle no"
-        msg = String()
+        msg = std_msgs.msg.String()
         msg.data = "no"
         self.wiggle_pub.publish(msg)
 
     def wiggleErrorButton_clicked(self):
         print "wiggle error"
-        msg = String()
+        msg = std_msgs.msg.String()
         msg.data = "error"
         self.wiggle_pub.publish(msg)
+
+    def safetyResetButton_clicked(self):
+        print "reset safety"
+        msg = std_msgs.msg.Bool
+        msg.data = True
+        self.reset_safety_pub.publish(msg)
 
 app = QtGui.QApplication(sys.argv)
 myWindow = MyWindowClass(None)
