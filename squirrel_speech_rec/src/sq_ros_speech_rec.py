@@ -30,6 +30,8 @@ def recognizer():
     arg_lang = rospy.get_param('~language', 'de')
     dev_id = rospy.get_param('~device_id', 1)
     speaker_id = rospy.get_param('~speaker_id', 1)
+    sample_rate = rospy.get_param('~sample_rate', 16000)
+    chunk_size = rospy.get_param('~chunk_size', 8192)
 
     if arg_lang != "de" and arg_lang != "de-DE":
         if arg_lang != "en" and arg_lang != "en-GB" and arg_lang != "en-US": 
@@ -43,7 +45,7 @@ def recognizer():
     print("---------------------------------------------------------------------------") 
 
     r = sr.Recognizer()
-    m = sr.Microphone(int(dev_id))
+    m = sr.Microphone(int(dev_id), int(sample_rate), int (chunk_size))
 
     utterance_cnt = 1
     with m as source:
