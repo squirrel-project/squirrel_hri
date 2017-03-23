@@ -1,0 +1,14 @@
+<launch>
+ <arg name="openni2_launch" default="false" />
+
+ <arg name="camera_id" default="kinect" />
+
+
+ <include file="$(find openni2_launch)/launch/openni2.launch" unless="$(arg openni2_launch)">
+  <arg name="camera" value="$(arg camera_id)" />
+ </include>
+
+ <node pkg="squirrel_person_tracker" type="shirt_main" name="shirt_node" output="screen">
+  <param name="camera" type="str" value="$(arg camera_id)" />
+ </node>
+</launch>

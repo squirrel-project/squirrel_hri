@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-from evaluation import *
 from elm import ELM
 from keras.utils import np_utils
 
@@ -91,73 +90,3 @@ def high_level_feature(pred, threshold):
     for feat_idx in range(4):
         results[feat_idx * nb_classes : (feat_idx + 1) * nb_classes] = feats[feat_idx]
     return results
-
-
-def elm_predict(model, X_train, X_test, X_valid, multiTasks, unweighted, stl, dictForLabelsTest, dictForLabelsValid, dictForLabelsTrain, hidden_num = 50, main_task_id = -1, elm_save_path = './model/elm.ckpt'):
-    sess = tf.Session()
-
-    print('elm high level feature generating')
-    pred_train = model.predict([X_train])
-    feat_train = high_level_feature_mtl(pred_train, stl = stl, main_task_id = main_task_id)
-    pred_test = model.predict([X_test])
-    feat_test = high_level_feature_mtl(pred_test, stl = stl, main_task_id = main_task_id)
-
-    print('high level feature dim: ', feat_test.shape[1])
-    
-    if X_valid != None:
-        pred_valid = model.predict([X_valid])
-        feat_valid = high_level_feature_mtl(pred_valid, stl = stl, main_task_id = main_task_id)
-
-    scores = []
-    for task, classes, idx in multiTasks:
-        elm = ELM(sess, feat_train.shape[0], feat_train.shape[1], hidden_num, dictForLabelsTrain[task].shape[1], task = str(task))
-        
-        print('elm training')
-        elm.feed(feat_train, dictForLabelsTrain[task])
-        elm.save(elm_save_path + "." + str(task) + ".elm.ckpt")
-
-        print('elm testing')
-        if unweighted:
-            labels = dictForLabelsTest[task]
-            preds = elm.test(feat_test)
-            scores.append(unweighted_recall(preds, labels, task))
-        else:
-            acc = elm.test(feat_test, labels)
-            scores.append(acc)
-
-        if X_valid != None:
-            print('elm validating')
-            if unweighted:
-                labels = dictForLabelsValid[task]
-                preds = elm.test(feat_valid)
-                scores.append(unweighted_recall(preds, labels, task))
-            else:
-                acc = elm.test(feat_valid, labels)
-                scores.append(acc)
-    return scores
-
-def elm_load_predict(model, X_test, multiTasks, unweighted, stl, dictForLabelsTest, hidden_num = 50, main_task_id = -1, elm_load_path = './model/elm.ckpt'):
-    sess = tf.Session()
-
-    print('elm high level feature generating')
-    pred_test = model.predict([X_test])
-    feat_test = high_level_feature_mtl(pred_test, stl = stl, main_task_id = main_task_id)
-
-    print('high level feature dim: ', feat_test.shape[1])
-    
-    scores = []
-    for task, classes, idx in multiTasks:
-        elm = ELM(sess, feat_test.shape[0], feat_test.shape[1], hidden_num, dictForLabelsTest[task].shape[1])
-        
-        print('elm loading')
-        elm.load(elm_load_path)
-
-        print('elm testing')
-        if unweighted:
-            labels = dictForLabelsTest[task]
-            preds = elm.test(feat_test)
-            scores.append(unweighted_recall(preds, labels, task))
-        else:
-            acc = elm.test(feat_test, labels)
-            scores.append(acc)
-    return scores
