@@ -51,6 +51,7 @@ public:
     boost::shared_ptr<message_filters::Synchronizer<SyncPolicy> > sync;
     boost::shared_ptr<message_filters::Subscriber<sensor_msgs::Image> > image_sub_;
     boost::shared_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2> > pc_sub_;
+    std::string camera_frame_;
 };
 
 #endif /* INCLUDE_POSE_TRACKING_PEOPLE_RECOGNITION_H_ */
