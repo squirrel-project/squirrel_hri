@@ -17,9 +17,9 @@ def recognizer():
 
     print("SQUIRREL SPEECH RECOGNITION -----------------------------------------------")
 
-    from subprocess import call
-    call(["pulseaudio", "--kill"])
-    call(["jack_control", "start"])
+    #from subprocess import call
+    #call(["pulseaudio", "--kill"])
+    #call(["jack_control", "start"])
 
     pub = rospy.Publisher('squirrel_speech_recognized_speech', RecognizedSpeech, queue_size=5)
     msg = RecognizedSpeech()
@@ -136,6 +136,8 @@ def recognizer():
                 print("Recognition service - {0}".format(e))
                 print("\033[0;39m")   #default
 
+            except IOError:
+                print("some audio IO error, ignoring")
 
 if __name__ == '__main__':
     try:
