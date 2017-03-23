@@ -227,7 +227,7 @@ class Recognizer(AudioSource):
         Creates a new ``Recognizer`` instance, which represents a collection of speech recognition functionality.
         """
         self.energy_threshold = 300 # minimum audio energy to consider for recording
-        self.yell_factor = 10 # this times energy threshold defines the audio energy considered yelling
+        self.yell_factor = 50 # this times energy threshold defines the audio energy considered yelling
         self.dynamic_energy_threshold = False
         self.dynamic_energy_adjustment_damping = 0.15
         self.dynamic_energy_ratio = 1.5
