@@ -138,8 +138,8 @@ def ser(args):
 	p = pyaudio.PyAudio()
 
 	#open mic
-	#s = p.open(format = format, channels = n_channel,rate = sample_rate,input = True, input_device_index = args.device_id,frames_per_buffer = chunk)
-	s = p.open(format = format, channels = n_channel, rate = sample_rate, input = True, frames_per_buffer = chunk)
+	s = p.open(format = format, channels = n_channel,rate = sample_rate,input = True, input_device_index = args.device_id,frames_per_buffer = chunk)
+	#s = p.open(format = format, channels = n_channel, rate = sample_rate, input = True, frames_per_buffer = chunk)
 	
 	rospy.loginfo("---MIC Starting---")
 
