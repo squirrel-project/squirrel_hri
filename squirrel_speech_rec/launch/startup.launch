@@ -1,5 +1,8 @@
 <launch>
 
+  <arg name="device_id" default="0"/>
+  <arg name="language" default="0"/>
+
   <!-- We need one such node per microphone, with each node running on a separate computer.
        Change the name, such that it is unique. -->
   <node pkg="squirrel_speech_rec" type="sq_ros_speech_rec.py" name="sq_ros_speech_rec1" output="screen">
