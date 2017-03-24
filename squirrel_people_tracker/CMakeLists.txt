@@ -33,11 +33,13 @@ add_library(squirrel_focus_on_head
 #add_executable(squirrel_people_tracker_node src/squirrel_people_tracker_node.cpp)
 add_executable(squirrel_focus_on_head_node src/squirrel_focus_on_head_node.cpp)
 add_executable(squirrel_follow_child_node src/follow_child.cpp)
+add_executable(child_test src/test.cpp)
 
 #add_dependencies(squirrel_people_tracker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(squirrel_focus_on_head_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(squirrel_follow_child_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(squirrel_focus_on_head ${catkin_EXPORTED_TARGETS})
+add_dependencies(child_test ${catkin_EXPORTED_TARGETS})
 
 #target_link_libraries(squirrel_people_tracker_node
 #   squirrel_people_tracker
@@ -56,3 +58,6 @@ target_link_libraries(squirrel_follow_child_node
    ${catkin_LIBRARIES}
 )
 
+target_link_libraries(child_test
+   ${catkin_LIBRARIES}
+)
