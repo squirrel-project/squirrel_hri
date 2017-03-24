@@ -51,6 +51,7 @@ public:
 
   ros::ServiceClient pan_speed_client_;
   ros::ServiceClient tilt_speed_client_;
+  ros::ServiceClient pan_tilt_client_;
   ros::Publisher pan_pub_;
   ros::Publisher tilt_pub_;
   ros::Publisher vis_pub_;
