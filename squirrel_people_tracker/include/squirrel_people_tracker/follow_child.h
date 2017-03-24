@@ -39,6 +39,7 @@ protected:
   squirrel_hri_msgs::FollowChildGoal::ConstPtr goal_;
   geometry_msgs::PoseStamped point_;
   move_base_msgs::MoveBaseGoal move_base_goal_;
+  int id_;
   double distance_;
   double target_distance_;
   ros::Time init_;
@@ -59,7 +60,7 @@ public:
   void goalCB();
   void preemptCB();
   void analysisCB(const people_msgs::PositionMeasurementArray::ConstPtr &msg);
-  void publishGoalMarker(float x, float y, float z, float red, float green, float blue);
+  void publishGoalMarker(float x, float y, float z, float red, float green, float blue, const char* name);
 
   ChildFollowingAction(std::string name);
   ~ChildFollowingAction();

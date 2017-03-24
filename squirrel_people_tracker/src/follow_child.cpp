@@ -18,6 +18,7 @@ ChildFollowingAction::~ChildFollowingAction(void)
 ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, false), action_name_(name)
 {
   init_ = ros::Time::now();
+  id_ = 0;
   move_base_ac_ = new MoveBaseClient("move_base", true);
   while (!move_base_ac_->waitForServer(ros::Duration(5.0)))
   {
@@ -42,7 +43,9 @@ void ChildFollowingAction::goalCB()
   goal_ = as_.acceptNewGoal();
   for (size_t i=0; i < goal_->target_locations.size(); ++i)
   {
-    publishGoalMarker(goal_->target_locations[i].x, goal_->target_locations[i].y, 0.0, 0.0, 1.0, 0.0);
+    ROS_INFO("publish target location markers.");
+    publishGoalMarker(goal_->target_locations[i].x, goal_->target_locations[i].y, 0.0, 1.0, 0.0, 0.0, "child_target_locations");
+    id_ += 1;
   }
 }
 
@@ -158,7 +161,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
     return;
   }
 
-  publishGoalMarker(out_pose.pose.position.x, out_pose.pose.position.y, out_pose.pose.position.z, 0.0, 1.0, 0.0);
+  publishGoalMarker(out_pose.pose.position.x, out_pose.pose.position.y, out_pose.pose.position.z, 0.0, 1.0, 0.0, "child_goal");
   ROS_DEBUG("Setting nav goal to (x, y): (%f, %f) hokuyo_link", tmp_pose.pose.position.x, tmp_pose.pose.position.y);
   ROS_INFO("Setting nav goal to (x, y): (%f, %f) map", out_pose.pose.position.x, out_pose.pose.position.y);
 
@@ -177,13 +180,13 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   ros::Duration(0.1).sleep();
 }
 
-void ChildFollowingAction::publishGoalMarker(float x, float y, float z, float red, float green, float blue)
+void ChildFollowingAction::publishGoalMarker(float x, float y, float z, float red, float green, float blue, const char* name)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "map";
   marker.header.stamp = ros::Time(0);
-  marker.ns = "goal";
-  marker.id = 0;
+  marker.ns = name;
+  marker.id = id_;
   marker.type = visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose.position.x = x;
