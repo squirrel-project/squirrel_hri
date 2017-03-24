@@ -4,14 +4,15 @@
 #Requirements
 pyyaml 
 h5py 
-numpy >= 1.12.0
+numpy>=1.12.0
 scipy  
 sympy 
 nose
 scikit-learn
 
-tensorflow
-keras
+tensorflow==0.12.1
+
+keras==1.2.1
 librosa
 pyaudio
 webrtcvad

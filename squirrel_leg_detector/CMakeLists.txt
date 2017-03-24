@@ -38,4 +38,3 @@ add_executable(leg_detector src/leg_detector.cpp src/lfeatures.cpp src/lgeometry
 target_link_libraries(leg_detector ${catkin_LIBRARIES} gsl gslcblas)
 target_link_libraries(squirrel_legs_close_to_pose ${catkin_LIBRARIES} )
 add_dependencies(squirrel_legs_close_to_pose squirrel_speech_msgs_generate_messages_cpp)
-
