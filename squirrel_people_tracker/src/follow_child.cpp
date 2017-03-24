@@ -40,6 +40,10 @@ ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, fa
 void ChildFollowingAction::goalCB()
 {
   goal_ = as_.acceptNewGoal();
+  for (size_t i=0; i < goal_->target_locations.size(); ++i)
+  {
+    publishGoalMarker(goal_->target_locations[i].x, goal_->target_locations[i].y, 0.0, 0.0, 1.0, 0.0);
+  }
 }
 
 void ChildFollowingAction::preemptCB()
@@ -154,7 +158,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
     return;
   }
 
-  publishGoalMarker(out_pose.pose.position.x, out_pose.pose.position.y, out_pose.pose.position.z);
+  publishGoalMarker(out_pose.pose.position.x, out_pose.pose.position.y, out_pose.pose.position.z, 0.0, 1.0, 0.0);
   ROS_DEBUG("Setting nav goal to (x, y): (%f, %f) hokuyo_link", tmp_pose.pose.position.x, tmp_pose.pose.position.y);
   ROS_INFO("Setting nav goal to (x, y): (%f, %f) map", out_pose.pose.position.x, out_pose.pose.position.y);
 
@@ -173,7 +177,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   ros::Duration(0.1).sleep();
 }
 
-void ChildFollowingAction::publishGoalMarker(float x, float y, float z)
+void ChildFollowingAction::publishGoalMarker(float x, float y, float z, float red, float green, float blue)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "map";
@@ -193,9 +197,9 @@ void ChildFollowingAction::publishGoalMarker(float x, float y, float z)
   marker.scale.y = 0.2;
   marker.scale.z = 0.2;
   marker.color.a = 1.0; // Don't forget to set the alpha!
-  marker.color.r = 0.0;
-  marker.color.g = 1.0;
-  marker.color.b = 0.0; 
+  marker.color.r = red;
+  marker.color.g = green;
+  marker.color.b = blue; 
   vis_pub_.publish(marker);
   ros::Duration(0.01).sleep();
 }
