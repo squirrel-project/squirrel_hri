@@ -110,8 +110,8 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   // check if the child is in one of the target areas
   for (size_t i=0; i < goal_->target_locations.size(); ++i)
   {
-    if ((fabs(child_pose.pose.position.x - goal_->target_locations[i].x) < 0.25) &&
-        (fabs(child_pose.pose.position.y - goal_->target_locations[i].y) < 0.25))
+    if ((fabs(child_pose.pose.position.x - goal_->target_locations[i].x) < 0.5) &&
+        (fabs(child_pose.pose.position.y - goal_->target_locations[i].y) < 0.5))
     {
       // make sure we stop now
       ROS_INFO("%s: Succeeded", action_name_.c_str());
