@@ -59,7 +59,7 @@ public:
   void goalCB();
   void preemptCB();
   void analysisCB(const people_msgs::PositionMeasurementArray::ConstPtr &msg);
-  void publishGoalMarker(float x, float y, float z);
+  void publishGoalMarker(float x, float y, float z, float red, float green, float blue);
 
   ChildFollowingAction(std::string name);
   ~ChildFollowingAction();
