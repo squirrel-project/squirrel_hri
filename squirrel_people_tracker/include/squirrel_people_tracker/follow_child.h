@@ -44,6 +44,8 @@ protected:
   double target_distance_;
   ros::Time init_;
   geometry_msgs::Pose last_goal_;
+  void LookAtChild(geometry_msgs::PoseStamped* pose);
+  void publishGoalMarker(float x, float y, float z, float red, float green, float blue, const char* name);
 
 public:
   tf::StampedTransform transform;
@@ -61,7 +63,6 @@ public:
   void goalCB();
   void preemptCB();
   void analysisCB(const people_msgs::PositionMeasurementArray::ConstPtr &msg);
-  void publishGoalMarker(float x, float y, float z, float red, float green, float blue, const char* name);
 
   ChildFollowingAction(std::string name);
   ~ChildFollowingAction();
