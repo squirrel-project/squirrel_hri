@@ -39,10 +39,13 @@ protected:
   squirrel_hri_msgs::FollowChildGoal::ConstPtr goal_;
   geometry_msgs::PoseStamped point_;
   move_base_msgs::MoveBaseGoal move_base_goal_;
+  int id_;
   double distance_;
   double target_distance_;
   ros::Time init_;
   geometry_msgs::Pose last_goal_;
+  void LookAtChild(geometry_msgs::PoseStamped* pose);
+  void publishGoalMarker(float x, float y, float z, float red, float green, float blue, const char* name);
 
 public:
   tf::StampedTransform transform;
@@ -50,6 +53,7 @@ public:
 
   ros::ServiceClient pan_speed_client_;
   ros::ServiceClient tilt_speed_client_;
+  ros::ServiceClient pan_tilt_client_;
   ros::Publisher pan_pub_;
   ros::Publisher tilt_pub_;
   ros::Publisher vis_pub_;
@@ -59,7 +63,6 @@ public:
   void goalCB();
   void preemptCB();
   void analysisCB(const people_msgs::PositionMeasurementArray::ConstPtr &msg);
-  void publishGoalMarker(float x, float y, float z, float red, float green, float blue);
 
   ChildFollowingAction(std::string name);
   ~ChildFollowingAction();
