@@ -26,17 +26,17 @@ namespace SQUIRREL_expression
 
     sound_files[squirrel_hri_msgs::Expression::GREETING_IN] = "greeting_in-01.wav";
     sound_files[squirrel_hri_msgs::Expression::GREETING_OUT] = "greeting_out-01.wav";
-    sound_files[squirrel_hri_msgs::Expression::OK] = "ok.wav";
-    sound_files[squirrel_hri_msgs::Expression::YES] = "yes.wav";
+    sound_files[squirrel_hri_msgs::Expression::OK] = "Ok_01.wav";
+    sound_files[squirrel_hri_msgs::Expression::YES] = "Yes_02.wav";
     sound_files[squirrel_hri_msgs::Expression::NO] = "no+sound-01.wav";
     sound_files[squirrel_hri_msgs::Expression::CHEERING_POSITIVE] = "cheering_positive-01.wav";
-    sound_files[squirrel_hri_msgs::Expression::OH_NO] = "nono.wav";
-    sound_files[squirrel_hri_msgs::Expression::CONFUSED] = "confused-02.wav";
-    sound_files[squirrel_hri_msgs::Expression::SURPRISED] = "surprised.wav";
-    sound_files[squirrel_hri_msgs::Expression::ASKING] = "asking-01.wav";
-    sound_files[squirrel_hri_msgs::Expression::NEED_TO_THINK_HARDER] = "need_to_think_harder.wav";
-    sound_files[squirrel_hri_msgs::Expression::HERE_HERE] = "herehere.wav";
-    sound_files[squirrel_hri_msgs::Expression::OUCH] = "ouch.wav";
+    sound_files[squirrel_hri_msgs::Expression::OH_NO] = "extra_start_01.wav";
+    sound_files[squirrel_hri_msgs::Expression::CONFUSED] = "confused-06.wav";
+    sound_files[squirrel_hri_msgs::Expression::SURPRISED] = "cheering_positive-02.wav";
+    sound_files[squirrel_hri_msgs::Expression::ASKING] = "confused-03.wav";
+    sound_files[squirrel_hri_msgs::Expression::NEED_TO_THINK_HARDER] = "confused-04.wav";
+    sound_files[squirrel_hri_msgs::Expression::HERE_HERE] = "Here-01.wav";
+    sound_files[squirrel_hri_msgs::Expression::OUCH] = "confused-01-uhoh.wav";
     // for these expressions there is no associated sound
     sound_files[squirrel_hri_msgs::Expression::ANTAGONIST] = "";
     sound_files[squirrel_hri_msgs::Expression::REFERENTIAL_INFO] = "";
@@ -76,8 +76,9 @@ namespace SQUIRREL_expression
   void ExpressionServer::performExpression(const std_msgs::String::ConstPtr& msg)
   {
     ROS_INFO("Expressions: make expression '%s'", msg->data.c_str());
-    performSound(msg->data);
     performFace(msg->data);
+    usleep(600000);
+    performSound(msg->data);
   }
 
   void ExpressionServer::performSound(const std::string &expression)
