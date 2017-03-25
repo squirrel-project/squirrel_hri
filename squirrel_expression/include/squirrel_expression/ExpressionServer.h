@@ -1,3 +1,12 @@
+/**
+ * Expression server.
+ * Takes expression messages (essentially strings like "SURPRISED") and issues
+ * the corresponding lower level behaviours: sounds, faces, base movements.
+ * 
+ * authors: Federico Boniardi, Michael Zillich
+ * date: Feb 2016
+ */
+
 #include <string>
 #include <map>
 #include <ros/ros.h>
@@ -12,30 +21,29 @@
  * The expression server listens for expression commands,
  * and makes the robotino dance.
  */
-namespace SQUIRREL_expression {
+namespace SQUIRREL_expression
+{
 
-	class ExpressionServer
-	{
+class ExpressionServer
+{
+private:
+  ros::Publisher sound_pub;
+  ros::Publisher head_tilt_pub;
+  ros::ServiceClient face_client;
 
-	private:
+  std::string sound_dir;
+  std::map<std::string, std::string> sound_files;
+  std::map<std::string, std::string> faces;
 
-		// topics
-		ros::Publisher head_tilt_pub;
-		ros::Publisher sound_pub;
-		
-		std::string sound_dir;
-		std::map<std::string, std::string> sound_files;
+  void performSound(const std::string &expression);
+  void performFace(const std::string &expression);
+  void performHead(const std::string &expression);
 
-		// expressions
-		void performNod();
+public:
+  ExpressionServer(ros::NodeHandle &nh);
 
-	public:
+  void performExpression(const std_msgs::String::ConstPtr& msg);
+};
 
-		/* constructor */
-		ExpressionServer(ros::NodeHandle &nh);
-
-		/* expression command callback method*/
-		void performExpression(const std_msgs::String::ConstPtr& msg);
-	};
 }
 #endif

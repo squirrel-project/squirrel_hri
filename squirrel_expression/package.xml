@@ -10,25 +10,27 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <build_depend>geometry_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roslib</build_depend>
-  <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>squirrel_hri_msgs</build_depend>
   <build_depend>sound_play</build_depend>
   <build_depend>pyqt4-dev-tools</build_depend>
+  <build_depend>squirrel_hri_msgs</build_depend>
+  <build_depend>raspberry_screen</build_depend>
 
-  <run_depend>geometry_msgs</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>roslib</run_depend>
-  <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
   <run_depend>tf</run_depend>
+  <run_depend>sound_play</run_depend>
   <run_depend>pyqt4-dev-tools</run_depend>
   <run_depend>squirrel_hri_msgs</run_depend>
-  <run_depend>sound_play</run_depend>
+  <run_depend>raspberry_screen</run_depend>
 
   <export>
   </export>
