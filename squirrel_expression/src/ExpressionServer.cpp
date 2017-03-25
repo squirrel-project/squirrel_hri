@@ -1,8 +1,18 @@
+/**
+ * Expression server.
+ * Takes expression messages (essentially strings like "SURPRISED") and issues
+ * the corresponding lower level behaviours: sounds, faces, base movements.
+ * 
+ * authors: Federico Boniardi, Michael Zillich
+ * date: Feb 2016
+ */
+
 #include <sstream>
 #include <ros/ros.h>
 #include <sound_play/SoundRequest.h>
 #include <squirrel_expression/ExpressionServer.h>
 #include <squirrel_hri_msgs/Expression.h>
+#include <raspberry_screen/DisplayScreen.h>
 
 namespace SQUIRREL_expression
 {
@@ -27,7 +37,6 @@ namespace SQUIRREL_expression
     sound_files[squirrel_hri_msgs::Expression::NEED_TO_THINK_HARDER] = "need_to_think_harder.wav";
     sound_files[squirrel_hri_msgs::Expression::HERE_HERE] = "herehere.wav";
     sound_files[squirrel_hri_msgs::Expression::OUCH] = "ouch.wav";
-
     // for these expressions there is no associated sound
     sound_files[squirrel_hri_msgs::Expression::ANTAGONIST] = "";
     sound_files[squirrel_hri_msgs::Expression::REFERENTIAL_INFO] = "";
@@ -35,16 +44,45 @@ namespace SQUIRREL_expression
     sound_files[squirrel_hri_msgs::Expression::HAND_TO_HAND] = "";
     sound_files[squirrel_hri_msgs::Expression::PUSHING] = "";
 
+    // faces are currently:
+    // blank cheerful confused look_down look_front look_left look_right no think
+    faces[squirrel_hri_msgs::Expression::GREETING_IN] = "cheerful";
+    faces[squirrel_hri_msgs::Expression::GREETING_OUT] = "cheerful";
+    faces[squirrel_hri_msgs::Expression::OK] = "cheerful";
+    faces[squirrel_hri_msgs::Expression::YES] = "cheerful";
+    faces[squirrel_hri_msgs::Expression::NO] = "no";
+    faces[squirrel_hri_msgs::Expression::CHEERING_POSITIVE] = "cheerful";
+    faces[squirrel_hri_msgs::Expression::OH_NO] = "no";
+    faces[squirrel_hri_msgs::Expression::CONFUSED] = "confused";
+    faces[squirrel_hri_msgs::Expression::SURPRISED] = "think";
+    faces[squirrel_hri_msgs::Expression::ASKING] = "confused";
+    faces[squirrel_hri_msgs::Expression::NEED_TO_THINK_HARDER] = "think";
+    faces[squirrel_hri_msgs::Expression::HERE_HERE] = "cheerful";
+    faces[squirrel_hri_msgs::Expression::OUCH] = "no";
+    // for these expressions there is no associated face
+    faces[squirrel_hri_msgs::Expression::ANTAGONIST] = "";
+    faces[squirrel_hri_msgs::Expression::REFERENTIAL_INFO] = "";
+    faces[squirrel_hri_msgs::Expression::HANDOVER_OBJECT_DOWN] = "";
+    faces[squirrel_hri_msgs::Expression::HAND_TO_HAND] = "";
+    faces[squirrel_hri_msgs::Expression::PUSHING] = "";
+
     // HACK: sound play has problems on the Robotino, so just directly use aplay
     // This should be fixed at some point.
     // sound_pub = nh.advertise<sound_play::SoundRequest>("/robotsound", 10, true);
+
+    face_client = nh.serviceClient<raspberry_screen::DisplayScreen>("/display_screen");
   }
 
   void ExpressionServer::performExpression(const std_msgs::String::ConstPtr& msg)
   {
-    // perform expression
     ROS_INFO("Expressions: make expression '%s'", msg->data.c_str());
-    std::string filename = sound_files[msg->data];
+    performSound(msg->data);
+    performFace(msg->data);
+  }
+
+  void ExpressionServer::performSound(const std::string &expression)
+  {
+    std::string filename = sound_files[expression];
     if(!filename.empty())
     {
       std::stringstream path;
@@ -62,11 +100,31 @@ namespace SQUIRREL_expression
     }
     else
     {
-      ROS_ERROR("unknown expression '%s'", msg->data.c_str());
+      ROS_ERROR("unknown expression '%s'", expression.c_str());
     }
   }
 
-  void ExpressionServer::performNod()
+  void ExpressionServer::performFace(const std::string &expression)
+  {
+    std::string face_msg = faces[expression];
+    if(!face_msg.empty())
+    {
+      raspberry_screen::DisplayScreen srv;
+      srv.request.message = face_msg;
+      if(!face_client.call(srv))
+        ROS_ERROR("Failed to call display_screen service");
+    }
+    else
+    {
+      ROS_ERROR("unknown expression '%s'", expression.c_str());
+    }
+  }
+
+  /**
+   * NOTE: for now this simply nods with the pan tilt. Probably this
+   * will go.
+   */
+  void ExpressionServer::performHead(const std::string &expression)
   {
     // nod the head
     ros::Rate nodRate(2.5);
@@ -91,8 +149,8 @@ namespace SQUIRREL_expression
 /* Main method */
 /*-------------*/
 
-int main(int argc, char **argv) {
-
+int main(int argc, char **argv)
+{
   ros::init(argc, argv, "squirrel_expression");
   ros::NodeHandle nh;
 
