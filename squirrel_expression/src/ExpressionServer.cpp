@@ -79,7 +79,8 @@ namespace SQUIRREL_expression
   {
     ROS_INFO("Expressions: make expression '%s'", msg->data.c_str());
     performFace(msg->data);
-    usleep(600000);
+    // HACK: this is only needed to synchrniace face and sound on the IDM robot
+    // usleep(600000);
     performSound(msg->data);
   }
 
