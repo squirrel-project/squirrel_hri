@@ -44,6 +44,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.tilt_pub = rospy.Publisher('/tilt_controller/command', std_msgs.msg.Float64, queue_size=10)
         self.wiggle_pub = rospy.Publisher('/motion_expression', std_msgs.msg.String, queue_size=10)
         self.reset_safety_pub = rospy.Publisher('/reset_safety', std_msgs.msg.Bool, queue_size=10)
+        self.arm_mode_pub = rospy.Publisher('/real/robotino/settings/switch_mode', std_msgs.msg.Int32, queue_size=10, latch=True)
 
     def helloButton_clicked(self):
         print "HELLO"
@@ -107,9 +108,12 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
 
     def safetyResetButton_clicked(self):
         print "reset safety"
+        # reset the wrist safety node
         msg = std_msgs.msg.Bool
         msg.data = True
         self.reset_safety_pub.publish(msg)
+        # reset the robot controller (works by switching the mode)
+        # self.mode_pub.publish(data=0)
 
 app = QtGui.QApplication(sys.argv)
 myWindow = MyWindowClass(None)
