@@ -30,7 +30,6 @@ void display_text_in_rviz(std::string speech, bool rec)
     }
 
     marker.text = speech;
-    ROS_INFO("Marker published");  
     marker_pub.publish(marker);
 }
 
@@ -76,9 +75,7 @@ int main( int argc, char** argv )
   marker.scale.y = 1.0;
   marker.scale.z = 1.0;
 
-  marker.lifetime = ros::Duration(0.5);
-
-  ROS_INFO("Marker initialized...");  
+  marker.lifetime = ros::Duration(3.0);
 
   ros::Subscriber sub = n.subscribe("squirrel_speech_recognized_speech", 1, callback);
 
