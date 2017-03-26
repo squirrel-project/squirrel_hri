@@ -24,6 +24,7 @@ namespace SQUIRREL_expression
       exit(1);
     }
 
+    sound_files[squirrel_hri_msgs::Expression::NEUTRAL] = "";
     sound_files[squirrel_hri_msgs::Expression::HELLO] = "greeting_in-01.wav";
     sound_files[squirrel_hri_msgs::Expression::GOODBYE] = "greeting_out-01.wav";
     sound_files[squirrel_hri_msgs::Expression::OK] = "Ok_01.wav";
@@ -46,6 +47,7 @@ namespace SQUIRREL_expression
 
     // faces are currently:
     // blank cheerful confused look_down look_front look_left look_right no think
+    faces[squirrel_hri_msgs::Expression::NEUTRAL] = "look_front";
     faces[squirrel_hri_msgs::Expression::HELLO] = "cheerful";
     faces[squirrel_hri_msgs::Expression::GOODBYE] = "cheerful";
     faces[squirrel_hri_msgs::Expression::OK] = "cheerful";
@@ -101,7 +103,7 @@ namespace SQUIRREL_expression
     }
     else
     {
-      ROS_ERROR("unknown expression '%s'", expression.c_str());
+      ROS_ERROR("unknown sound expression '%s'", expression.c_str());
     }
   }
 
@@ -117,7 +119,7 @@ namespace SQUIRREL_expression
     }
     else
     {
-      ROS_ERROR("unknown expression '%s'", expression.c_str());
+      ROS_ERROR("unknown face expression '%s'", expression.c_str());
     }
   }
 
