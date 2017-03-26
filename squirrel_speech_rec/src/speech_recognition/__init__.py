@@ -78,7 +78,7 @@ chunk default = 1024
             
             # print out device parameters
             devinfo = audio.get_device_info_by_index(device_index)
-            print( "Used Device-----------------------------")
+            print( "speech_rec: Used Device-----------------------------")
             for k in devinfo.items():
                 name, value = k
 
@@ -87,9 +87,9 @@ chunk default = 1024
                 if name == 'hostApi':
                     value = str(value) + \
                             " (%s)" % audio.get_host_api_info_by_index(k[1])['name']
-                print (str(name) + " : " + str(value))
+                print ("speech_rec: " + str(name) + " : " + str(value))
 
-            print( "--------------------------")
+            print( "speech_rec: --------------------------")
             audio.terminate()
 
 
@@ -330,7 +330,7 @@ class Recognizer(AudioSource):
                 # detect whether speaking has started on audio input
                 energy = audioop.rms(buffer, source.SAMPLE_WIDTH) # energy of the audio signal
                 if energy > self.energy_threshold: break
-                print "[silence] cur energy/low thr/yell thr: ", energy, " / ", self.energy_threshold, " / ", self.yell_factor*self.energy_threshold
+                #print "speech_rec: [silence] cur energy/low thr/yell thr: ", energy, " / ", self.energy_threshold, " / ", self.yell_factor*self.energy_threshold
 
                 # dynamically adjust the energy threshold using assymmetric weighted average
                 if self.dynamic_energy_threshold:
@@ -342,6 +342,7 @@ class Recognizer(AudioSource):
             pause_count, phrase_count = 0, 0
             phrase_duration = 0
             yell = False
+            print "speech_rec: [start utterance] cur energy/low thr/yell thr: ", energy, " / ", self.energy_threshold, " / ", self.yell_factor*self.energy_threshold
             while True:
                 elapsed_time += seconds_per_buffer
                 phrase_duration += seconds_per_buffer
@@ -354,13 +355,13 @@ class Recognizer(AudioSource):
                 energy = audioop.rms(buffer, source.SAMPLE_WIDTH) # energy of the audio signal
                 # check if speaking is loud enough to be considered yelling
                 if energy > self.yell_factor*self.energy_threshold:
-                    print "YELLING"
+                    print "speech_rec: YELLING"
                     yell = True
                     break;
                 if phrase_duration > self.max_phrase_duration:
-                    print "long utterance, cutting off"
+                    print "speech_rec: long utterance, cutting off"
                     break;
-                print "[utterance] cur energy/low thr/yell thr: ", energy, " / ", self.energy_threshold, " / ", self.yell_factor*self.energy_threshold
+                #print "speech_rec: [utterance] cur energy/low thr/yell thr: ", energy, " / ", self.energy_threshold, " / ", self.yell_factor*self.energy_threshold
                 # check if speaking has stopped for longer than the pause threshold on the audio input
                 if energy > self.energy_threshold:
                     pause_count = 0
