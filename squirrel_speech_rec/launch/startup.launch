@@ -1,20 +1,20 @@
 <launch>
 
-  <arg name="device_id" default="0"/>
-  <arg name="language" default="0"/>
+  <arg name="device_id" default="2"/>
+  <arg name="language" default="de"/>
 
   <!-- We need one such node per microphone, with each node running on a separate computer.
        Change the name, such that it is unique. -->
   <node pkg="squirrel_speech_rec" type="sq_ros_speech_rec.py" name="sq_ros_speech_rec1" output="screen">
-    <param name="device_id" value="0" />
+    <param name="device_id" value="$(arg device_id)" />
     <param name="speaker_id" value="0" />
-    <param name="language" value="de" />
+    <param name="language" value="$(arg language)" />
     <param name="sample_rate" value="16000" />
     <param name="chunk_size" value="2048" />
   </node>
 
-  <!-- This only needs to run once in the system -->
   <node pkg="squirrel_speech_rec" type="sq_ros_speech_parser.py" name="sq_ros_speech_parser" output="screen" />
+  <node pkg="squirrel_speech_rec" type="speech_visu" name="speech_visu" output="screen" />
 
 </launch>
 
