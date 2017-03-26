@@ -24,17 +24,17 @@ namespace SQUIRREL_expression
       exit(1);
     }
 
-    sound_files[squirrel_hri_msgs::Expression::GREETING_IN] = "greeting_in-01.wav";
-    sound_files[squirrel_hri_msgs::Expression::GREETING_OUT] = "greeting_out-01.wav";
+    sound_files[squirrel_hri_msgs::Expression::HELLO] = "greeting_in-01.wav";
+    sound_files[squirrel_hri_msgs::Expression::GOODBYE] = "greeting_out-01.wav";
     sound_files[squirrel_hri_msgs::Expression::OK] = "Ok_01.wav";
     sound_files[squirrel_hri_msgs::Expression::YES] = "Yes_02.wav";
     sound_files[squirrel_hri_msgs::Expression::NO] = "no+sound-01.wav";
-    sound_files[squirrel_hri_msgs::Expression::CHEERING_POSITIVE] = "cheering_positive-01.wav";
+    sound_files[squirrel_hri_msgs::Expression::CHEERING] = "cheering_positive-01.wav";
     sound_files[squirrel_hri_msgs::Expression::OH_NO] = "extra_start_01.wav";
     sound_files[squirrel_hri_msgs::Expression::CONFUSED] = "confused-06.wav";
     sound_files[squirrel_hri_msgs::Expression::SURPRISED] = "cheering_positive-02.wav";
     sound_files[squirrel_hri_msgs::Expression::ASKING] = "confused-03.wav";
-    sound_files[squirrel_hri_msgs::Expression::NEED_TO_THINK_HARDER] = "confused-04.wav";
+    sound_files[squirrel_hri_msgs::Expression::THINKING] = "confused-04.wav";
     sound_files[squirrel_hri_msgs::Expression::HERE_HERE] = "Here-01.wav";
     sound_files[squirrel_hri_msgs::Expression::OUCH] = "confused-01-uhoh.wav";
     // for these expressions there is no associated sound
@@ -46,17 +46,17 @@ namespace SQUIRREL_expression
 
     // faces are currently:
     // blank cheerful confused look_down look_front look_left look_right no think
-    faces[squirrel_hri_msgs::Expression::GREETING_IN] = "cheerful";
-    faces[squirrel_hri_msgs::Expression::GREETING_OUT] = "cheerful";
+    faces[squirrel_hri_msgs::Expression::HELLO] = "cheerful";
+    faces[squirrel_hri_msgs::Expression::GOODBYE] = "cheerful";
     faces[squirrel_hri_msgs::Expression::OK] = "cheerful";
     faces[squirrel_hri_msgs::Expression::YES] = "cheerful";
     faces[squirrel_hri_msgs::Expression::NO] = "no";
-    faces[squirrel_hri_msgs::Expression::CHEERING_POSITIVE] = "cheerful";
+    faces[squirrel_hri_msgs::Expression::CHEERING] = "cheerful";
     faces[squirrel_hri_msgs::Expression::OH_NO] = "no";
     faces[squirrel_hri_msgs::Expression::CONFUSED] = "confused";
     faces[squirrel_hri_msgs::Expression::SURPRISED] = "think";
     faces[squirrel_hri_msgs::Expression::ASKING] = "confused";
-    faces[squirrel_hri_msgs::Expression::NEED_TO_THINK_HARDER] = "think";
+    faces[squirrel_hri_msgs::Expression::THINKING] = "think";
     faces[squirrel_hri_msgs::Expression::HERE_HERE] = "cheerful";
     faces[squirrel_hri_msgs::Expression::OUCH] = "no";
     // for these expressions there is no associated face
