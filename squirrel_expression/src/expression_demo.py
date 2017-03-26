@@ -19,12 +19,13 @@ AROUSAL_THR = 0.5
 class TestBehaviour(object):
     def __init__(self):
         rospy.Subscriber("/arousal", RecognisedResult, self.arousalCallback)
-        self.expression_pub = rospy.Publisher('/expression', std_msgs.msg.String, queue_size=5)
+        self.expression_pub = rospy.Publisher('/expression', std_msgs.msg.String, queue_size=1)
         self.have_arousal = False
+        rospy.sleep(2)
+        self.expression_pub.publish(std_msgs.msg.String(Expression.NEUTRAL))
         #self.arousal_time = 0.0
 
     def arousalCallback(self, msg):
-        rospy.loginfo("arousal")
         if msg.label > AROUSAL_THR:
             self.expression_pub.publish(std_msgs.msg.String(Expression.CHEERING))
             self.have_arousal = True
@@ -35,6 +36,8 @@ class TestBehaviour(object):
             if not self.have_arousal:
                 self.expression_pub.publish(std_msgs.msg.String(Expression.HERE_HERE))
             self.have_arousal = False
+            rospy.sleep(2)
+            self.expression_pub.publish(std_msgs.msg.String(Expression.NEUTRAL))
             rospy.sleep(10)
 
 if __name__ == '__main__':
