@@ -8,6 +8,7 @@
 # date: March 2017
 
 import sys
+import random
 import rospy
 import std_msgs
 import squirrel_vad_msgs
@@ -38,7 +39,7 @@ class TestBehaviour(object):
             self.have_arousal = False
             rospy.sleep(2)
             self.expression_pub.publish(std_msgs.msg.String(Expression.NEUTRAL))
-            rospy.sleep(10)
+            rospy.sleep(random.randrange(60, 90))
 
 if __name__ == '__main__':
     rospy.init_node('expression_demo', anonymous=True)
