@@ -15,7 +15,7 @@ from squirrel_hri_msgs.msg import Expression
 
 def recognizer():
 
-    print("SQUIRREL SPEECH RECOGNITION -----------------------------------------------")
+    print("speech_rec: SQUIRREL SPEECH RECOGNITION -----------------------------------------------")
 
     #from subprocess import call
     #call(["pulseaudio", "--kill"])
@@ -36,13 +36,12 @@ def recognizer():
     if arg_lang != "de" and arg_lang != "de-DE":
         if arg_lang != "en" and arg_lang != "en-GB" and arg_lang != "en-US": 
             if arg_lang != "nl" and arg_lang != "nl-NL":
-                print("Language not supported... (*might work anyway - see google speech language list)")
+                print("speech_rec: Language not supported... (*might work anyway - see google speech language list)")
 
-    print("Used Language: " + arg_lang) 
-    print("Google API") 
-    print("audio device ID: ", dev_id)
-    print(" ") 
-    print("---------------------------------------------------------------------------") 
+    print("speech_rec: Used Language: " + arg_lang) 
+    print("speech_rec: Google API") 
+    print("speech_rec: audio device ID: ", dev_id)
+    print("speech_rec: ---------------------------------------------------------------------------") 
 
     r = sr.Recognizer()
     m = sr.Microphone(int(dev_id), int(sample_rate), int (chunk_size))
@@ -50,21 +49,21 @@ def recognizer():
     utterance_cnt = 1
     with m as source:
         r.adjust_for_ambient_noise(source)
-        print("Set minimum energy threshold to {}".format(r.energy_threshold))
+        print("speech_rec: Set minimum energy threshold to {}".format(r.energy_threshold))
 
-        print("---------------------------------------------------------------------------") 
+        print("speech_rec: ---------------------------------------------------------------------------") 
 
         while not rospy.is_shutdown():
             # LOOP -----------------------------------------------------------------------
             try:
-                print("Ready!")
+                print("speech_rec: Ready!")
                 (audio, yelling) = r.listen(source)
 
                 if yelling:
                     # say "oh no!"
                     expression_pub.publish(std_msgs.msg.String(Expression.OH_NO))
 
-                    print("detected YELLING")
+                    print("speech_rec: detected YELLING")
                     msg.recognized_speech = "YELLING"
                     msg.is_recognized = True
                     msg.speaker_ID = speaker_id
@@ -84,9 +83,9 @@ def recognizer():
 
                 else:
                     # say "hm?" "what?"
-                    expression_pub.publish(std_msgs.msg.String(Expression.WHAT))
+                    #expression_pub.publish(std_msgs.msg.String(Expression.CONFUSED))
 
-                    print("Recognition...")
+                    print("speech_rec: Recognition...")
  
                     value = r.recognize_google(audio, None, arg_lang)
                     value = value.encode("utf-8")
@@ -124,7 +123,7 @@ def recognizer():
                 msg.header = he
 
                 print("\033[0;31m", end="")  #red
-                print("ERROR: Unrecognizable", end="")
+                print("speech_rec: ERROR: Unrecognizable", end="")
                 rospy.loginfo(msg)
                 print("\033[0;39m")   #default
 
@@ -132,12 +131,12 @@ def recognizer():
 
             except sr.RequestError as e:
                 print("\033[0;31m", end="")  #red
-                print("ERROR: Couldn't request results from Google Speech")
-                print("Recognition service - {0}".format(e))
+                print("speech_rec: ERROR: Couldn't request results from Google Speech")
+                print("speech_rec: Recognition service - {0}".format(e))
                 print("\033[0;39m")   #default
 
             except IOError:
-                print("some audio IO error, ignoring")
+                print("speech_rec: some audio IO error, ignoring")
 
 if __name__ == '__main__':
     try:
