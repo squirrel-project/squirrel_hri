@@ -29,7 +29,7 @@ ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, fa
   }
 
   move_base_ac_ = new MoveBaseClient("move_base", true);
-  if (!move_base_ac_->waitForServer(ros::Duration(5.0)))
+  if (!move_base_ac_->waitForServer(ros::Duration(15.0)))
   {
     ROS_ERROR("Waiting for the move_base action server to come up");
     return;
@@ -86,20 +86,26 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
 
   geometry_msgs::PoseStamped robot_pose, child_pose, tmp_pose, out_pose;
   move_base_msgs::MoveBaseGoal move_base_goal_;
-  squirrel_view_controller_msgs::LookAtPosition srv;
   
   double min_distance = 1000.0;
   int index = 0;
   double time_diff = (ros::Time::now() - init_).toSec();
 
   ROS_DEBUG("time diff: %f", time_diff);
-  if (time_diff < 1.5)
+  if (time_diff < 1.0)
   {
     return;
   }
   // calculate distance to select the closest personCB
   for (size_t i = 0; i < msg->people.size(); ++i)
   {
+    tmp_pose.header.stamp = ros::Time(0);
+    tmp_pose.header.frame_id = "hokuyo_link";
+    tmp_pose.pose.position.x = msg->people[i].pos.x;
+    tmp_pose.pose.position.y = msg->people[i].pos.y;
+    tmp_pose.pose.orientation =  tf::createQuaternionMsgFromYaw(0.0);
+    LookAtChild(&tmp_pose);
+
     double distance = (sqrt(msg->people[i].pos.x*msg->people[i].pos.x + msg->people[i].pos.y*msg->people[i].pos.y));
     if (distance < min_distance)
     {
@@ -188,26 +194,9 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   move_base_goal_.target_pose.pose.position.y = out_pose.pose.position.y;
   move_base_goal_.target_pose.pose.orientation = out_pose.pose.orientation;
 
-  // set pan / tilt goal
-  srv.request.target.header.frame_id = out_pose.header.frame_id;
-  srv.request.target.header.stamp = out_pose.header.stamp;
-  srv.request.target.pose.position.x = out_pose.pose.position.x;
-  srv.request.target.pose.position.y = out_pose.pose.position.y;
-  srv.request.target.pose.position.z = 1.5;
-  srv.request.target.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
-
-
   ROS_INFO("Sending goal to move_base");
   move_base_ac_->sendGoal(move_base_goal_);
-
-  if (pan_tilt_client_.call(srv))
-  {
-    ROS_DEBUG("%s: Reached position", pan_tilt_client_.getService().c_str());
-  }
-  else
-  {
-    ROS_ERROR("Failed to call service %s", pan_tilt_client_.getService().c_str());
-  }
+  LookAtChild(&child_pose);
 
   init_ = ros::Time::now();
   //ros::Duration(0.1).sleep();
@@ -238,6 +227,27 @@ void ChildFollowingAction::publishGoalMarker(float x, float y, float z, float re
   marker.color.b = blue; 
   vis_pub_.publish(marker);
   ros::Duration(0.01).sleep();
+}
+
+void ChildFollowingAction::LookAtChild(geometry_msgs::PoseStamped* pose)
+{
+  squirrel_view_controller_msgs::LookAtPosition srv;
+  // set pan / tilt goal
+  srv.request.target.header.frame_id = pose->header.frame_id;
+  srv.request.target.header.stamp = pose->header.stamp;
+  srv.request.target.pose.position.x = pose->pose.position.x;
+  srv.request.target.pose.position.y = pose->pose.position.y;
+  srv.request.target.pose.position.z = 1.5;
+  srv.request.target.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
+
+  if (pan_tilt_client_.call(srv))
+  {
+    ROS_DEBUG("%s: Reached position", pan_tilt_client_.getService().c_str());
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service %s", pan_tilt_client_.getService().c_str());
+  }
 }
 
 int main(int argc, char **argv)
