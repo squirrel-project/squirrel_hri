@@ -5,10 +5,17 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <tf/tf.h>
 #include <actionlib/client/terminal_state.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_types.h>
+#include <pcl/filters/passthrough.h>
+#include <pcl/common/common.h>
+#include "pcl_ros/point_cloud.h"
+
 #include "squirrel_view_controller_msgs/LookAtPosition.h"
 
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+typedef pcl::PointXYZRGB PointT;
 
 ChildFollowingAction::~ChildFollowingAction(void)
 {
@@ -44,8 +51,9 @@ ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, fa
   as_.start();
 
   // publishers
-  pub_ = nh_.advertise<geometry_msgs::PoseStamped>("/published_topic", 1);
+  pub_ = nh_.advertise<geometry_msgs::PoseStamped>("published_topic", 1);
   vis_pub_ = nh_.advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
+  cloud_pub_ = nh_.advertise<pcl::PointCloud<PointT> > ("filtered_cloud", 5, true);
 }
 
 void ChildFollowingAction::goalCB()
@@ -89,6 +97,7 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   
   double min_distance = 1000.0;
   int index = 0;
+  double height = 0.0;
   double time_diff = (ros::Time::now() - init_).toSec();
 
   ROS_DEBUG("time diff: %f", time_diff);
@@ -96,18 +105,23 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
   {
     return;
   }
+
+  bool child_present = false;
   // calculate distance to select the closest personCB
   for (size_t i = 0; i < msg->people.size(); ++i)
   {
+    double distance = (sqrt(msg->people[i].pos.x*msg->people[i].pos.x + msg->people[i].pos.y*msg->people[i].pos.y));
+
     tmp_pose.header.stamp = ros::Time(0);
     tmp_pose.header.frame_id = "hokuyo_link";
     tmp_pose.pose.position.x = msg->people[i].pos.x;
     tmp_pose.pose.position.y = msg->people[i].pos.y;
     tmp_pose.pose.orientation =  tf::createQuaternionMsgFromYaw(0.0);
     LookAtChild(&tmp_pose);
+    child_present = VerifyChildAtPose(&tmp_pose, height);
+    LookAtChild(&tmp_pose, height);
 
-    double distance = (sqrt(msg->people[i].pos.x*msg->people[i].pos.x + msg->people[i].pos.y*msg->people[i].pos.y));
-    if (distance < min_distance)
+    if (distance < min_distance && child_present)
     {
       index = i;
       min_distance = distance;
@@ -229,7 +243,85 @@ void ChildFollowingAction::publishGoalMarker(float x, float y, float z, float re
   ros::Duration(0.01).sleep();
 }
 
-void ChildFollowingAction::LookAtChild(geometry_msgs::PoseStamped* pose)
+bool ChildFollowingAction::VerifyChildAtPose(geometry_msgs::PoseStamped* pose, double &height, double margin)
+{
+  sensor_msgs::PointCloud2ConstPtr sceneConst;
+  sensor_msgs::PointCloud2 scene;
+  geometry_msgs::PointStamped point, point_max;
+  geometry_msgs::PoseStamped out_pose;
+  pcl::PointCloud<PointT>::Ptr cloud(new pcl::PointCloud<PointT>);
+
+  // get data from depth camera
+  sceneConst =
+      ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/kinect/depth_registered/points", nh_, ros::Duration(20));
+
+  // cut away area that is not close to the child candidate's location
+  if (sceneConst != NULL)
+  {
+    scene = *sceneConst;
+    pcl::fromROSMsg(scene, *cloud);
+
+    try
+    {
+      ros::Time now = ros::Time(0);
+      listener_.waitForTransform(scene.header.frame_id, pose->header.frame_id, now, ros::Duration(3.0));
+      listener_.transformPose(scene.header.frame_id, now, *pose, pose->header.frame_id, out_pose);
+    }
+    catch (tf::TransformException ex)
+    {
+      ROS_ERROR("%s", ex.what());
+      ros::Duration(1.0).sleep();
+      return false;
+    }
+
+    // Create the filtering object
+    pcl::PassThrough<PointT> pass;
+    pass.setKeepOrganized(true);
+    pass.setFilterFieldName("z");
+    pass.setFilterLimits(out_pose.pose.position.z - margin, out_pose.pose.position.z + margin);
+    pass.setInputCloud(cloud);
+    pass.filter(*cloud);
+    pass.setFilterFieldName("y");
+    pass.setFilterLimits(out_pose.pose.position.y - margin, out_pose.pose.position.y + margin);
+    pass.setInputCloud(cloud);
+    pass.filter(*cloud);
+    cloud_pub_.publish(cloud);
+    PointT min_p, max_p;
+    pcl::getMinMax3D(*cloud, min_p, max_p);
+
+    point.header.frame_id = scene.header.frame_id;
+    point.header.stamp = scene.header.stamp;
+    point.point.x = max_p.x;
+    point.point.y = max_p.y;
+    point.point.z = max_p.z;
+
+    try
+    {
+      ros::Time now = ros::Time(0);
+      listener_.waitForTransform("/map", point.header.frame_id, now, ros::Duration(3.0));
+      listener_.transformPoint("/map", now, point, point.header.frame_id, point_max);
+    }
+    catch (tf::TransformException ex)
+    {
+      ROS_ERROR("%s", ex.what());
+      ros::Duration(1.0).sleep();
+      return false;
+    }
+
+    // plausibility check
+    if ((point_max.point.z < 1.0) || (point_max.point.z > 1.8)) 
+    {
+      // height check failed
+      ROS_INFO("Heighest point is lower than 1.0 or above 1.8 meters. Unlikely to be a standing child.");
+      return false;
+    }
+    height = point_max.point.z;
+    return true;
+  }
+  return false;
+}
+
+void ChildFollowingAction::LookAtChild(geometry_msgs::PoseStamped* pose, double height)
 {
   squirrel_view_controller_msgs::LookAtPosition srv;
   // set pan / tilt goal
@@ -237,7 +329,7 @@ void ChildFollowingAction::LookAtChild(geometry_msgs::PoseStamped* pose)
   srv.request.target.header.stamp = pose->header.stamp;
   srv.request.target.pose.position.x = pose->pose.position.x;
   srv.request.target.pose.position.y = pose->pose.position.y;
-  srv.request.target.pose.position.z = 1.5;
+  srv.request.target.pose.position.z = height;
   srv.request.target.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
 
   if (pan_tilt_client_.call(srv))
