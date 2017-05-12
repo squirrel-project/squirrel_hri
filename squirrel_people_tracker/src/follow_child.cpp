@@ -1,4 +1,4 @@
-	#include "squirrel_people_tracker/follow_child.h"
+#include "squirrel_people_tracker/follow_child.h"
 #include <actionlib/client/simple_action_client.h>
 #include <string>
 #include <visualization_msgs/Marker.h>
