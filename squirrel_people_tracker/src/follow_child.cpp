@@ -130,6 +130,10 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
     }
   }
 
+  // we did not detect a child
+  if (index == 0)
+    return;
+
   double alpha = 0.0;
   tmp_pose.header.stamp = ros::Time(0);
   tmp_pose.header.frame_id = "hokuyo_link";
