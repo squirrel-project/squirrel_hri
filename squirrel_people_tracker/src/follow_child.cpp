@@ -1,4 +1,4 @@
-#include "squirrel_people_tracker/follow_child.h"
+	#include "squirrel_people_tracker/follow_child.h"
 #include <actionlib/client/simple_action_client.h>
 #include <string>
 #include <visualization_msgs/Marker.h>
@@ -10,6 +10,7 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl/common/common.h>
 #include "pcl_ros/point_cloud.h"
+#include <pcl/io/pcd_io.h>
 
 #include "squirrel_view_controller_msgs/LookAtPosition.h"
 
@@ -54,6 +55,7 @@ ChildFollowingAction::ChildFollowingAction(std::string name) : as_(nh_, name, fa
   pub_ = nh_.advertise<geometry_msgs::PoseStamped>("published_topic", 1);
   vis_pub_ = nh_.advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
   cloud_pub_ = nh_.advertise<pcl::PointCloud<PointT> > ("filtered_cloud", 5, true);
+  ROS_INFO("Ready to accept goals...");
 }
 
 void ChildFollowingAction::goalCB()
@@ -119,10 +121,10 @@ void ChildFollowingAction::analysisCB(const people_msgs::PositionMeasurementArra
     tmp_pose.pose.orientation =  tf::createQuaternionMsgFromYaw(0.0);
     LookAtChild(&tmp_pose);
     child_present = VerifyChildAtPose(&tmp_pose, height);
-    LookAtChild(&tmp_pose, height);
 
     if (distance < min_distance && child_present)
     {
+      LookAtChild(&tmp_pose, height);
       index = i;
       min_distance = distance;
     }
@@ -250,6 +252,7 @@ bool ChildFollowingAction::VerifyChildAtPose(geometry_msgs::PoseStamped* pose, d
   geometry_msgs::PointStamped point, point_max;
   geometry_msgs::PoseStamped out_pose;
   pcl::PointCloud<PointT>::Ptr cloud(new pcl::PointCloud<PointT>);
+  pcl::PointCloud<PointT>::Ptr outputCloud(new pcl::PointCloud<PointT>);
 
   // get data from depth camera
   sceneConst =
@@ -260,6 +263,7 @@ bool ChildFollowingAction::VerifyChildAtPose(geometry_msgs::PoseStamped* pose, d
   {
     scene = *sceneConst;
     pcl::fromROSMsg(scene, *cloud);
+    ROS_INFO("cloud frame is %s", scene.header.frame_id.c_str());
 
     try
     {
@@ -274,26 +278,104 @@ bool ChildFollowingAction::VerifyChildAtPose(geometry_msgs::PoseStamped* pose, d
       return false;
     }
 
-    // Create the filtering object
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = out_pose.header.frame_id;
+    marker.header.stamp = ros::Time(0);
+    marker.ns = "cutoff";
+    marker.id = 1;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = out_pose.pose.position.x;
+    marker.pose.position.y = out_pose.pose.position.y;
+    marker.pose.position.z = out_pose.pose.position.z;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.2;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.2;
+    marker.color.a = 1.0; // Don't forget to set the alpha!
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    vis_pub_.publish(marker);
+    ros::Duration(0.01).sleep();
+
+    try
+    {
+	// Create the filtering object
+        pcl::io::savePCDFileASCII("/tmp/cloud.pcd", *cloud);
+    }
+    catch (pcl::IOException ex)
+    {
+	ROS_ERROR("%s", ex.what());
+	ros::Duration(1.0).sleep();
+        return false;
+    }
+
     pcl::PassThrough<PointT> pass;
     pass.setKeepOrganized(true);
     pass.setFilterFieldName("z");
+    ROS_INFO("cutting at %s frame : %f", pose->header.frame_id.c_str(), pose->pose.position.x);
+    ROS_INFO("cutting Z at %s frame : %f",out_pose.header.frame_id.c_str(), out_pose.pose.position.z);
     pass.setFilterLimits(out_pose.pose.position.z - margin, out_pose.pose.position.z + margin);
     pass.setInputCloud(cloud);
     pass.filter(*cloud);
-    pass.setFilterFieldName("y");
-    pass.setFilterLimits(out_pose.pose.position.y - margin, out_pose.pose.position.y + margin);
+    pass.setFilterFieldName("x");
+    ROS_INFO("cutting X at %s frame : %f",out_pose.header.frame_id.c_str(), out_pose.pose.position.x);
+    pass.setFilterLimits(out_pose.pose.position.x - margin, out_pose.pose.position.x + margin);
     pass.setInputCloud(cloud);
     pass.filter(*cloud);
-    cloud_pub_.publish(cloud);
+    std::vector<int> indices;
+    pcl::removeNaNFromPointCloud(*cloud, *outputCloud, indices);
+    cloud_pub_.publish(outputCloud);
     PointT min_p, max_p;
-    pcl::getMinMax3D(*cloud, min_p, max_p);
+    pcl::getMinMax3D(*outputCloud, min_p, max_p);
 
-    point.header.frame_id = scene.header.frame_id;
-    point.header.stamp = scene.header.stamp;
-    point.point.x = max_p.x;
-    point.point.y = max_p.y;
-    point.point.z = max_p.z;
+    try
+    {
+	// Create the filtering object
+        pcl::io::savePCDFileASCII("/tmp/filtered_cloud.pcd", *outputCloud);
+    }
+    catch (pcl::IOException ex)
+    {
+	ROS_ERROR("%s", ex.what());
+	ros::Duration(1.0).sleep();
+        return false;
+    }
+    ROS_INFO("min y: %f, max y: %f", min_p.y, max_p.y);
+
+    point.header.frame_id = out_pose.header.frame_id;
+    point.header.stamp = out_pose.header.stamp;
+    point.point.x = out_pose.pose.position.x;
+    point.point.y = min_p.y;
+    point.point.z = out_pose.pose.position.z;
+
+    ROS_INFO("Highest point is at: x: %f, y: %f, z: %f in frame: %s", point.point.x, point.point.y, point.point.z, point.header.frame_id.c_str());
+
+    marker.header.frame_id = scene.header.frame_id;
+    marker.header.stamp = ros::Time(0);
+    marker.ns = "cutoff";
+    marker.id = 2;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = point.point.x;
+    marker.pose.position.y = point.point.y;
+    marker.pose.position.z = point.point.z;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 0.2;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.2;
+    marker.color.a = 1.0; // Don't forget to set the alpha!
+    marker.color.r = 0.0;
+    marker.color.g = 0.0;
+    marker.color.b = 1.0;
+    vis_pub_.publish(marker);
+    ros::Duration(0.01).sleep();
 
     try
     {
@@ -308,14 +390,16 @@ bool ChildFollowingAction::VerifyChildAtPose(geometry_msgs::PoseStamped* pose, d
       return false;
     }
 
+    ROS_INFO("Highest point: %f", point_max.point.z);
     // plausibility check
-    if ((point_max.point.z < 1.0) || (point_max.point.z > 1.8)) 
+    if ((point_max.point.z < 1.0) || (point_max.point.z > 2.0))
     {
       // height check failed
-      ROS_INFO("Heighest point is lower than 1.0 or above 1.8 meters. Unlikely to be a standing child.");
+      ROS_INFO("Highest point is lower than 1.0 or above 2.0 meters. Unlikely to be a standing child.");
       return false;
     }
     height = point_max.point.z;
+    ROS_INFO("Height check success");
     return true;
   }
   return false;

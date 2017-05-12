@@ -51,7 +51,7 @@ protected:
   
   void LookAtChild(geometry_msgs::PoseStamped* pose, double height = 1.5);
   void publishGoalMarker(float x, float y, float z, float red, float green, float blue, const char* name);
-  bool VerifyChildAtPose(geometry_msgs::PoseStamped* pose,  double &height, double margin = 0.3);
+  bool VerifyChildAtPose(geometry_msgs::PoseStamped* pose,  double &height, double margin = 0.6);
 
 public:
   tf::StampedTransform transform;
