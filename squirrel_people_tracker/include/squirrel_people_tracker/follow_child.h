@@ -22,6 +22,8 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
+#include <tf/transform_listener.h>
+
 
 class ChildFollowingAction
 {
@@ -39,18 +41,21 @@ protected:
   squirrel_hri_msgs::FollowChildGoal::ConstPtr goal_;
   geometry_msgs::PoseStamped point_;
   move_base_msgs::MoveBaseGoal move_base_goal_;
+  tf::TransformListener listener_;
+  ros::Time init_;
+  geometry_msgs::Pose last_goal_;
+
   int id_;
   double distance_;
   double target_distance_;
-  ros::Time init_;
-  geometry_msgs::Pose last_goal_;
-  void LookAtChild(geometry_msgs::PoseStamped* pose);
+  
+  void LookAtChild(geometry_msgs::PoseStamped* pose, double height = 1.5);
   void publishGoalMarker(float x, float y, float z, float red, float green, float blue, const char* name);
+  bool VerifyChildAtPose(geometry_msgs::PoseStamped* pose,  double &height, double margin = 0.6);
 
 public:
   tf::StampedTransform transform;
   tf::TransformListener tfl_;
-
   ros::ServiceClient pan_speed_client_;
   ros::ServiceClient tilt_speed_client_;
   ros::ServiceClient pan_tilt_client_;
@@ -58,6 +63,7 @@ public:
   ros::Publisher tilt_pub_;
   ros::Publisher vis_pub_;
   ros::Publisher pub_;
+  ros::Publisher cloud_pub_;
   ros::Subscriber sub_;
 
   void goalCB();
