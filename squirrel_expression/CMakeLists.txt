@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   sound_play
   squirrel_hri_msgs
-  raspberry_screen
+  squirrel_interaction
 )
 
 ###################################
@@ -29,7 +29,7 @@ catkin_package(
   tf
   sound_play
   squirrel_hri_msgs
-  raspberry_screen
+  squirrel_interaction
 )
 
 ###########
