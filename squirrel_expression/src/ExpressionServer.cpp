@@ -12,7 +12,7 @@
 #include <sound_play/SoundRequest.h>
 #include <squirrel_expression/ExpressionServer.h>
 #include <squirrel_hri_msgs/Expression.h>
-#include <raspberry_screen/DisplayScreen.h>
+#include <squirrel_interaction/DisplayScreen.h>
 
 namespace SQUIRREL_expression
 {
@@ -72,7 +72,7 @@ namespace SQUIRREL_expression
     // This should be fixed at some point.
     // sound_pub = nh.advertise<sound_play::SoundRequest>("/robotsound", 10, true);
 
-    face_client = nh.serviceClient<raspberry_screen::DisplayScreen>("/display_screen");
+    face_client = nh.serviceClient<squirrel_interaction::DisplayScreen>("/display_screen");
   }
 
   void ExpressionServer::performExpression(const std_msgs::String::ConstPtr& msg)
@@ -113,7 +113,7 @@ namespace SQUIRREL_expression
     std::string face_msg = faces[expression];
     if(!face_msg.empty())
     {
-      raspberry_screen::DisplayScreen srv;
+      squirrel_interaction::DisplayScreen srv;
       srv.request.message = face_msg;
       if(!face_client.call(srv))
         ROS_ERROR("Failed to call display_screen service");
