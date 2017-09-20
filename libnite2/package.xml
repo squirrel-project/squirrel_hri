@@ -4,16 +4,9 @@
   <version>0.0.0</version>
   <description>Wrapper for the NiTE2 library</description>
 
-  <maintainer email="rmb@ipa.fhg.de">Richard Bormann</maintainer>
+  <maintainer email="richard.bormann@ipa.fraunhofer.de">Richard Bormann</maintainer>
 
   <license>LGPL</license>
-
-  <build_depend>roslib</build_depend>
-  <build_depend>mk</build_depend>
-  <build_depend>rospack</build_depend>
-  <run_depend>roslib</run_depend>
-  <run_depend>mk</run_depend>
-  <run_depend>rospack</run_depend>
   
   <buildtool_depend>catkin</buildtool_depend>
   
