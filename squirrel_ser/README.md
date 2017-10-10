@@ -50,8 +50,11 @@ You can choose your input device as a pulse audio and use the pulse as the input
 pulseaudio --start
 
 1. find your device by:
+See: https://wiki.archlinux.org/index.php/PulseAudio/Examples
 
 pacmd list-sources | grep -e device.string -e 'name:'
+
+Depending on os and devices, it gives you various names. You need to choose a right input device among them.
 
 2. set a default device for "pulse" by typing in a terminal for example:
 
@@ -64,6 +67,9 @@ pacmd stat
 4. check your "pulse" device's ID in pulseaudio:
 
 rosrun squirrel_ser ser.py
+
+This will give you a list of audio devices and you need to identify index of "pulse".
+Note that this index changes depending on usb devices being used. Hence, it's safe to check before it runs.
 
 5. set the ID of "pulse" in the launch file: ser.launch
 by the argument: -d_id 
