@@ -64,7 +64,7 @@ class SoundViz(object):
 		ma1.pose.position.y = 0
 		ma1.pose.position.z = 0
 		
-		rospy.loginfo(self.duration)
+		#rospy.logdebug(self.duration)
 		ma1.scale.x = 1*(1 + self.arousal * 2)
 		ma1.scale.y = 1*(1 + self.arousal * 2)
 		ma1.scale.z = 1*(1 + self.arousal * 2)
