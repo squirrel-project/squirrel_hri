@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="squirrel_ser" name="$(anon visualisation_ser)" output="screen" type="visualisation_ser.py" args="" respawn="true"/>
+  <node pkg="squirrel_ser" name="$(anon visualisation_ser)" output="screen" type="visualisation_ser.py" args="-th 0.1" respawn="true"/>
 </launch>
 
 

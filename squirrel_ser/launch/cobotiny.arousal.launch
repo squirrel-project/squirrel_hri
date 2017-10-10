@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="squirrel_ser" name="$(anon cobotiny_arousal)" output="screen" type="cobotiny_arousal.py" args="-fq 1.0 -th 0.1" respawn="true"/>
+</launch>
+
+
+

@@ -21,7 +21,7 @@ Please run the following steps BEFORE you run catkin_make.
 `sudo apt-get install python-pip python-dev libhdf5-dev portaudio19-dev'
 
 Next, using pip, install all pre-required modules.
-(pip version 8.1 is required.)
+(pip version >= 8.1 is required.)
 
 http://askubuntu.com/questions/712339/how-to-upgrade-pip-to-latest
 
@@ -39,6 +39,24 @@ try to install tensorflow using pip, then it will install the proper version of 
 Please use catkin_make to build this.
 
 ## 3. Usage <a id="3--usage"/>
+Currently, using pulse audio as the input device is the best stable way.
+You can choose your input device as a pulse audio and use the pulse as the input device for emotion recognition as follows:
+0. find your device by:
+pulseaudio --start (if it's off, run pulseaudio server only in "user account", if other ps runs already, simply reboot; pulseaudio --kill does not work.)
+pacmd list-sources | grep -e device.string -e 'name:'
+
+1. set a default device for "pulse" by typing in a terminal for example:
+pacmd "set-default-source alsa_input.usb-Andrea_Electronics_Corp._Andrea_Stereo_USB_Mic-00-Mic.analog-stereo"
+
+2. check it works:
+pacmd stat
+
+3. check your "pulse" device's ID in pulseaudio:
+rosrun squirrel_ser ser.py
+
+4. set the ID of "pulse" in the launch file: ser.launch
+by the argument: -d_id 
+
 For a quick start, run in the terminal:
 
 roslunach squirrel_ser ser.launch
@@ -81,8 +99,21 @@ optional arguments:
                         minimum energy of speech for emotion detection
   
   -d_id DEVICE_ID, --device_id DEVICE_ID
-                        device id for microphone
-  
+                        device id for microphone:
+                        PLEASE use "pulse" and set your device as a default sink for "pulse" as follows:
+
+                        1. set a default device for "pulse" by typing in a terminal:
+                        pacmd "set-default-source alsa_input.usb-Andrea_Electronics_Corp._Andrea_Stereo_USB_Mic-00-Mic.analog-stereo"
+                        
+                        2. check it works:
+                        pacmd stat
+                        
+                        3. check your "pulse" device's ID in pulseaudio:
+                        rosrun squirrel_ser ser.py
+
+                        4. set the ID of "pulse" in the launch file: ser.launch
+                        by the argument: -d_id 
+
   -g_min G_MIN, --gain_min G_MIN
                         min value of automatic gain normalisation
   
