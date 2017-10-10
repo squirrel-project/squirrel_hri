@@ -16,3 +16,4 @@ keras==1.2.1
 librosa
 pyaudio
 webrtcvad
+six>=1.10
