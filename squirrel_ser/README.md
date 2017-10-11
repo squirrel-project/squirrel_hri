@@ -42,8 +42,9 @@ try to install tensorflow using pip, then it will install the proper version of 
 Please use catkin_make to build this.
 
 ## 3. Device setup <a id="3--device"/>
-Currently, using pulse audio as the input device is the best stable way.
-You can choose your input device as a pulse audio and use the pulse as the input device for emotion recognition as follows:
+Currently, using pulse audio as the input device is the best stable way. If you do not specify device ID, a pulse audio device will be chosen as an input. However, you must make sure if pulseaudio server is running. (if not, type "pulseaudio --start").
+
+If you want and know pulse & alsa works, you can choose your own input device as a pulse audio and use the pulse as the input device for emotion recognition as follows:
 
 0. turn on pulseaudio server if it's off
 
