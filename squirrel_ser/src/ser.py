@@ -27,6 +27,19 @@ def listup_devices():
 		if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
 			print "Input Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0, i).get('name'), " - ch: ", p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels'), " sr: ", p.get_device_info_by_host_api_device_index(0, i).get('defaultSampleRate')
 
+def find_device_id(name):
+	p = pyaudio.PyAudio()
+	info = p.get_host_api_info_by_index(0)
+	numdevices = info.get('deviceCount')
+	for i in range(0, numdevices):
+		if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+			print "Input Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0, i).get('name'), " - ch: ", p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels'), " sr: ", p.get_device_info_by_host_api_device_index(0, i).get('defaultSampleRate')
+			if name in p.get_device_info_by_host_api_device_index(0, i).get('name'):
+				print name, " is found and will be used as an input device."
+				return i
+	print "There is no such a device named ", name
+	return -1
+
 def broadcast_result(task_publisher, task_outputs):
 	for id in range(0, len(task_publisher)):
 		output = task_outputs[id]
@@ -138,6 +151,13 @@ def ser(args):
 			
 	p = pyaudio.PyAudio()
 
+	#open mic
+	if args.device_id is None:
+		args.device_id = find_device_id("pulse")
+		if args.device_id == -1:
+			rospy.loginfo("There is no default device!, please check the configuration")
+			sys.exit(-1)
+			
 	#open mic
 	s = p.open(format = format, channels = n_channel,rate = sample_rate,input = True, input_device_index = args.device_id,frames_per_buffer = chunk)
 	#s = p.open(format = format, channels = n_channel, rate = sample_rate, input = True, frames_per_buffer = chunk)
