@@ -1,5 +1,6 @@
 <a id="top"/> 
 # squirrel_ser
+
 This folder has source codes for deep convolutional neural network-based speech emotion recognition. Note that this module relies on many machine learning packages and platforms such as Google Tensorflow and Keras, which is comptutationally expensive without GPU supports. Hence, it may not be operationable on the robot, rather deployment on an external machine is recommended. This module requires two trained models: keras-model and elm-model. Keras-model is either convolutional DNN or convolutional LSTM, which output frame-level prediction. If elm-model is given, it proceeds the outputs of keras-model to predict utterance-level prediction. (The latter gives better results so far). Performance varies on speakers and environment.
 
 Maintainer: [**batikim09**](https://github.com/**github-user**/) (**batikim09**) - **j.kim@utwente.nl**
@@ -9,9 +10,11 @@ Maintainer: [**batikim09**](https://github.com/**github-user**/) (**batikim09**)
 
 2. <a href="#2--build">Build</a>
 
-3. <a href="#3--usage">Usage</a>
+3. <a href="#3--device">Device setup</a>
 
-4. <a href="#3--references">References</a>
+4. <a href="#4--usage">Usage</a>
+
+4. <a href="#5--references">References</a>
 
 ## 1. Installation Requirements <a id="1--installation-requirements"/>
 ####Debian packages
@@ -21,7 +24,7 @@ Please run the following steps BEFORE you run catkin_make.
 `sudo apt-get install python-pip python-dev libhdf5-dev portaudio19-dev'
 
 Next, using pip, install all pre-required modules.
-(pip version 8.1 is required.)
+(pip version >= 8.1 is required.)
 
 http://askubuntu.com/questions/712339/how-to-upgrade-pip-to-latest
 
@@ -38,7 +41,42 @@ try to install tensorflow using pip, then it will install the proper version of 
 
 Please use catkin_make to build this.
 
-## 3. Usage <a id="3--usage"/>
+## 3. Device setup <a id="3--device"/>
+Currently, using pulse audio as the input device is the best stable way. If you do not specify device ID, a pulse audio device will be chosen as an input. However, you must make sure if pulseaudio server is running. (if not, type "pulseaudio --start").
+
+If you want and know pulse & alsa works, you can choose your own input device as a pulse audio and use the pulse as the input device for emotion recognition as follows:
+
+0. turn on pulseaudio server if it's off
+
+pulseaudio --start
+
+1. find your device by:
+See: https://wiki.archlinux.org/index.php/PulseAudio/Examples
+
+pacmd list-sources | grep -e device.string -e 'name:'
+
+Depending on os and devices, it gives you various names. You need to choose a right input device among them.
+
+2. set a default device for "pulse" by typing in a terminal for example:
+
+pacmd "set-default-source alsa_input.usb-Andrea_Electronics_Corp._Andrea_Stereo_USB_Mic-00-Mic.analog-stereo"
+
+3. check it works:
+
+pacmd stat
+
+4. check your "pulse" device's ID in pulseaudio:
+
+rosrun squirrel_ser ser.py
+
+This will give you a list of audio devices and you need to identify index of "pulse".
+Note that this index changes depending on usb devices being used. Hence, it's safe to check before it runs.
+
+5. set the ID of "pulse" in the launch file: ser.launch
+by the argument: -d_id 
+
+## 4. Usage <a id="4--usage"/>
+
 For a quick start, run in the terminal:
 
 roslunach squirrel_ser ser.launch
@@ -81,8 +119,9 @@ optional arguments:
                         minimum energy of speech for emotion detection
   
   -d_id DEVICE_ID, --device_id DEVICE_ID
-                        device id for microphone
-  
+                        device id for microphone:
+                        PLEASE use "pulse" and set your device as a default sink for "pulse", see 2. device setup:
+
   -g_min G_MIN, --gain_min G_MIN
                         min value of automatic gain normalisation
   

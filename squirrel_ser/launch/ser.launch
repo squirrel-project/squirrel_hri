@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="squirrel_ser" name="$(anon ser)" output="screen" type="ser.py" args="--sync --reg -d_id 0 -me 2000 -vd 500 -s_ratio 0.9 -md MSPEC_MM.all.ar_vl.0.h5 -tasks arousal:2,valence:2 -c_len 10 -m_t_step 500" respawn="true"/>
+  <node pkg="squirrel_ser" name="$(anon ser)" output="screen" type="ser.py" args="--sync --reg -me 6000 -sr 16000 -vd 500 -s_ratio 0.7 -md MSPEC_MM.all.ar_vl.0.h5 -tasks arousal:2,valence:2 -c_len 10 -m_t_step 500" respawn="true"/>
 </launch>
 
 

@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find squirrel_ser)/launch/ser.launch"/>
+  <include file="$(find squirrel_ser)/launch/viz.launch"/>
+  <include file="$(find squirrel_ser)/launch/cobotiny.arousal.launch"/>
+</launch>
