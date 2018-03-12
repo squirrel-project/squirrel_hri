@@ -56,6 +56,18 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.blueLEDButton.clicked.connect(self.blueLEDButton_clicked)
         self.whiteLEDButton.clicked.connect(self.whiteLEDButton_clicked)
         self.offLEDButton.clicked.connect(self.offLEDButton_clicked)
+        # IKEA
+        self.face_detectedButton.clicked.connect(self.face_detectedButton_clicked)
+        self.start_commandButton.clicked.connect(self.start_commandButton_clicked)
+        self.check_floorButton.clicked.connect(self.check_floorButton_clicked)
+        self.grasp_successButton.clicked.connect(self.grasp_successButton_clicked)
+        self.drive_to_startButton.clicked.connect(self.drive_to_startButton_clicked)
+        self.emo_face_detectedButton.clicked.connect(self.emo_face_detectedButton_clicked)
+        self.emo_start_searchButton.clicked.connect(self.emo_start_searchButton_clicked)
+        self.emo_found_somethingButton.clicked.connect(self.emo_found_somethingButton_clicked)
+        self.emo_successButton.clicked.connect(self.emo_successButton_clicked)
+        self.emo_failureButton.clicked.connect(self.emo_failureButton_clicked)
+
 
         rospy.init_node('expression_gui')
         self.led_pub = rospy.Publisher('/light/command', std_msgs.msg.ColorRGBA, queue_size=10)
@@ -67,6 +79,45 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.reset_safety_pub = rospy.Publisher('/reset_safety', std_msgs.msg.Bool, queue_size=10)
         self.arm_mode_pub = rospy.Publisher('/real/robotino/settings/switch_mode', std_msgs.msg.Int32, queue_size=10, latch=True)
         self.door = rospy.ServiceProxy('/door_controller/command', DoorController)
+
+        # IKEA demo
+        self.face_detection_pub = rospy.Publisher('/ikea/face_deteced', std_msgs.msg.Bool, queue_size=1)
+        self.start_pub = rospy.Publisher('/ikea/start_command', std_msgs.msg.Bool, queue_size=1)
+        self.grasp_success_pub = rospy.Publisher('/ikea/grasp_success', std_msgs.msg.Bool, queue_size=1)
+
+
+    def face_detectedButton_clicked(self):
+        self.face_detection_pub.publish(True)
+        pass
+
+    def start_commandButton_clicked(self):
+        self.start_pub.publish(True)
+        pass
+
+    def check_floorButton_clicked(self):
+        self.grasp_success_pub.publish(True)
+        pass
+
+    def grasp_successButton_clicked(self):
+        pass
+
+    def drive_to_startButton_clicked(self):
+        pass
+
+    def emo_face_detectedButton_clicked(self):
+        pass
+
+    def emo_start_searchButton_clicked(self):
+        pass
+
+    def emo_found_somethingButton_clicked(self):
+        pass
+    def emo_successButton_clicked(self):
+        pass
+
+    def emo_failureButton_clicked(self):
+        pass
+
 
     def helloButton_clicked(self):
         print "Hello"
